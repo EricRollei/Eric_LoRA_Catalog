@@ -1,15 +1,38 @@
+[build-system]
+requires = ["setuptools>=61.0"]
+build-backend = "setuptools.build_meta"
+
 [project]
 name = "eric-lora-catalog"
-description = "Find your LoRAs by what they do, not by folder name. A local vision LLM (LM Studio or Ollama, e.g. Qwen3-VL) writes a card for every LoRA in your library: its role (style, lighting, detailer, subject...), look, genre and mood, trigger words, good weights and NSFW level. You review and correct the cards in a fast browser editor that also searches, rates, de-duplicates and moves files with undo. Civitai data shows how each LoRA ranks against others of its base model, the weights people really use and the prompts they make with it. The LoRA Suggester node reads your prompt and stacks the LoRAs that fit, with per-stage weights and an NSFW gate. A ComfyUI sidebar panel refreshes the catalog. Everything runs on your machine; works standalone for Forge and A1111 too."
 version = "0.9.0"
+description = "Find your LoRAs by what they do, not by folder name. A local vision LLM (LM Studio or Ollama, e.g. Qwen3-VL) writes a card for every LoRA in your library: its role (style, lighting, detailer, subject...), look, genre and mood, trigger words, good weights and NSFW level. You review and correct the cards in a fast browser editor that also searches, rates, de-duplicates and moves files with undo. Civitai data shows how each LoRA ranks against others of its base model, the weights people really use and the prompts they make with it. The LoRA Suggester node reads your prompt and stacks the LoRAs that fit, with per-stage weights and an NSFW gate. A ComfyUI sidebar panel refreshes the catalog. Everything runs on your machine; works standalone for Forge and A1111 too."
+authors = [{ name = "Eric Hiss" }]
+readme = "README.md"
 license = { file = "LICENSE" }
 requires-python = ">=3.12"
+keywords = ["comfyui", "lora", "lora-manager", "lora-browser", "civitai", "stable-diffusion", "flux", "krea2",
+            "local-llm", "vision-llm", "lm-studio", "ollama", "qwen3-vl", "prompt", "forge", "automatic1111"]
+
+# Kept in sync with requirements.txt. All three come with ComfyUI already and are listed unpinned, so nothing is
+# reinstalled over ComfyUI's own versions. OpenCV is optional (preview videos only) and deliberately not listed:
+# ComfyUI ships one of the opencv packages, and installing a second one overwrites the shared cv2 folder.
 dependencies = ["requests", "pyyaml", "Pillow"]
 
 [project.urls]
 Repository = "https://github.com/EricRollei/Eric_LoRA_Catalog"
+"Bug Tracker" = "https://github.com/EricRollei/Eric_LoRA_Catalog/issues"
+Documentation = "https://github.com/EricRollei/Eric_LoRA_Catalog/blob/main/docs/USER_GUIDE.md"
 
+# ─────────────────────────────────────────────────────────────────────────
+#  ComfyUI Registry metadata (https://registry.comfy.org)
+# ─────────────────────────────────────────────────────────────────────────
 [tool.comfy]
 PublisherId = "ericrollei"
 DisplayName = "Eric LoRA Catalog"
 Icon = ""
+
+[tool.setuptools]
+# A ComfyUI node pack loaded by directory, not an importable library: no package auto-discovery or installation into
+# site-packages (with several top-level folders - lora_catalog, suggest, nodes, comfy - auto-discovery would fail).
+py-modules = []
+packages = []
