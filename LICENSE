@@ -1,0 +1,142 @@
+# Dual License Agreement
+
+**Eric LoRA Catalog (LoRA Catalog, card editor and LoRA Suggester)**
+
+Copyright (c) 2025-2026 Eric Hiss. All rights reserved.
+
+---
+
+## License Terms
+
+This software is available under a dual-license model:
+
+### 1. Non-Commercial Use License
+
+For **non-commercial use**, this software is licensed under the terms of the:
+
+**Creative Commons Attribution-NonCommercial 4.0 International License (CC BY-NC 4.0)**
+
+You are free to:
+- **Share** — copy and redistribute the material in any medium or format
+- **Adapt** — remix, transform, and build upon the material
+
+Under the following terms:
+- **Attribution** — You must give appropriate credit, provide a link to the license, and indicate if changes were made
+- **NonCommercial** — You may not use the material for commercial purposes
+
+To view a copy of this license, visit:
+http://creativecommons.org/licenses/by-nc/4.0/
+
+Or send a letter to:
+Creative Commons, PO Box 1866, Mountain View, CA 94042, USA
+
+---
+
+### 2. Commercial Use License
+
+For **commercial use**, including but not limited to:
+- Use in commercial products or services
+- Use by businesses or commercial entities
+- Monetization of content created using this software
+- Integration into paid software or services
+
+A separate commercial license is required.
+
+**To obtain a commercial license, please contact:**
+
+**Eric Hiss**
+- Email: eric@historic.camera
+- Email: eric@rollei.us
+- GitHub: [@EricRollei](https://github.com/EricRollei)
+
+Commercial licenses can be customized to fit your specific needs.
+
+---
+
+## Definitions
+
+### Non-Commercial Use
+Non-commercial use means use that is not primarily intended for or directed toward commercial advantage or monetary compensation. Personal use, educational use, research, and non-profit use are generally considered non-commercial.
+
+### Commercial Use
+Commercial use means any use that is primarily intended for or directed toward commercial advantage or monetary compensation. This includes but is not limited to:
+- Using the software in a business environment
+- Providing services using the software
+- Creating commercial content using the software
+- Selling or licensing derivative works
+- Integrating into commercial products
+
+If you are uncertain whether your use qualifies as commercial, please contact the author.
+
+---
+
+## Disclaimer of Warranty
+
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.
+
+IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
+
+---
+
+## Third-Party Dependencies
+
+This software uses the following third-party libraries and acknowledges their respective licenses:
+
+### Python and Core Libraries
+- **Python** (https://www.python.org/) - Python Software Foundation License
+- **Pillow** (https://python-pillow.org/) - HPND License
+- **requests** (https://requests.readthedocs.io/) - Apache License 2.0
+- **PyYAML** (https://pyyaml.org/) - MIT License
+- **Send2Trash** (https://github.com/arsenetar/send2trash) - BSD License
+- **OpenCV** (https://opencv.org/), optional - Apache License 2.0
+
+### ComfyUI (optional host)
+- **ComfyUI** (https://github.com/comfyanonymous/ComfyUI) - GNU General Public License v3.0 (GPL-3.0)
+
+### LLM Backends (optional, any OpenAI-compatible server)
+- **LM Studio** (https://lmstudio.ai/) - Proprietary License
+- **Ollama** (https://ollama.com/) - MIT License
+- **llama.cpp** (https://github.com/ggml-org/llama.cpp) - MIT License
+
+### Data sources
+- **Civitai** (https://civitai.com/) - model records, stats and example images are fetched with the user's own API key and stay on the user's machine, under Civitai's terms of service.
+
+All third-party software is subject to its own license terms. This software does not claim ownership of or modify the licenses of its dependencies.
+
+---
+
+## Attribution Requirements
+
+When using this software under the Non-Commercial License, you must:
+
+1. **Provide Credit**: Include a reference to "Eric LoRA Catalog" and the author "Eric Hiss"
+2. **Link to Source**: Provide a link to the original repository (https://github.com/EricRollei/Eric_LoRA_Catalog)
+3. **Indicate Changes**: If you modified the software, clearly indicate what changes were made
+4. **License Notice**: Include a copy of or link to this license
+
+Example attribution:
+```
+LoRAs catalogued with Eric LoRA Catalog
+by Eric Hiss (https://github.com/EricRollei/Eric_LoRA_Catalog)
+Licensed under CC BY-NC 4.0
+```
+
+---
+
+## Questions?
+
+If you have questions about:
+- Whether your use requires a commercial license
+- Licensing terms and conditions
+- Custom licensing agreements
+- Attribution requirements
+
+Please contact:
+- **Eric Hiss**
+- Email: eric@historic.camera or eric@rollei.us
+- GitHub: [@EricRollei](https://github.com/EricRollei)
+
+---
+
+**Last Updated**: October 2025
+**Version**: 1.7.0

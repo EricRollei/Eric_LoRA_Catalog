@@ -1,0 +1,38 @@
+# Your settings (paths, API keys) - never commit
+settings.json
+*.tmp
+
+# Data the tool writes (standalone default; inside ComfyUI it goes to ComfyUI/user/lora_catalog)
+user_data/
+*.sqlite
+*.sqlite-wal
+*.sqlite-shm
+*.db
+cache/
+reviews/
+review_*.html
+moves/
+stacks/
+locks/
+logs/
+*.log
+axes_ladders_draft.yaml
+*.bak_*
+backup*/
+_to_delete/
+_lora_trash/
+
+# Python / tools
+__pycache__/
+*.pyc
+.history/
+.vscode/
+.idea/
+
+# Local notes and scratch
+CLAUDE.md
+TODO.md
+RELEASE_PLAN.md
+dev/scratch/
+_not_shipped/
+dev/scratch_lib/

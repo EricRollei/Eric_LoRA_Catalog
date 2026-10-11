@@ -1,0 +1,18 @@
+{
+  "library_roots": ["C:\\path\\to\\your\\loras"],
+  "llm_base_url": "http://localhost:1234/v1",
+  "llm_backend": "auto",
+  "card_model": "qwen/qwen3-vl-8b",
+  "genre_model": "",
+  "civitai_api_key": "",
+  "civitai_host": "https://civitai.com",
+  "data_dir": "",
+  "catalog_path": "",
+  "training_roots": [],
+  "artist_names_file": "",
+  "reference_dirs": [],
+  "suggest": {
+    "block_real_person_nsfw": true,
+    "blend_ratio": 0.6
+  }
+}

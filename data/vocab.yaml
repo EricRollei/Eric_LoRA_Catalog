@@ -1,0 +1,817 @@
+# LoRA card pick lists - the fixed words a card may use for each field.
+#
+# EDIT FREELY. Read by the card editor (run.py serve) and, later, the card writer.
+#
+#   facets:
+#     <field>:
+#       pick: one | many          one = a single choice, many = any number
+#       help: shown in the editor
+#       terms:
+#         some_term: [alias, alias]       a term; its label is the id with _ as spaces.
+#                                         Aliases are other words meaning the same (used to read old free text and
+#                                         prompts). The label itself always counts.
+#         a_group:                        a group is itself a pickable term (broad match),
+#           _: [alias, alias]             its own aliases go under "_"
+#           child_term: []                narrower terms; a prompt naming the group matches them all,
+#                                         a prompt naming the child matches the child best.
+#
+# Renaming a term id after cards use it orphans those choices - add the old id as an alias of the new one instead.
+# Words you type in the editor that are not here are kept on the card and listed by `run.py vocab-gaps`.
+
+version: 1
+
+facets:
+
+  role:
+    pick: many
+    help: The job it does in a stack. style = the whole look; transform = changes content and composition but stacks on a style (surreal, dreamlike, glitch); treatment = a surface on top. Decides its slot and when it is applied (S1 / S2 / S3).
+    terms:
+      style: [base style, art style, artist style, look]
+      transform: [transformation, reality bending, dreamlike transform, surreal transform, morph, glitch world]
+      treatment: [overlay, finish, texture layer, process, linework layer, colour grade]
+      detailer: [enhancer, detail, sharpener, quality, fixer, hands fix, realism boost]
+      environment: [setting, background, location, place, room, scenery]
+      lighting: [light, lighting mood, colour mood]
+      subject: [character, person, creature, object, product, clothing, outfit, pose, action]
+      layout: [composition, format, template, page layout, frame]
+      utility: [tool, speed, turbo, lightning, distill, inpaint helper, control]
+      slider: [dial, concept slider]
+
+  family:
+    pick: many
+    help: Which group of styles it belongs to. Styles in the same family may stack as a blend (two comic styles); styles from different families clash unless pinned. Leave empty and the Suggester works it out from use / medium / rendering.
+    terms:
+      comic_illustration: [comic and illustration, illustration family, comics family]
+      anime: [anime family, manga family]
+      painterly: [painting family, fine art painting, painterly family]
+      print_graphic: [print family, graphic design, poster family]
+      photographic: [photo family, photography family]
+      three_d: [3d family, cgi family]
+      surreal_transform: [surreal family, dreamlike family]
+
+  use:
+    pick: many
+    help: What you would make with it. Several are fine (a poster LoRA that also does strong lettering).
+    terms:
+      illustration:
+        _: [illustrative]
+        editorial_illustration: [magazine illustration, spot illustration]
+        childrens_book: [picture book, storybook, kids book]
+        fantasy_illustration: [fantasy art, sword and sorcery]
+        scientific_plate: [botanical plate, natural history plate, botanical illustration, anatomical plate, field guide]
+        fashion_illustration: [fashion sketch]
+      concept_art: [concept design, keyframe, matte painting, visual development]
+      comics:
+        _: [comic, comic book, sequential art]
+        comic_page: [comic panels, paneling]
+        manga: [manga page, manhwa, webtoon]
+        bande_dessinee: [bd, franco-belgian, ligne claire]
+        cartoon_strip: [newspaper strip, gag cartoon]
+      animation_look:
+        _: [cartoon, animated]
+        anime: [anime screencap, niji]
+        western_cartoon: [western animation, saturday morning cartoon]
+        rubber_hose: [1930s cartoon, fleischer]
+      poster: [poster art, movie poster, gig poster, propaganda poster, travel poster]
+      cover_art:
+        _: [cover]
+        magazine_cover: [magazine]
+        book_cover: [paperback cover, pulp cover, novel cover]
+        album_cover: [record sleeve, lp cover]
+        game_box_art: [box art]
+      logo: [logotype, emblem, badge, brand mark, mascot logo]
+      icon_sticker: [icon, sticker, emoji, app icon, die cut]
+      typography: [lettering, calligraphy, type design, font, word art, text effect]
+      vector_flat: [vector art, flat design, flat illustration, svg look]
+      coloring_book: [colouring book, line art for coloring, colouring page]
+      collage: [photo collage, mixed media collage, scrapbook, cut and paste]
+      pattern: [seamless pattern, textile, wallpaper, fabric print, tile]
+      tattoo: [tattoo flash, tattoo design]
+      card_art: [trading card, tarot, playing card, tcg]
+      map: [fantasy map, cartography]
+      infographic: [diagram, chart, explainer]
+      packaging: [label, product label, can design]
+      ui_game_asset: [game asset, sprite, item icon, ui]
+      character_sheet: [turnaround, reference sheet, model sheet]
+      fine_art: [gallery painting, museum piece]
+      photography: [photo, photograph]
+      three_d_render: [3d render, cgi, blender]
+
+  medium:
+    pick: many
+    help: The materials or process it imitates.
+    terms:
+      paint:
+        _: [painting, painted]
+        oil: [oil paint, oil painting, oils]
+        acrylic: [acrylic paint]
+        watercolour: [watercolor, watercolour paint, watercolor paint]
+        gouache: []
+        tempera: [egg tempera]
+        fresco: []
+        ink_wash: [ink and wash, wash, sumi-e, sumi e, chinese ink painting]
+        airbrush: []
+        digital_painting: [digital paint, digital art]
+        spray_paint: [graffiti, aerosol]
+      drawing:
+        _: [drawn]
+        graphite: [pencil, pencil drawing, graphite pencil]
+        charcoal: []
+        chalk_pastel: [pastel, chalk, soft pastel, oil pastel]
+        coloured_pencil: [colored pencil, crayon]
+        marker: [markers, copic, chalk marker, chalk markers]
+        ballpoint: [ballpoint pen, biro]
+        silverpoint: [metalpoint]
+        scratchboard: [scratchboard art, scraperboard]
+        pen_and_ink: [pen and ink, ink drawing, pen drawing, ink illustration, pen-and-ink]
+        brush_ink: [brush pen, brush and ink]
+      print:
+        _: [printmaking, printed, relief printing, collagraphy]
+        woodcut: [woodblock, woodblock print, wood engraving]
+        linocut: [lino print, linoleum]
+        etching: [drypoint, intaglio]
+        engraving: [steel engraving, copperplate]
+        monotype: [monotype printing, monoprint]
+        stencil: [stencil art, pochoir]
+        lithograph: [lithography]
+        screen_print: [screenprint, silkscreen, serigraph]
+        risograph: [riso]
+        halftone: [ben-day dots, benday, dot matrix, newsprint, offset print]
+        cyanotype: [blueprint photo]
+        letterpress: []
+      graphic:
+        _: [graphic design]
+        vector: [vector illustration, flat vector]
+        cel: [cel shaded, cel shading, cel animation]
+        pixel_art: [pixel, 8-bit, 16-bit, sprite art]
+        line_art: [lineart, outline drawing]
+      craft:
+        _: [handmade]
+        paper_cut: [papercut, cut paper, paper craft, kirigami]
+        collage_media: [mixed media, collage, photomontage]
+        embroidery: [cross stitch, needlework]
+        stained_glass: []
+        mosaic: []
+        clay: [claymation, plasticine, sculpture]
+        ceramics: [ceramic, pottery, terra-cotta, terracotta, porcelain]
+        origami: [paper folding]
+        quilling: [paper quilling]
+        papier_mache: [papier-mâché, papier-mache, paper mache]
+        textile_craft: [crochet, knitting, felting, macrame, weaving, tapestry, quilt art, quilting, batik, beadwork]
+        pyrography: [wood burning]
+        scrimshaw: []
+        assemblage: [found objects, recycled art, found object art]
+      photo_process:
+        _: [photographic]
+        film_photo: [analog film, film grain, 35mm]
+        polaroid: [instant film]
+        daguerreotype: [tintype, wet plate, collodion]
+
+  period:
+    pick: many
+    help: Movement, era or tradition. Pick the narrowest that is true; the tree lets broad prompts find it.
+    terms:
+      medieval:
+        _: [middle ages, gothic art, romanesque, international gothic]
+        illuminated_manuscript: [illumination, book of hours, medieval manuscript, medieval illuminations]
+        byzantine: [icon painting]
+      renaissance:
+        _: [renaissance painting]
+        early_renaissance: [quattrocento]
+        high_renaissance: []
+        northern_renaissance: [flemish primitive, early netherlandish, danube school]
+        mannerism: []
+      baroque: [caravaggesque, dutch golden age, tenebrism, counter-reformation art, vanitas, quito school]
+      rococo: [rocaille]
+      neoclassical: [neoclassicism, neo-classicism, classicism, new classicism]
+      romanticism: [romantic painting, hudson river school, luminism, tonalism, barbizon school]
+      nineteenth_century:
+        _: [19th century, aestheticism]
+        academic_art: [academic, salon painting, academicism]
+        pre_raphaelite: [pre-raphaelite brotherhood, pre-raphaelitism, preraphaelite, preraphaelite style]
+        realism_19c: [realist painting, 19th century realism, realism movement, classical realism, artistic realism, american realism, ashcan school]
+        orientalist: [orientalism]
+      impressionism:
+        _: [impressionist, plein air, heidelberg school]
+        post_impressionism: [post-impressionist, pointillism, divisionism, neo-impressionism, cloisonnism, synthetism, les nabis, intimism]
+      symbolism: [symbolist]
+      art_nouveau: [jugendstil, mucha style, secession]
+      arts_and_crafts: [william morris]
+      golden_age_illustration: [golden age of illustration, early 20th century illustration, early xx century illustration, early 20th century american illustration, brandywine]
+      modernism:
+        _: [modern art, early modern, school of paris, paris school]
+        expressionism: [german expressionism]
+        fauvism: [fauve, fauvist, neo-fauvism]
+        cubism: [cubist, cubism-inspired, orphism, rayonism, synchromism, purism, vorticism, precisionism]
+        futurism: [panfuturism]
+        constructivism: [soviet constructivism, suprematism]
+        bauhaus: []
+        de_stijl: [mondrian, neo-plasticism]
+        dada: [dadaism]
+        surrealism: [surrealist, surreal, pittura metafisica, metaphysical painting, massurrealism]
+        new_objectivity: [neue sachlichkeit, magic realism, verism]
+        regionalism: [american regionalism, social realism, american scene painting]
+        abstraction: [abstract art, non-objective art, non-representational art, lyrical abstraction, art informel, informalism, tachisme, colour field, color field, abstract illusionism, spatialism, geometric abstraction, geometric abstract art, hard-edge abstraction, concrete art, arte concreto]
+        art_deco: [deco, streamline, 1920s, 1930s]
+      mid_century:
+        _: [mid-century, mid century modern, 1950s, 1960s]
+        pulp: [pulp magazine, pulp art]
+        pin_up: [pinup, pin-up]
+        upa_cartoon: [1950s cartoon, limited animation]
+        atomic_age: [googie, retro futurism, retrofuturism]
+        propaganda: [propaganda art, wpa poster, socialist realism]
+      pop_art: [pop-art, lichtenstein, warhol, sots art]
+      op_art: [optical art, kinetic art]
+      psychedelic: [1960s psychedelic, concert poster, fillmore, visionary art, acid art]
+      abstract_expressionism: [abstract expressionist, action painting]
+      underground_comix: [comix]
+      seventies: [1970s, 1970s retro, 70s retro, seventies style, disco era]
+      fantasy_paperback: [1970s fantasy, 1980s fantasy, fantasy paperback cover art, high fantasy art, high-fantasy art]
+      eighties_retro: [1980s, 80s retro, 1980s retro, synthwave, outrun, vaporwave, memphis design]
+      nineties_y2k: [1990s, 2000s, 90s retro, y2k, frutiger aero]
+      contemporary:
+        _: [contemporary art, modern illustration, contemporary digital, contemporary digital illustration, modern digital illustration, stuckism, remodernism, transavantgarde, new leipzig school, young british artists, afrofuturism]
+        minimalism: [minimalist art, post-minimalism, postminimalism, monochromism, dansaekhwa]
+        conceptual_art: [fluxus, happening, performance art, installation art, land art, environmental art, earthworks, arte povera, process art, video art]
+        generative_art: [algorithmic art, computer art, glitch art, net art, new media art, ascii art]
+        lowbrow: [pop surrealism, superflat]
+        street_art: [graffiti art, mural, muralism]
+      asian_traditions:
+        _: [asian art, nihonga, bengal school]
+        ukiyo_e: [ukiyo-e, edo period, japanese woodblock, shin hanga, sosaku hanga, sōsaku hanga]
+        chinese_ink: [guohua, shan shui, chinese painting, zhe school]
+        persian_miniature: [mughal miniature, islamic miniature, qajar art]
+      folk_naive: [folk art, naive art, naïve art, outsider art, art brut, primitivism, primitive art, neo-primitivism, mingei]
+      anime_eras:
+        _: [anime style]
+        anime_80s: [1980s anime]
+        anime_90s: [1990s anime, 90s anime, 1990s manga]
+        anime_modern: [2010s anime, modern anime, 2010s anime art, 2010s anime illustration]
+      comic_eras:
+        _: [comic book art, comic art]
+        golden_age_comics: [1940s comics]
+        silver_bronze_comics: [1960s comics, 1970s comics]
+        modern_comics: [modern comic book art, 2010s comic art]
+
+  # genre and mood added 2026-10-10. grimdark / dark fantasy moved here from period, dieselpunk from
+  # period:propaganda, pulp horror from period:pulp - they are worlds and moods, not eras or movements.
+  genre:
+    pick: many
+    help: The world or aesthetic it belongs to, whatever the era - gothic, cyberpunk, steampunk, dark fantasy, noir, cottagecore. Period says WHEN or which art movement; genre says WHAT KIND of world.
+    terms:
+      gothic:
+        _: [gothic horror, goth, gothic aesthetic, dark gothic, gothic romance]
+        victorian_gothic: [gaslamp, gaslamp fantasy, victorian horror, penny dreadful]
+        goth_subculture: [goth girl, goth fashion, gothic fashion, gothic lolita, trad goth, nu goth]
+      horror:
+        _: [horror art, creepy art, pulp horror, scary]
+        cosmic_horror: [lovecraftian, eldritch, cthulhu]
+        folk_horror: [pagan horror, rural horror]
+        body_horror: [biomechanical horror]
+      dark_fantasy:
+        _: [dark fantasy art]
+        grimdark: [grimdark fantasy]
+      high_fantasy: [epic fantasy, sword and sorcery, heroic fantasy, fantasy rpg]
+      fairytale: [fairy tale, fairy-tale, storybook fantasy, whimsical fantasy, enchanted forest]
+      mythology: [mythological, mythic, folklore]
+      science_fiction:
+        _: [sci-fi, scifi, sci fi]
+        cyberpunk: [cyber punk, cyber-punk, neon noir city]
+        space_opera: [space fantasy, star wars style]
+        biopunk: [bio punk]
+        mecha: [giant robots, mech]
+      steampunk: [steam punk, clockpunk, victorian sci-fi]
+      dieselpunk: [diesel punk, diesel-punk]
+      post_apocalyptic: [post-apocalyptic, apocalyptic, wasteland, dystopian, dystopia]
+      solarpunk: [solar punk, eco futurism]
+      noir: [film noir, neo-noir, neo noir, hardboiled, crime noir]
+      western: [wild west, cowboy, spaghetti western]
+      cottagecore: [cottage core, cottage aesthetic, farmhouse aesthetic]
+      kawaii: [cutecore, kawaii style, yume kawaii]
+      vaporwave: [vapor wave, aesthetic vaporwave]
+      retrowave: [synthwave, outrun, retro wave]
+      military: [war art, military art, battlefield]
+
+  mood:
+    pick: many
+    help: The feeling it gives a picture - eerie, cozy, melancholic, whimsical, dramatic. Pick what it does to the mood even when the prompt is neutral.
+    terms:
+      dark_moody:
+        _: [moody, brooding, somber, sombre, gloomy, grim, dark mood, dark atmosphere]
+        melancholic: [melancholy, wistful, lonely, sorrowful, mournful]
+        eerie: [creepy, spooky, uncanny, haunting, ominous, unsettling, foreboding]
+        menacing: [sinister, threatening, malevolent]
+      serene: [calm, peaceful, tranquil, meditative, quiet mood]
+      cozy: [cosy, warm and inviting, comforting, hygge, homely]
+      whimsical: [playful, quirky, lighthearted, light-hearted, joyful, cheerful]
+      dreamy: [ethereal, dreamlike, otherworldly, magical atmosphere]
+      nostalgic: [nostalgia, sentimental, bittersweet]
+      dramatic: [intense, epic, heroic, grandiose, theatrical]
+      romantic: [tender, intimate, sensual, romance]
+      mysterious: [enigmatic, mystical, mystery]
+      energetic: [lively, exuberant, chaotic energy, high energy]
+
+  rendering:
+    pick: many
+    help: How finished and how real the forms are drawn.
+    terms:
+      flat: [flat colour, flat color, flat fills]
+      cel_shaded: [two-tone shading]
+      semi_flat: [simple shading]
+      painterly: [visible brushstrokes, loose, brushy]
+      rendered: [semi-realistic, semi realism, semi-realism, polished]
+      photoreal: [photorealistic, hyperreal, hyperrealism, hyper realism, photorealism, superrealism, trompe-l'oeil]
+      linework_only: [line only, uncoloured, outline only]
+      sketchy: [rough, loose sketch, unfinished, sketch]
+
+  dimension:
+    pick: many
+    help: Flat picture, faux depth, or 3D.
+    terms:
+      two_d: [2d]
+      two_and_half_d: [2.5d, faux 3d]
+      three_d: [3d]
+
+  palette:
+    pick: many
+    help: Colour character it pushes.
+    terms:
+      black_and_white: [b&w, monochrome ink, black-and-white]
+      monochrome: [greyscale, grayscale, single hue]
+      duotone: [two colour]
+      limited: [limited palette, limited colours, limited color palette, spot colour]
+      pastel: [soft colours, pastel hues, stark pastels]
+      muted: [desaturated, muted colours, muted colors, subdued]
+      earthy: [earth tones, earthy warm, earthy tones]
+      vibrant: [saturated, bright, vivid, bold colours]
+      neon: [fluorescent, glowing colours, neon-like]
+      high_contrast: [deep shadows, dramatic contrast, high-contrast]
+      sepia: [aged, vintage tint, antique]
+      warm: []
+      cool: []
+      retro_print: [faded print colours, cmyk misregistration, vintage print, retro colors]
+      metallic_gold: [gold leaf, gold accents, gilded]
+
+  line:
+    pick: many
+    help: Edges and marks.
+    terms:
+      no_outline: [lineless, soft edges, minimal outlines, no outlines, without outlines, outline-free, no linework]
+      bold_outline: [bold even outlines, thick lines, heavy outlines, bold outlines]
+      fine_line: [thin lines, delicate lines, fine linework, intricate fine linework]
+      hatching: [hatched shading, hatched lines, hatch lines, pen hatching, line hatching]
+      cross_hatching: [crosshatching, cross-hatching, cross-hatched, crosshatched, cross hatched]
+      stippling: [stipple, dotwork]
+      sketchy_line: [rough lines, scribbly, scratchy, rough, uneven lines]
+      brush_line: [brush strokes, brushstrokes, calligraphic line, variable width]
+      clean_vector_line: [clean lineart, crisp lines, sharp lineart]
+      woodcut_line: [carved line, gouged]
+
+  subjects:
+    pick: many
+    help: What it is good at depicting.
+    terms:
+      portrait: [face, headshot, bust, portraits]
+      figure: [full body, people, person, human figure, figures]
+      character: [hero, warrior, warriors, fantasy character, fantasy characters, characters]
+      creature: [monster, dragon, dragons, beast, mythical creature, mythical creatures, fantasy creatures]
+      animal: [animals, wildlife, pets]
+      landscape: [scenery, nature, vista, landscapes]
+      cityscape: [urban, street, city, urban scenes, urban environments]
+      interior: [room, interior scene, interior scenes, interior settings]
+      architecture: [building, buildings]
+      still_life: []
+      object: [objects, product, item, prop, everyday objects]
+      vehicle: [car, ship, aircraft, mecha]
+      food: [dish, cuisine]
+      botanical: [plants, flowers, foliage]
+      abstract: [abstract shapes, non-figurative]
+      crowd: [group, many figures]
+      text_lettering: [words, letters, title]
+
+  lighting:
+    pick: many
+    help: Light it creates or favours.
+    terms:
+      natural_light:
+        _: [daylight, natural lighting]
+        golden_hour: [sunset light, sunrise light, warm low sun, magic hour]
+        blue_hour: [twilight, dusk light]
+        overcast: [soft daylight, diffused light, cloudy light]
+        harsh_sun: [midday sun, hard sunlight]
+      studio_light:
+        _: [studio lighting]
+        softbox: [soft studio light, beauty light]
+        rim_light: [edge light, hair light, backlight rim]
+        rembrandt_light: [rembrandt lighting]
+        split_light: [split lighting]
+        butterfly_light: [paramount lighting]
+        hard_flash: [direct flash, on-camera flash, flash photography]
+        coloured_gels: [gel lighting, colored gels, two-tone lighting]
+      chiaroscuro: [dramatic lighting, tenebrism, strong contrast light]
+      low_key: [dark moody lighting, low-key]
+      high_key: [bright airy, high-key]
+      backlit: [silhouette, contre-jour, backlighting]
+      volumetric: [god rays, light rays, crepuscular rays, light shafts, volumetric lighting]
+      atmospheric: [fog, haze, mist, smoke atmosphere]
+      neon_light: [neon lighting, neon glow, cyberpunk lighting]
+      practical_light: [lamp light, practical lights, window light]
+      firelight: [candlelight, candle light, torchlight, campfire light]
+      moonlight: [night lighting, moonlit]
+      glow: [bioluminescent, bioluminescence, glowing, emissive, inner glow]
+      caustics: [underwater light, water caustics]
+      lens_effects: [lens flare, bloom, halation, light leak]
+
+  composition:
+    pick: many
+    help: Framing, viewpoint and layout it pushes.
+    terms:
+      framing:
+        _: [shot size]
+        extreme_close_up: [ecu, macro face]
+        close_up: [closeup, headshot framing]
+        medium_shot: [waist up, half body]
+        full_body_shot: [full figure, full length]
+        wide_shot: [establishing shot, long shot, wide angle view]
+      viewpoint:
+        _: [camera angle]
+        low_angle: [worm's eye, from below, heroic angle]
+        high_angle: [from above]
+        top_down: [overhead, bird's eye, aerial view, flat lay, knolling]
+        dutch_angle: [tilted horizon, canted angle]
+        pov: [first person, point of view]
+        isometric: [isometric view, axonometric]
+      symmetry: [symmetrical, centered symmetry, wes anderson framing]
+      centred: [centered composition, central subject]
+      rule_of_thirds: []
+      negative_space: [minimal composition, lots of empty space]
+      leading_lines: []
+      frame_within_frame: [framed by doorway, vignette frame]
+      lens_look:
+        _: [lens]
+        fisheye: [fish-eye, wide lens distortion]
+        telephoto: [compressed perspective, long lens]
+        tilt_shift: [miniature effect, tilt-shift]
+        shallow_dof: [bokeh, shallow depth of field, blurred background]
+        deep_focus: [everything sharp, deep depth of field]
+      panorama: [panoramic, ultra wide]
+      multi_panel: [panels, triptych, grid layout, split screen, collage layout]
+
+  detail:
+    pick: many
+    help: What a detailer adds or fixes.
+    terms:
+      fine_detail: [more detail, detail boost, intricate details, high detail]
+      sharpness: [sharpen, crisp, anti-blur, clarity]
+      skin: [skin texture, pores, realistic skin]
+      faces: [face fix, facial detail]
+      eyes: [eye detail, better eyes]
+      hands: [hands fix, better hands, fingers]
+      hair: [hair detail, strands]
+      fabric_detail: [cloth detail, textile detail, clothing detail]
+      ornament: [ornate, filigree detail, intricate ornament]
+      micro_texture: [surface detail, texture detail]
+      realism_boost: [more realistic, photorealism boost]
+      background_detail: [detailed background, environment detail]
+      noise_cleanup: [denoise, less artifacts, clean up]
+      contrast_boost: [punchy, more contrast, dynamic range]
+      colour_boost: [more colour, saturation boost, vivid colours]
+
+  pattern:
+    pick: many
+    help: Patterns it adds to surfaces or backgrounds.
+    terms:
+      floral_pattern: [floral, flowers pattern, botanical pattern, chintz]
+      geometric_pattern: [geometric, geometry]
+      islamic_geometric: [arabesque, girih]
+      art_nouveau_ornament: [whiplash curves, nouveau ornament]
+      art_deco_pattern: [deco pattern, sunburst, chevrons]
+      celtic_knot: [knotwork, celtic]
+      paisley: []
+      damask: [baroque pattern, brocade]
+      mandala: []
+      fractal: [fractals, mandelbrot]
+      tessellation: [escher, tiling]
+      stripes: [striped]
+      polka_dots: [dots]
+      plaid: [tartan, gingham, check]
+      camouflage: [camo]
+      animal_print: [leopard print, zebra print, snakeskin]
+      zentangle: [doodle pattern]
+      glitch: [glitch art, datamosh, pixel sorting]
+      op_pattern: [optical illusion, moire]
+      folk_pattern: [folk art pattern, rosemaling, otomi, slavic ornament]
+
+  material:
+    pick: many
+    help: Surface treatments - makes things look made of chrome, marble, glass...
+    terms:
+      metal:
+        _: [metallic]
+        chrome: [mirror metal, polished chrome, liquid metal, chrome look]
+        gold: [gold metal, gilded statue, solid gold]
+        brass_bronze: [brass, bronze, bronze statue]
+        copper_patina: [verdigris, patina, oxidized copper]
+        rust: [rusty, corroded]
+        steel: [brushed metal, iron]
+      stone:
+        _: [stone carving]
+        marble: [marble statue, marble veins, carved marble]
+        granite: []
+        obsidian: []
+        concrete: [brutalist concrete]
+      glass: [transparent glass, blown glass, glass sculpture]
+      crystal: [gemstone, quartz, diamond, crystalline]
+      ice: [frozen, icy]
+      liquid: [water, fluid, splash, liquid form]
+      ceramic: [porcelain, glazed ceramic, pottery]
+      clay_material: [clay, plasticine, claymation look]
+      wood: [wooden, carved wood, woodgrain]
+      paper_material: [paper, origami, cardboard, papercraft]
+      fabric: [knitted, wool, crochet, felt, plush, textile sculpture]
+      leather: []
+      plastic: [toy, vinyl figure, action figure]
+      latex_rubber: [latex, rubber, inflatable, balloon]
+      holographic: [iridescent, holo foil, opalescent, oil slick]
+      neon_tube: [neon sign]
+      smoke_material: [smoke form, made of smoke]
+      fire_material: [made of fire, flames form, lava, molten]
+      food_material: [candy, sugar, chocolate, jelly, gummy]
+      fur_material: [furry, fluffy]
+      brick_toy: [lego, building blocks]
+      wireframe: [wire, wire sculpture, circuit board, circuitry]
+      light_material: [made of light, energy form]
+
+  photo_style:
+    pick: many
+    help: Photographic genres and looks.
+    terms:
+      portrait_photo: [portrait photography, studio portrait, headshot photo]
+      fashion_editorial: [fashion photography, editorial, vogue style, lookbook]
+      glamour: [glamour photography, beauty shot]
+      street_photo: [street photography, candid street]
+      documentary: [photojournalism, reportage, documentary photo]
+      product_photo: [product photography, commercial photography, packshot, advertising photo]
+      food_photo: [food photography]
+      architecture_photo: [architectural photography, interior photography, real estate photo]
+      landscape_photo: [landscape photography, nature photography]
+      wildlife_photo: [wildlife photography]
+      macro_photo: [macro photography, close-up photography]
+      sports_photo: [sports photography, action photography]
+      snapshot: [amateur photo, phone photo, iphone photo, casual snapshot, candid]
+      flash_party: [party photo, flash snapshot, disposable camera]
+      vintage_photo: [old photo, antique photo, 1970s photo, retro photo]
+      long_exposure: [light trails, motion blur, slow shutter]
+      double_exposure: [multiple exposure, double-exposure]
+      infrared: [infrared photography, ir photo]
+      surveillance: [cctv, security camera, webcam, dashcam, trail cam]
+      drone_photo: [drone shot, aerial photography]
+      underwater_photo: [underwater photography]
+      fine_art_photo: [art photography, conceptual photography]
+
+  cinematic:
+    pick: many
+    help: Film genres, grades and formats.
+    terms:
+      cinematic_still: [movie still, film still, cinematic shot, cinematic]
+      genre:
+        _: [film genre]
+        film_noir: [noir, neo-noir]
+        western: [spaghetti western]
+        sci_fi_film: [science fiction film, space opera]
+        horror_film: [horror movie, giallo]
+        fantasy_film: [epic fantasy film]
+        period_drama: [costume drama]
+        action_film: [blockbuster, action movie]
+        animated_film: [animated feature]
+        arthouse: [art film, art house]
+      grade:
+        _: [colour grade, color grading]
+        teal_orange: [teal and orange, orange and teal]
+        bleach_bypass: [desaturated grade, silver retention]
+        day_for_night: []
+        cross_processed: [cross processing]
+        technicolor: [three-strip technicolor]
+        monochrome_film: [black and white film]
+      format:
+        _: [film format]
+        anamorphic: [anamorphic lens, anamorphic flares, letterbox, widescreen]
+        imax: [large format film]
+        super8: [super 8, 8mm, home movie]
+        sixteen_mm: [16mm]
+        vhs: [vhs tape, videotape, camcorder, vhs look]
+        tv_broadcast: [broadcast tv, crt, 90s tv]
+      era_film:
+        _: [period film look]
+        silent_film: [1920s film, silent movie]
+        film_1950s: [1950s film]
+        film_1970s: [1970s film, 70s movie]
+        film_1980s: [1980s film, 80s movie]
+        film_1990s: [1990s film, 90s movie]
+
+  film_stock:
+    pick: many
+    help: Specific film emulations.
+    terms:
+      kodak_portra: [portra, portra 400, portra 160]
+      kodak_ektar: [ektar]
+      kodachrome: []
+      ektachrome: []
+      kodak_gold: [kodak gold 200, ultramax]
+      cinestill: [cinestill 800t, cinestill 50d]
+      fuji_velvia: [velvia]
+      fuji_provia: [provia]
+      fuji_superia: [superia, fujicolor]
+      fuji_pro400h: [pro 400h]
+      ilford_hp5: [hp5]
+      kodak_trix: [tri-x, trix]
+      polaroid_film: [polaroid sx-70, instax]
+      lomography: [lomo, lomochrome]
+      expired_film: [expired film, faded film, film burn]
+      film_grain: [grain, grainy film]
+
+  depicts:
+    pick: many
+    help: The named character or person it was trained on (type the name). Leave empty for generic types.
+    terms: {}
+
+  figure:
+    pick: many
+    help: Who or what the character is. Adults only - characters must read as adults.
+    terms:
+      likeness:
+        _: [identity]
+        real_person: [celebrity, actor, actress, real person likeness, real influencer, model likeness, famous person]
+        fictional_character: [anime character, game character, movie character, comic character, cartoon character]
+        original_character: [oc, original character, virtual model, ai model, ai babe, ai influencer, virtual influencer]
+        generic_type: [archetype, generic person]
+      gender:
+        _: [sex]
+        female: [woman, women, girl, lady, female character]
+        male: [man, men, guy, male character]
+        androgynous: [androgyne, gender neutral]
+      age:
+        _: [age group]
+        young_adult: [20s, twenties, young woman, young man]
+        adult: [30s, 40s, grown]
+        middle_aged: [50s, middle age]
+        elderly: [old, old woman, old man, senior, aged, wrinkled]
+      species:
+        _: [race fantasy]
+        human: []
+        elf: [elven, elves]
+        orc_goblin: [orc, goblin, ogre, troll]
+        demon_angel: [demon, succubus, angel, devil, tiefling]
+        anthro: [furry, anthropomorphic, kemonomimi, catgirl, cat ears, animal ears]
+        robot_cyborg: [robot, android, cyborg, mecha girl, gynoid]
+        alien: [extraterrestrial]
+        undead: [zombie, vampire, skeleton, lich]
+        merfolk: [mermaid, merman]
+        monster: [monster girl, lamia, harpy, slime]
+        fairy: [fae, pixie, sprite]
+      body:
+        _: [body type, physique]
+        slim: [slender, thin, skinny]
+        athletic: [toned, sporty]
+        muscular: [muscles, bodybuilder, buff]
+        curvy: [voluptuous, hourglass]
+        plus_size: [chubby, fat, bbw, heavyset]
+        tall: []
+        short_stature: [short, dwarf]
+
+  appearance:
+    pick: many
+    help: Look of the face, hair and skin.
+    terms:
+      hair:
+        _: [hairstyle]
+        blonde_hair: [blonde, blond, golden hair]
+        brown_hair: [brunette]
+        black_hair: []
+        red_hair: [redhead, ginger, auburn]
+        white_grey_hair: [white hair, grey hair, gray hair, silver hair]
+        dyed_hair: [pink hair, blue hair, green hair, purple hair, colorful hair, rainbow hair]
+        long_hair: []
+        short_hair: [pixie cut, bob cut]
+        curly_hair: [curls, afro, coily]
+        braids: [braided, cornrows, dreadlocks, locs]
+        bald: [shaved head]
+      eyes:
+        _: [eye colour]
+        blue_eyes: []
+        green_eyes: []
+        brown_eyes: []
+        heterochromia: [odd eyes]
+        glowing_eyes: []
+      face:
+        _: [facial features]
+        freckles: []
+        beard: [stubble, goatee]
+        moustache: [mustache]
+        glasses: [spectacles, eyeglasses]
+        makeup: [lipstick, eyeliner, eyeshadow, heavy makeup]
+        scars: [scar, scarred]
+      skin:
+        _: [skin tone]
+        pale_skin: [porcelain skin, fair skin]
+        tan_skin: [tanned, olive skin]
+        dark_skin: [dark-skinned, deep skin tone]
+        unusual_skin: [blue skin, green skin, vitiligo, albino, scales]
+      body_art:
+        _: [body modification]
+        tattoos: [tattoo, tattooed, sleeve tattoo]
+        piercings: [piercing, pierced]
+        body_paint: [face paint, war paint, tribal markings]
+      heritage:
+        _: [ethnicity, ethnic look]
+        east_asian: [chinese, japanese, korean, asian]
+        south_asian: [indian, pakistani, bengali]
+        southeast_asian: [filipino, thai, vietnamese, indonesian]
+        black_african: [african, black woman, black man, nigerian, ethiopian]
+        middle_eastern_north_african: [arab, persian, berber, amazigh, turkish]
+        latin_american: [latina, latino, mexican, brazilian]
+        european: [nordic, slavic, mediterranean, caucasian]
+        indigenous: [native american, first nations, aboriginal, maori, inuit]
+        pacific_islander: [polynesian, hawaiian, samoan]
+        mixed_heritage: [mixed race, biracial]
+
+  costume:
+    pick: many
+    help: Clothing, outfits and accessories it brings.
+    terms:
+      armour: [armor, plate armor, knight armor, power armor]
+      military_uniform: [soldier, army uniform]
+      work_uniform: [nurse, chef, police, firefighter, pilot, scientist, lab coat, maid]
+      formal_wear: [suit, tuxedo, evening gown, ball gown, dress]
+      casual_wear: [streetwear, jeans, t-shirt, hoodie]
+      sportswear: [gym wear, yoga pants, athletic wear, jersey]
+      swimwear: [bikini, swimsuit]
+      lingerie: [underwear, corset, stockings]
+      latex_leather: [latex outfit, leather outfit, bodysuit, catsuit]
+      historical_dress:
+        _: [period costume]
+        medieval_dress: [tunic, medieval clothing]
+        victorian_dress: [victorian, corset gown, steampunk outfit]
+        twenties_dress: [flapper, 1920s outfit]
+        retro_fashion: [1950s fashion, 1970s fashion, 1980s fashion, vintage outfit]
+      traditional_dress: [kimono, hanfu, sari, hanbok, qipao, cheongsam, dirndl, folk costume]
+      fantasy_costume: [wizard robes, sorceress, elven dress, priestess, ranger outfit]
+      scifi_costume: [spacesuit, cyberpunk outfit, mech suit, futuristic clothing]
+      cosplay: [costume of, cosplay outfit]
+      religious_attire: [nun, monk robe, priest]
+      accessories:
+        _: [accessory]
+        headwear: [hat, crown, tiara, helmet, hood, headdress]
+        jewellery: [jewelry, necklace, earrings, rings]
+        mask: [masked, gas mask, masquerade mask]
+        weapons: [sword, gun, bow, staff, spear]
+        wings: [winged]
+        horns_tail: [horns, tail]
+
+  nsfw:
+    pick: one
+    help: How adult its output is on its own. Lets the suggester keep NSFW LoRAs out of SFW prompts.
+    terms:
+      sfw: [safe, safe for work]
+      suggestive: [sexy, pin-up, cleavage, pg-13]
+      nudity: [nude, naked, topless]
+      explicit: [porn, sexual, sex, hentai, xxx]
+
+  mature_content:
+    pick: many
+    help: Kinds of adult or disturbing content it produces, so they can be filtered.
+    terms:
+      artistic_nude: [figure study, nude art, classical nude]
+      boudoir: [glamour, boudoir photo, erotic photography]
+      lingerie_swimwear_focus: [lingerie focus, bikini focus]
+      explicit_sexual: [sex act, sexual content, explicit]
+      fetish: [kink, bdsm, bondage, latex fetish]
+      gore: [blood, guts, dismemberment, body horror]
+      violence: [violent, fighting, war violence]
+      disturbing: [creepy, horror imagery, unsettling]
+      drugs: [drug use, smoking, alcohol]
+      nudity_enabler: [uncensored, nsfw enabler, unlock nudity, nsfw unlock, nude enabler]
+      anatomy: [anatomy fix, better anatomy, correct anatomy, body detail, nsfw detail]
+
+  side_effects:
+    pick: many
+    help: What else it does to a picture, wanted or not. Decides whether it can share a stack.
+    terms:
+      adds_text: [writes text, adds lettering, title text]
+      adds_border: [frame, border, margin, panel border]
+      adds_signature: [signature, watermark, artist mark]
+      paper_texture: [adds paper, canvas texture, grain overlay]
+      forces_portrait: [face close-up bias]
+      forces_full_body: []
+      forces_composition: [same layout, centred subject, rigid composition]
+      same_face: [character bias, sameface]
+      nsfw_bias: [nudity bias, suggestive]
+      female_bias: []
+      male_bias: []
+      colour_shift: [strong grade, tints everything]
+      simplifies_background: [plain background, white background]
+      overpowers: [dominant, fights other loras, needs low weight in stacks]
+      needs_high_weight: [weak, subtle at 1.0]
+      photo_conflict: [breaks photorealism, cannot do photo]
+      youthful_look: [looks young, childlike proportions, baby face]   # never stacked with NSFW LoRAs
+      censors_nudity: [sfw only, adds clothing, blocks nudity, covers up]

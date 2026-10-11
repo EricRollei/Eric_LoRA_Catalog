@@ -1,0 +1,15 @@
+[project]
+name = "eric-lora-catalog"
+description = "A local catalog of your LoRA library: LLM-written cards, a browser card editor, Civitai audience data, and the LoRA Suggester node that picks LoRAs for a prompt."
+version = "0.9.0"
+license = { file = "LICENSE" }
+requires-python = ">=3.12"
+dependencies = ["requests", "pyyaml", "Pillow"]
+
+[project.urls]
+Repository = "https://github.com/EricRollei/Eric_LoRA_Catalog"
+
+[tool.comfy]
+PublisherId = "ericrollei"
+DisplayName = "Eric LoRA Catalog"
+Icon = ""

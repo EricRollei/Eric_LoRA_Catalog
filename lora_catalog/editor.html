@@ -1,0 +1,1166 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>LoRA Card Editor</title>
+<style>
+:root {
+  --bg:#f6f4ef; --panel:#ffffff; --fg:#1f1f1d; --muted:#7a776f; --line:#e2ded4; --soft:#efece4;
+  --accent:#2f5d8a; --accent-fg:#ffffff; --accent-soft:#dde7f2; --warn:#a85a14; --good:#2e7d4f; --new:#7a4fa0; --star:#d39a12;
+}
+@media (prefers-color-scheme: dark) {
+  :root { --bg:#151617; --panel:#1e2022; --fg:#e8e6e1; --muted:#9a978f; --line:#33363a; --soft:#26292c;
+          --accent:#7fa8d6; --accent-fg:#10161d; --accent-soft:#24364a; --warn:#e0a060; --good:#6cc28f; --new:#b99be0; --star:#f0c050; }
+}
+* { box-sizing:border-box; }
+html, body { height:100%; }
+body { margin:0; background:var(--bg); color:var(--fg); font:14px/1.45 system-ui, -apple-system, "Segoe UI", sans-serif; }
+button, select, input, textarea { font:inherit; color:inherit; }
+.muted { color:var(--muted); }
+header { display:flex; gap:10px; align-items:center; flex-wrap:wrap; padding:8px 14px; border-bottom:1px solid var(--line); background:var(--panel); position:sticky; top:0; z-index:5; }
+header h1 { font-size:15px; margin:0 8px 0 0; letter-spacing:.2px; }
+header select { background:var(--soft); border:1px solid var(--line); border-radius:6px; padding:4px 6px; }
+header .progress { color:var(--muted); margin-left:auto; }
+header .keys { color:var(--muted); font-size:12px; }
+header .search input { width:230px; background:var(--soft); border:1px solid var(--line); border-radius:6px; padding:4px 8px; }
+header .search input:focus { outline:none; border-color:var(--accent); background:var(--panel); }
+aside .found { padding:6px 12px; font-size:12px; color:var(--muted); border-bottom:1px solid var(--line); background:var(--soft); }
+aside .found a { color:var(--accent); cursor:pointer; }
+aside .item small.f { max-width:90px; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
+/* folder panel (organise.py) */
+header button.fold { background:var(--soft); border:1px solid var(--line); border-radius:6px; padding:3px 10px; cursor:pointer; }
+header button.fold.on { background:var(--accent); color:var(--accent-fg); border-color:var(--accent); }
+body.folders-on .layout { grid-template-columns:250px 270px 1fr; }
+#folders { display:none; }
+body.folders-on #folders { display:block; }
+#folders .tools { position:sticky; top:0; background:var(--panel); padding:8px 10px; border-bottom:1px solid var(--line); display:flex; flex-wrap:wrap; gap:6px; z-index:2; }
+#folders .tools button, .modal button { background:var(--soft); border:1px solid var(--line); border-radius:6px; padding:3px 9px; cursor:pointer; font-size:12px; }
+#folders .tools button:disabled { opacity:.45; cursor:default; }
+#folders .tools .sel { width:100%; font-size:12px; color:var(--muted); }
+#folders .f { padding:4px 10px; cursor:pointer; display:flex; gap:6px; align-items:center; font-size:13px; border-bottom:1px solid var(--soft); }
+#folders .f:hover { background:var(--soft); }
+#folders .f.on { background:var(--accent-soft); font-weight:600; }
+#folders .f .nm { flex:1; min-width:0; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
+#folders .f small { color:var(--muted); }
+#folders .f .here { display:none; font-size:11px; border:1px solid var(--accent); color:var(--accent); border-radius:5px; padding:0 6px; background:none; cursor:pointer; }
+body.selecting #folders .f:hover .here { display:inline-block; }
+aside .item .ck { margin:0; display:none; }
+body.folders-on aside .item .ck { display:inline-block; }
+aside .item.sel { box-shadow:inset 3px 0 0 var(--accent); }
+aside .item.grp { border-top:2px solid var(--line); }
+body.dupes aside .item small.f { max-width:130px; }
+#folders .tools button.danger { color:var(--warn); border-color:var(--warn); }
+.modal-back { position:fixed; inset:0; background:rgba(0,0,0,.45); display:none; align-items:center; justify-content:center; z-index:30; }
+.modal-back.on { display:flex; }
+.modal { background:var(--panel); border:1px solid var(--line); border-radius:10px; width:min(760px, 94vw); max-height:86vh; overflow:auto; padding:16px 20px; }
+.modal h3 { margin:0 0 8px; font-size:16px; }
+.modal .row { display:flex; gap:8px; align-items:center; margin:10px 0; flex-wrap:wrap; }
+.modal input[type=text] { flex:1; min-width:260px; background:var(--soft); border:1px solid var(--line); border-radius:6px; padding:5px 8px; }
+.modal button.go { background:var(--accent); color:var(--accent-fg); border-color:var(--accent); font-size:13px; padding:5px 14px; }
+.modal .warn { color:var(--warn); } .modal .good { color:var(--good); }
+.modal ul { margin:6px 0; padding-left:20px; font-size:12px; }
+.modal li { overflow-wrap:anywhere; }
+.modal details { margin:8px 0; font-size:12px; } .modal summary { cursor:pointer; color:var(--muted); }
+.modal .ops { font:11px/1.5 ui-monospace, Consolas, monospace; white-space:pre-wrap; overflow-wrap:anywhere; color:var(--muted); }
+.modal table { border-collapse:collapse; width:100%; font-size:12px; } .modal td { padding:4px 6px; border-bottom:1px solid var(--soft); }
+.layout { display:grid; grid-template-columns:270px 1fr; height:calc(100% - 47px); }
+aside { border-right:1px solid var(--line); overflow:auto; background:var(--panel); }
+aside .item { padding:7px 12px; border-bottom:1px solid var(--soft); cursor:pointer; display:flex; gap:8px; align-items:center; }
+aside .item:hover { background:var(--soft); }
+aside .item.on { background:var(--accent-soft); }
+aside .item .n { flex:1; min-width:0; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
+aside .item small { color:var(--muted); }
+aside .item .st { color:var(--star); font-size:12px; }
+.dot { width:8px; height:8px; border-radius:50%; background:var(--line); flex:none; }
+.dot.confirmed { background:var(--good); } .dot.edited { background:var(--accent); } .dot.unsure { background:var(--warn); }
+main { overflow:auto; padding:14px 18px 90px; }
+.empty { color:var(--muted); padding:40px; text-align:center; }
+
+/* card: left pane (title, images, what the model says) | two input columns. Proportional, so it uses wide screens. */
+.card { display:grid; grid-template-columns:minmax(360px, 2fr) minmax(0, 3fr); gap:20px; align-items:start; }
+.left { min-width:0; }
+.head { position:sticky; top:-14px; z-index:3; background:var(--bg); padding:14px 0 6px; margin-top:-14px; }
+.cols { display:grid; grid-template-columns:repeat(auto-fit, minmax(300px, 1fr)); gap:14px; align-items:start; min-width:0; }
+.col { min-width:0; }
+@media (max-width: 1050px) { .card { grid-template-columns:1fr; } .head { position:static; margin-top:0; padding-top:0; } }
+
+.title { display:flex; gap:10px; align-items:baseline; flex-wrap:wrap; }
+.title h2 { margin:0; font-size:19px; }
+.title .ver { color:var(--muted); }
+.stars { margin-left:auto; user-select:none; white-space:nowrap; font-size:19px; letter-spacing:1px; }
+.stars span { cursor:pointer; color:var(--line); }
+.stars span.on { color:var(--star); }
+.stars span:hover { color:var(--star); opacity:.7; }
+.stars small { font-size:11px; color:var(--muted); margin-left:6px; letter-spacing:0; }
+.badges { display:flex; gap:6px; flex-wrap:wrap; margin:6px 0 6px; }
+.badge { font-size:11px; border:1px solid var(--line); border-radius:10px; padding:1px 8px; color:var(--muted); }
+.badge.warn { color:var(--warn); border-color:var(--warn); } .badge.good { color:var(--good); border-color:var(--good); }
+.badge a { color:var(--accent); text-decoration:none; }
+.file { font-size:12px; color:var(--muted); overflow-wrap:anywhere; cursor:copy; }
+
+/* images: a 2x2 grid that pages when a LoRA has more than four */
+.grid { display:grid; grid-template-columns:1fr 1fr; gap:6px; margin:8px 0 4px; }
+.grid .cell { aspect-ratio:1; max-height:30vh; background:var(--soft); border-radius:6px; overflow:hidden; display:flex; align-items:center; justify-content:center; }
+.grid.one { grid-template-columns:1fr; }
+.grid.one .cell { aspect-ratio:auto; height:auto; max-height:44vh; }
+.grid img { max-width:100%; max-height:100%; width:auto; height:auto; object-fit:contain; cursor:zoom-in; display:block; }
+.grid.one img { max-height:44vh; }
+.pager { display:flex; gap:8px; align-items:center; justify-content:center; color:var(--muted); font-size:12px; margin-bottom:6px; }
+.pager button { border:1px solid var(--line); background:var(--soft); border-radius:6px; padding:0 10px; cursor:pointer; }
+.none { color:var(--muted); padding:20px; text-align:center; background:var(--soft); border-radius:6px; margin:8px 0; }
+
+section.facet { background:var(--panel); border:1px solid var(--line); border-radius:8px; padding:9px 11px 10px; margin-bottom:9px; }
+section.facet h3 { margin:0 0 6px; font-size:13px; display:flex; gap:8px; align-items:baseline; flex-wrap:wrap; }
+section.facet h3 .help { font-weight:normal; color:var(--muted); font-size:12px; }
+section.facet h3 .pick { font-weight:normal; color:var(--muted); font-size:11px; margin-left:auto; }
+.chips { display:flex; flex-wrap:wrap; gap:5px; }
+.chip { border:1px solid var(--line); background:var(--soft); border-radius:14px; padding:2px 10px; cursor:pointer; user-select:none; font-size:13px; }
+.chip:hover { border-color:var(--accent); }
+.chip.sel { background:var(--accent); color:var(--accent-fg); border-color:var(--accent); }
+.chip.model:not(.sel) { border-style:dashed; border-color:var(--warn); }
+.chip.group { font-weight:600; }
+.chip.child { font-size:12px; }
+.chip.free { border-color:var(--new); }
+.chip.free.sel { background:var(--new); border-color:var(--new); }
+.chip .x { margin-left:6px; opacity:.7; }
+.chip .more { margin-left:5px; opacity:.6; font-size:11px; }
+.chip .mk { margin-left:6px; font-weight:700; opacity:.85; }
+.chip .mk:hover { opacity:1; text-decoration:underline; }
+.promote { margin-top:7px; padding:6px 8px; border:1px dashed var(--new); border-radius:6px; display:flex; gap:8px; align-items:center; flex-wrap:wrap; font-size:13px; }
+.promote select, .promote button { background:var(--soft); border:1px solid var(--line); border-radius:6px; padding:2px 8px; cursor:pointer; }
+.promote button.go { background:var(--new); color:#fff; border-color:var(--new); }
+.getciv { display:block; margin:4px auto 8px; border:1px solid var(--accent); color:var(--accent); background:var(--panel); border-radius:6px; padding:4px 12px; cursor:pointer; }
+.getciv:disabled { opacity:.6; cursor:wait; }
+.chip.trig.normal { background:var(--accent); color:var(--accent-fg); border-color:var(--accent); }
+.chip.trig.priority { background:var(--good); color:var(--accent-fg); border-color:var(--good); font-weight:600; }
+.chip.trig.off { text-decoration:line-through; opacity:.55; }
+input.trigedit { border:1px solid var(--accent); border-radius:14px; padding:1px 10px; background:var(--bg); font-size:13px; min-width:120px; }
+.addbox { margin-top:6px; display:flex; gap:6px; }
+.addbox input { flex:1; min-width:0; background:var(--bg); border:1px solid var(--line); border-radius:6px; padding:3px 8px; font-size:13px; }
+h2.group { font-size:12px; text-transform:uppercase; letter-spacing:.8px; color:var(--muted); margin:4px 0 6px; padding-top:6px; }
+section.facet.closed { padding:6px 11px; }
+section.facet.closed h3 { margin:0; }
+section.facet h3.toggle { cursor:pointer; }
+section.facet h3 .tw { color:var(--muted); width:12px; display:inline-block; }
+.legend { font-size:12px; color:var(--muted); margin:2px 0 10px; }
+.legend .chip { cursor:default; font-size:11px; padding:0 7px; }
+.look { background:var(--panel); border:1px solid var(--line); border-radius:8px; padding:8px 11px; margin-bottom:9px; }
+.look .lab { font-size:12px; text-transform:uppercase; letter-spacing:.8px; color:var(--muted); margin-right:8px; }
+
+.evidence { background:var(--panel); border:1px solid var(--line); border-radius:8px; padding:10px 12px; font-size:13px; margin-top:4px; }
+.evidence h4 { margin:10px 0 3px; font-size:12px; color:var(--muted); text-transform:uppercase; letter-spacing:.5px; }
+.evidence h4:first-child { margin-top:0; }
+.evidence p { margin:0 0 4px; }
+.evidence .prompt { border-left:3px solid var(--line); padding-left:8px; margin:4px 0; color:var(--fg); }
+.evidence dl { display:grid; grid-template-columns:72px 1fr; gap:2px 8px; margin:0; }
+.evidence dt { color:var(--muted); } .evidence dd { margin:0; overflow-wrap:anywhere; }
+.evidence details summary { cursor:pointer; color:var(--muted); }
+code { background:var(--soft); padding:0 4px; border-radius:3px; }
+.row { display:flex; gap:10px; align-items:center; flex-wrap:wrap; }
+.wts label { display:flex; gap:5px; align-items:center; color:var(--muted); font-size:12px; }
+.wts input { width:78px; background:var(--bg); border:1px solid var(--line); border-radius:6px; padding:3px 6px; color:var(--fg); font-size:14px; }
+.wbar { margin:8px 0 2px; }
+.wbar .track { position:relative; height:16px; background:var(--soft); border-radius:8px; }
+.wbar .band { position:absolute; border-radius:5px; }
+.wbar .band.model { top:1px; height:14px; border:1.5px dashed var(--warn); }
+.wbar .band.mine { top:4px; height:8px; background:var(--accent); opacity:.75; }
+.wbar .band.comm { top:12px; height:4px; background:var(--good); opacity:.85; }
+.wbar .ctick { position:absolute; top:10px; width:2px; margin-left:-1px; height:8px; background:var(--good); }
+/* Civitai audience (community.py) */
+.aud { background:var(--panel); border:1px solid var(--line); border-radius:8px; padding:10px 12px; font-size:13px; margin:8px 0 4px; }
+.aud h4 { margin:0 0 4px; font-size:12px; color:var(--muted); text-transform:uppercase; letter-spacing:.5px; display:flex; gap:8px; align-items:center; }
+.aud .big { font-size:20px; font-weight:600; color:var(--fg); letter-spacing:0; text-transform:none; }
+.aud .nums { color:var(--muted); font-size:12px; margin:2px 0 6px; }
+.aud .levels { display:flex; height:8px; border-radius:4px; overflow:hidden; margin:4px 0 2px; background:var(--soft); }
+.aud .levels span { display:block; height:100%; }
+.aud .tp { border-left:3px solid var(--line); padding:3px 0 3px 8px; margin:6px 0; }
+.aud .tp.picked { border-left-color:var(--good); }
+.aud .tp .meta { font-size:11px; color:var(--muted); display:flex; gap:6px; align-items:center; flex-wrap:wrap; }
+.aud .tp .meta b { font-weight:600; }
+.aud .tp button, .aud select, .aud .usew { font-size:11px; background:var(--soft); border:1px solid var(--line); border-radius:5px; padding:0 6px; cursor:pointer; }
+.aud .lvl { border-radius:4px; padding:0 5px; font-size:10px; }
+.aud .lvl.None { background:#2e7d4f22; } .aud .lvl.Soft { background:#d39a1222; } .aud .lvl.Mature { background:#a85a1433; } .aud .lvl.X { background:#b23b2e33; }
+.aud .warnline { color:var(--warn); }
+.aud .pcs { display:flex; flex-wrap:wrap; gap:4px 6px; align-items:center; font-size:12px; margin:0 0 6px; }
+.aud .pc { border:1px solid var(--line); border-radius:10px; padding:0 7px; color:var(--muted); }
+.aud .pc b { color:var(--fg); font-weight:600; }
+.aud .pc.hi { border-color:var(--good); } .aud .pc.hi b { color:var(--good); }
+.aud .pc.lo { border-color:var(--warn); }
+.aud .tp .txt { display:-webkit-box; -webkit-line-clamp:4; -webkit-box-orient:vertical; overflow:hidden; cursor:pointer; }
+.aud .tp .txt.open { display:block; }
+.badge.score { color:var(--good); border-color:var(--good); }
+.wbar .tick { position:absolute; top:-3px; width:3px; margin-left:-1px; height:22px; background:var(--fg); border-radius:2px; }
+.wbar .zero { position:absolute; top:0; width:1px; height:16px; background:var(--muted); }
+.wbar .scale { display:flex; justify-content:space-between; font-size:11px; color:var(--muted); margin-top:3px; }
+.wkey { font-size:11px; color:var(--muted); }
+.wkey i { display:inline-block; width:16px; height:8px; border-radius:3px; vertical-align:middle; margin:0 3px 0 8px; }
+textarea { width:100%; min-height:48px; background:var(--bg); border:1px solid var(--line); border-radius:6px; padding:5px 8px; resize:vertical; }
+.suggest { position:relative; flex:1; }
+.suggest ul { position:absolute; left:0; right:0; top:100%; margin:2px 0 0; padding:0; list-style:none; background:var(--panel); border:1px solid var(--line); border-radius:6px; z-index:10; max-height:230px; overflow:auto; }
+.suggest li { padding:4px 8px; cursor:pointer; } .suggest li.on, .suggest li:hover { background:var(--accent-soft); }
+body.folders-on footer { left:520px; }
+footer { position:fixed; left:270px; right:0; bottom:0; display:flex; gap:8px; align-items:center; padding:9px 18px; background:var(--panel); border-top:1px solid var(--line); z-index:6; }
+@media (max-width: 760px) { .layout { grid-template-columns:1fr; } aside { max-height:30vh; } footer { left:0; } }
+footer button { border:1px solid var(--line); background:var(--soft); border-radius:6px; padding:6px 13px; cursor:pointer; }
+footer button.primary { background:var(--accent); color:var(--accent-fg); border-color:var(--accent); font-weight:600; }
+footer button.unsure { color:var(--warn); border-color:var(--warn); }
+footer .msg { color:var(--muted); margin-left:auto; font-size:13px; }
+footer .msg.err { color:var(--warn); }
+.overlay { position:fixed; inset:0; background:rgba(0,0,0,.85); display:none; align-items:center; justify-content:center; z-index:20; cursor:zoom-out; }
+.overlay img { max-width:94vw; max-height:94vh; border-radius:6px; }
+.overlay .count { position:fixed; bottom:14px; left:0; right:0; text-align:center; color:#ddd; font-size:13px; }
+.overlay.on { display:flex; }
+</style>
+</head>
+<body>
+<header>
+  <h1>LoRA Card Editor</h1>
+  <span class="search"><input id="q" type="search" placeholder="Search  ( / )" autocomplete="off" spellcheck="false"
+    title="Find LoRAs by name, trigger, artist, tag or any words on the card.&#10;fashion photo - every word, each a prefix (photo finds photography)&#10;&quot;film noir&quot; - exact phrase&#10;-anime - leave out&#10;name:arcane  tag:poster  artist:mucha  creator:xyz  folder:graphic  notes:  card:  trigger:  description:&#10;The shelf, status and rating pickers still filter the results."></span>
+  <select id="shelf" title="Shelf / category folder"></select>
+  <select id="status" title="Which cards to list">
+    <option value="todo">not reviewed</option><option value="unsure">unsure</option>
+    <option value="edited">edited</option><option value="confirmed">confirmed</option><option value="all">all</option>
+  </select>
+  <select id="rating" title="Filter by your star rating">
+    <option value="any">any rating</option><option value="unrated">unrated</option>
+    <option value="low">★1-2 (cull?)</option><option value="high">★3 and up</option>
+  </select>
+  <select id="order" title="Order">
+    <option value="priority">most useful first</option><option value="name">by name</option><option value="folder">by folder</option>
+    <option value="rating">by rating</option>
+  </select>
+  <a href="/sweeps" title="Mark Eric_Krea2 sweep cells good / bad / unsure - which LoRA combinations work" style="color:var(--accent);font-size:13px">Sweeps</a>
+  <button class="fold" id="dupbtn" title="List every LoRA that exists more than once (the same file in two places), copies side by side. Tick the copies to remove, then Delete… in the folder panel.">Duplicates</button>
+  <button class="fold" id="foldbtn" title="Show the library folders: pick LoRAs with the checkboxes, then move them, or make / rename folders. Every change shows a plan first and can be undone.">Folders</button>
+  <span class="keys">/ search · Enter save · U unsure · J/K next/prev · 1-4 image (←/→ in zoom) · Shift+1-5 rate, Shift+0 clear</span>
+  <span class="progress" id="progress"></span>
+</header>
+<div class="layout">
+  <aside id="folders"></aside>
+  <aside id="queue"></aside>
+  <main id="main"><div class="empty">Loading...</div></main>
+</div>
+<footer>
+  <button id="prev" title="K">← Prev</button>
+  <button id="save" class="primary" title="Enter">Looks right ↵</button>
+  <button id="unsure" class="unsure" title="U">Unsure</button>
+  <button id="skip" title="J">Skip →</button>
+  <span class="msg" id="msg"></span>
+</footer>
+<div class="modal-back" id="modalback"><div class="modal" id="modal"></div></div>
+<div class="overlay" id="overlay"><img id="big" alt=""><div class="count" id="bigcount"></div></div>
+
+<script>
+const $ = s => document.querySelector(s);
+const esc = s => String(s ?? "").replace(/[&<>"']/g, c => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
+let VOCAB = null, QUEUE = [], POS = -1, CARD = null, STATE = null, START = null;
+let IMGPAGE = 0, ZOOM = -1, WARNED = null;
+const PER_PAGE = 4;
+
+async function api(url, body) {
+  const r = await fetch(url, body ? {method:"POST", headers:{"Content-Type":"application/json"}, body:JSON.stringify(body)} : {});
+  const data = await r.json().catch(() => ({error:"bad response"}));
+  if (!r.ok || data.error) throw new Error(data.error || r.statusText);
+  return data;
+}
+function msg(text, err) { const m = $("#msg"); m.textContent = text; m.className = "msg" + (err ? " err" : ""); }
+const remember = (k, v) => { try { localStorage.setItem("lce_" + k, v); } catch (e) {} };
+const recall = k => { try { return localStorage.getItem("lce_" + k); } catch (e) { return null; } };
+
+// ---------- queue ------------------------------------------------------------------------------------------
+async function loadShelves() {
+  const shelves = await api("/api/shelves");
+  const sel = $("#shelf"), keep = sel.value;
+  sel.innerHTML = `<option value="">all shelves</option>` + shelves.map(s =>
+    `<option value="${esc(s.shelf)}">${esc(s.shelf)}  (${s.reviewed}/${s.total})</option>`).join("");
+  const last = keep || recall("shelf");
+  sel.value = last !== null && shelves.some(s => s.shelf === last) ? last : (shelves.find(s => /graphic/i.test(s.shelf))?.shelf ?? "");
+  const total = shelves.reduce((a, s) => a + s.total, 0), done = shelves.reduce((a, s) => a + s.reviewed, 0);
+  $("#progress").textContent = `${done} / ${total} reviewed`;
+  syncShelfSelect();
+}
+let FOUND = null;          // search summary {matched, hidden, mode} or null when not searching
+async function loadQueue(keepPath) {
+  const q = $("#q").value.trim();
+  const shelf = $("#shelf").value === "__folder__" ? "" : $("#shelf").value;
+  const p = new URLSearchParams({shelf, status:$("#status").value, order:$("#order").value,
+                                 rating:$("#rating").value, q, folder: FOLDER ? FOLDER.rel : ""});
+  if (DUPES) p.set("dupes", "1");
+  const data = await api("/api/queue?" + p);
+  if (Array.isArray(data)) { QUEUE = data; FOUND = null; }
+  else if (data.dupes) { QUEUE = data.items; FOUND = null; }
+  else { QUEUE = data.items; FOUND = data; }
+  drawQueue();
+  let i = keepPath ? QUEUE.findIndex(q => q.path === keepPath) : 0;
+  if (i < 0) i = 0;
+  if (QUEUE.length) open(i); else { POS = -1; CARD = null; $("#main").innerHTML = `<div class="empty">${FOUND ?
+    (FOUND.matched ? `${FOUND.matched} LoRAs match, but the shelf / status / rating pickers hide them all.` : "Nothing matches that search.")
+    : "Nothing here. Try another shelf, status or rating."}</div>`; }
+}
+function foundLine() {
+  if (DUPES) {
+    const groups = new Set(QUEUE.map(q => q.group)).size;
+    if (!groups) return `<div class="found">No duplicates: every LoRA exists once. · <a id="dupoff">done</a></div>`;
+    return `<div class="found"><b>${groups}</b> LoRA${groups === 1 ? "" : "s"} exist${groups === 1 ? "s" : ""} more than once (${QUEUE.length} copies) · tick the copy to remove, then <b>Delete…</b> · <a id="dupoff">done</a></div>`;
+  }
+  const inFolder = FOLDER ? `<div class="found">folder <b>${esc(FOLDER.rel || "(library root)")}</b> · ${QUEUE.length} shown · <a id="leavefolder">all shelves</a>${
+    $("body").classList.contains("folders-on") ? ` · <a id="selall">select all</a>` : ""}</div>` : "";
+  if (!FOUND) return inFolder;
+  const any = FOUND.mode === "any" ? " (no LoRA has every word: showing any word)" : "";
+  const hid = FOUND.hidden > 0 ? ` · ${FOUND.hidden} hidden by the pickers · <a id="showall">show all</a>` : "";
+  return inFolder + `<div class="found">${FOUND.matched} match${FOUND.matched === 1 ? "" : "es"}${any}${hid} · <a id="clearq">clear</a>${
+    !FOLDER && $("body").classList.contains("folders-on") ? ` · <a id="selall">select all</a>` : ""}</div>`;
+}
+function drawQueue() {
+  const searching = !!FOUND || DUPES;
+  $("#queue").innerHTML = foundLine() + (QUEUE.map((q, i) => `<div class="item${i === POS ? " on" : ""}${SEL.has(q.path) ? " sel" : ""}${
+      DUPES && i && QUEUE[i - 1].group !== q.group ? " grp" : ""}" data-i="${i}">
+      <input type="checkbox" class="ck" data-i="${i}" ${SEL.has(q.path) ? "checked" : ""} title="Select for moving (Shift-click: a range)">
+      <span class="dot ${q.status}"></span><span class="n" title="${esc(q.folder)}">${esc(q.name)}</span>
+      ${q.rating ? `<span class="st">${"★".repeat(q.rating)}</span>` : ""}
+      ${searching ? `<small class="f" title="${esc(q.folder)}">${esc(DUPES ? q.folder.split(/[\\/]/).filter(s => !/^\d{3,}-/.test(s)).join("/") : q.folder.split(/[\\/]/).slice(0, 2).join("/"))}</small>`
+                  : `<small>${q.confidence != null ? q.confidence.toFixed(2) : ""}</small>`}</div>`).join("") ||
+    `<div class="empty">empty</div>`);
+  $("#queue").querySelectorAll(".item").forEach(el => el.onclick = ev => {
+    if (ev.target.classList.contains("ck")) return;
+    guarded(() => open(+el.dataset.i)); });
+  $("#queue").querySelectorAll(".ck").forEach(el => el.onclick = ev => { ev.stopPropagation(); pick(+el.dataset.i, el.checked, ev.shiftKey); });
+  const dupoff = $("#dupoff"); if (dupoff) dupoff.onclick = () => toggleDupes(false);
+  const leave = $("#leavefolder"); if (leave) leave.onclick = () => { FOLDER = null; $("#shelf").value = ""; syncShelfSelect(); drawFolders(); loadQueue(); };
+  const selall = $("#selall"); if (selall) selall.onclick = () => { QUEUE.forEach(q => SEL.add(q.path)); selChanged(); };
+  const showall = $("#showall"); if (showall) showall.onclick = () => {
+    $("#shelf").value = ""; $("#status").value = "all"; $("#rating").value = "any"; loadQueue(); };
+  const clearq = $("#clearq"); if (clearq) clearq.onclick = () => { $("#q").value = ""; loadQueue(); };
+  const on = $("#queue .item.on"); if (on) on.scrollIntoView({block:"nearest"});
+}
+
+// ---------- one card ---------------------------------------------------------------------------------------
+async function open(i) {
+  if (i < 0 || i >= QUEUE.length) return;
+  POS = i; drawQueue(); msg("");
+  try { CARD = await api("/api/card?path=" + encodeURIComponent(QUEUE[i].path)); }
+  catch (e) { msg(e.message, true); return; }
+  const e = CARD.edit, k = CARD.card;
+  STATE = {
+    facets: JSON.parse(JSON.stringify(e ? Object.assign(Object.fromEntries(NEWER_FACETS.filter(n => !(n in (e.facets || {})))
+              .map(n => [n, CARD.prefill[n] || []])), e.facets) : CARD.prefill)),
+    artists: [...(e ? e.artists : k.artists)],
+    triggers: [...(e ? e.triggers : k.triggers)],
+    trigger_states: {...((e && e.trigger_states) || {})},
+    weight: e && e.weight != null ? e.weight : k.weight,
+    weight_low: e && e.weight_low != null ? e.weight_low : k.weight_low,
+    weight_high: e && e.weight_high != null ? e.weight_high : k.weight_high,
+    rating: e && e.rating ? e.rating : null,
+    notes: e ? (e.notes || "") : "",
+    creator: e && e.creator != null && e.creator !== "" ? e.creator : (CARD.creator || ""),
+    expanded: {},
+  };
+  IMGPAGE = 0; WARNED = null;
+  START = snapshot();
+  draw();
+  if (FOLDERS_OPEN) drawFolderTools();
+}
+const snapshot = () => JSON.stringify({f:STATE.facets, a:STATE.artists, t:STATE.triggers, ts:STATE.trigger_states,
+  w:STATE.weight, wl:STATE.weight_low, wh:STATE.weight_high, r:STATE.rating, n:STATE.notes, c:STATE.creator});
+const num0 = v => Number(v ?? 0);
+function otherChanged() {        // anything besides the pick lists that differs from the card (a rating alone does not count)
+  const c = CARD.card, same = (a, b) => JSON.stringify([...a].sort()) === JSON.stringify([...b].sort());
+  return !same(STATE.artists, c.artists) || !same(STATE.triggers, c.triggers) ||
+         Object.keys(STATE.trigger_states).length > 0 ||
+         num0(STATE.weight) !== num0(c.weight) || num0(STATE.weight_low) !== num0(c.weight_low) ||
+         num0(STATE.weight_high) !== num0(c.weight_high) || !!STATE.notes.trim() ||
+         (STATE.creator || "") !== (CARD.creator || "");
+}
+function dirty() { return snapshot() !== START; }
+function updateSaveButton() {
+  const prefillSame = Object.keys({...CARD.prefill, ...STATE.facets}).every(k =>
+    JSON.stringify([...(CARD.prefill[k] || [])].sort()) === JSON.stringify([...(STATE.facets[k] || [])].sort()));
+  const ratingSame = (STATE.rating || null) === ((CARD.edit && CARD.edit.rating) || null);
+  $("#save").textContent = (prefillSame && !otherChanged() && ratingSame) ? "Looks right ↵" : "Save ↵";
+}
+
+function draw() {
+  const c = CARD, k = c.card;
+  const conf = k.confidence != null ? k.confidence.toFixed(2) : "?";
+  $("#main").innerHTML = `<div class="card">
+   <div class="left">
+    <div class="head">
+     <div class="title"><h2>${esc(c.name)}</h2><span class="ver">${esc(c.version)}</span>
+       <span class="stars" id="stars" title="Your rating: click, or Shift+1-5 (Shift+0 clears). Saved with the card."></span></div>
+     <div class="badges">
+      <span class="badge">${esc(k.kind)} / ${esc(k.scope)}</span>
+      <span class="badge${k.confidence < 0.6 ? " warn" : ""}">conf ${conf}</span>
+      ${c.base_model ? `<span class="badge">${esc(c.base_model)}</span>` : ""}
+      ${c.source ? `<span class="badge">${esc(c.source)}</span>` : ""}
+      ${(k.nsfw || 0) >= 2 ? `<span class="badge warn">nsfw ${k.nsfw}</span>` : ""}
+      ${c.lm_favorite ? `<span class="badge good">favourite</span>` : ""}
+      ${c.lm_exclude ? `<span class="badge warn">excluded in LoRA Manager</span>` : ""}
+      ${c.edit ? `<span class="badge good">you: ${esc(c.edit.status)} ${esc((c.edit.edited_at || "").slice(0, 10))}</span>` : ""}
+      ${c.civitai_url ? `<span class="badge"><a href="${esc(c.civitai_url)}" target="_blank" rel="noopener">Civitai ↗</a></span>` : ""}
+      ${c.community && c.community.score != null ? `<span class="badge${c.community.score >= 75 ? " score" : ""}" title="Community score: percentile among ${esc(c.community.score_group)} (approval, likes per download, downloads per day, people posting with it, reactions). A popularity prior - your stars win.">Civitai ${topText(c.community.score)}</span>` : ""}
+      ${c.community && c.community.newer_version ? `<span class="badge warn" title="A newer version of this model, same base model, is on Civitai">newer: ${esc(c.community.newer_version)}</span>` : ""}
+     </div>
+     <div class="file" title="click to copy the path" id="file">${esc(c.folder)}\\${esc(c.file)}</div>
+     <div><button id="copytag" class="badge" style="cursor:copy;background:none" title="copy &lt;lora:name:weight&gt; and the trigger words, for Forge / AUTOMATIC1111 prompts (uses the weight and triggers as they are on this card now)">copy as prompt tag</button></div>
+    </div>
+    <div id="images"></div>
+    <div id="audience">${audienceHtml()}</div>
+    ${evidenceHtml()}
+   </div>
+   <div class="cols" id="inputs"><div class="col" id="colA"></div><div class="col" id="colB"></div></div>
+  </div>`;
+  $("#file").onclick = () => navigator.clipboard?.writeText(c.path).then(() => msg("path copied"));
+  $("#copytag").onclick = () => navigator.clipboard?.writeText(promptTag(c)).then(() => msg("prompt tag copied"));
+  drawImages();
+  drawStars();
+  drawFacets();
+  wireAudience();
+}
+
+// ---------- images -----------------------------------------------------------------------------------------
+const imgUrl = i => `/img?path=${encodeURIComponent(CARD.path)}&i=${i}`;
+function drawImages() {
+  const n = CARD.image_count, box = $("#images");
+  const getBtn = CARD.has_civitai && n < PER_PAGE ? `<button class="getciv" id="getciv">Get ${n ? "more " : ""}images from Civitai</button>` : "";
+  const wireGet = () => { const b = $("#getciv"); if (!b) return; b.onclick = async () => {
+    b.disabled = true; b.textContent = "downloading from Civitai...";
+    try { const r = await api("/api/fetch_images", {path: CARD.path}); CARD.image_count = r.image_count;
+          msg(r.saved ? `saved ${r.saved} image(s) next to the LoRA` : (r.available ? "nothing new to save" : "Civitai has no images for this version"));
+          drawImages(); }
+    catch (e) { msg(e.message, true); b.disabled = false; b.textContent = "Get images from Civitai"; } }; };
+  if (!n) { box.innerHTML = `<div class="none">no example images</div>` + getBtn; wireGet(); return; }
+  const pages = Math.ceil(n / PER_PAGE);
+  IMGPAGE = Math.max(0, Math.min(IMGPAGE, pages - 1));
+  const start = IMGPAGE * PER_PAGE, shown = Math.min(PER_PAGE, n - start);
+  const cells = Array.from({length:shown}, (_, j) =>
+    `<div class="cell"><img src="${imgUrl(start + j)}" data-i="${start + j}" alt="example ${start + j + 1}"></div>`).join("");
+  box.innerHTML = `<div class="grid${n === 1 ? " one" : ""}">${cells}</div>` + (pages > 1 ?
+    `<div class="pager"><button data-pg="-1">‹</button><span>${start + 1}-${start + shown} of ${n}</span><button data-pg="1">›</button></div>` : "") + getBtn;
+  wireGet();
+  box.querySelectorAll("img").forEach(img => img.onclick = () => zoom(+img.dataset.i));
+  box.querySelectorAll("[data-pg]").forEach(b => b.onclick = () => { IMGPAGE = (IMGPAGE + +b.dataset.pg + pages) % pages; drawImages(); });
+}
+function zoom(i) {
+  if (!CARD || i < 0 || i >= CARD.image_count) return;
+  ZOOM = i; $("#big").src = imgUrl(i); $("#bigcount").textContent = CARD.image_count > 1 ? `${i + 1} / ${CARD.image_count}   ←/→` : "";
+  $("#overlay").classList.add("on");
+}
+function unzoom() { $("#overlay").classList.remove("on"); ZOOM = -1; }
+
+// ---------- rating -----------------------------------------------------------------------------------------
+function drawStars() {
+  const el = $("#stars"); if (!el) return;
+  const r = STATE.rating || 0;
+  el.innerHTML = [1, 2, 3, 4, 5].map(n => `<span data-star="${n}" class="${n <= r ? "on" : ""}">★</span>`).join("") +
+    `<small>${r ? "" : "unrated"}</small>`;
+  el.querySelectorAll("[data-star]").forEach(s => s.onclick = () => setRating(+s.dataset.star, false));
+}
+function setRating(n, exact) {
+  if (!STATE) return;
+  STATE.rating = exact ? (n || null) : (STATE.rating === n ? null : n);
+  drawStars(); updateSaveButton();
+  msg(STATE.rating ? `★${STATE.rating}: Enter saves it` : "rating cleared: Enter saves it");
+}
+
+// ---------- the model's evidence (no inner scroll: it runs full height under the images) --------------------
+// ---------- Civitai audience: score, what people make with it, test prompts (community.py) ----------------------
+const topText = s => s >= 50 ? `top ${Math.max(1, Math.round(100 - s))}%` : `bottom ${Math.max(1, Math.round(s))}%`;
+const LEVEL_ORDER = ["None", "Soft", "Mature", "X"];
+const LEVEL_COLOR = {None:"#2e7d4f", Soft:"#d39a12", Mature:"#a85a14", X:"#b23b2e"};
+function audienceHtml() {
+  const m = CARD.community;
+  if (!m) return CARD.has_civitai ? `<div class="aud"><h4>Civitai audience</h4><span class="muted">not collected yet - <code>run.py community</code></span></div>` : "";
+  const n = x => x == null ? "?" : Number(x).toLocaleString();
+  const share = m.nsfw_share || {};
+  const bar = LEVEL_ORDER.map(l => share[l] ? `<span style="width:${share[l] * 100}%;background:${LEVEL_COLOR[l]}" title="${l} ${Math.round(share[l] * 100)}%"></span>` : "").join("");
+  const hot = (share.Mature || 0) + (share.X || 0);
+  const unasked = m.explicit_unasked != null && hot >= 0.15 && m.explicit_unasked >= 0.3 ?
+    `<div class="warnline" title="Of its mature / explicit community images, this share had no nudity or sex words in the prompt: the LoRA may push nudity by itself (a heuristic).">⚠ ${Math.round(m.explicit_unasked * 100)}% of its mature / explicit images were not asked for in the prompt</div>` : "";
+  const cap = recall("tp_level") || "X";
+  const allowed = l => LEVEL_ORDER.indexOf(l || "None") <= LEVEL_ORDER.indexOf(cap);
+  const prompts = (m.prompts || []).filter(p => allowed(p.nsfw_level));
+  const picked = prompts.filter(p => p.picked), rest = prompts.filter(p => !p.picked);
+  const tp = p => `<div class="tp${p.picked ? " picked" : ""}"><div class="meta"><b>${esc(p.source)}</b><span class="lvl ${esc(p.nsfw_level)}">${esc(p.nsfw_level)}</span>
+      <span>${esc(p.prompt_style)}</span>${p.weight != null ? `<span>w ${p.weight}</span>` : ""}${p.reactions ? `<span>♥ ${p.reactions}</span>` : ""}
+      <button data-copy="${esc(p.cleaned)}" title="copy the cleaned prompt">copy</button></div><div class="txt" title="click to show it all">${esc(p.cleaned)}</div></div>`;
+  const w = m.weight_n >= 10 ? `<div>weights people use: <b>${m.weight_median}</b> (${m.weight_p25} to ${m.weight_p75}, ${m.weight_n} images)
+      <button class="usew" id="usecomm" title="put these in your low / typical / high (then save)">use these</button></div>` :
+      (m.weight_n ? `<div class="muted">weights: only ${m.weight_n} images say (${m.weight_median})</div>` : "");
+  return `<div class="aud">
+    <h4>Civitai audience ${m.score != null ? `<span class="big">${topText(m.score)}</span><span>of ${esc(m.score_group)}</span>` : ""}</h4>
+    <div class="nums">▲ ${n(m.thumbs_up)} · ▼ ${n(m.thumbs_down)} · ${n(m.downloads)} downloads (${m.momentum ?? "?"}/day) ·
+      ${n(m.distinct_posters)} people in its ${n(m.images_sampled)} newest images · median ♥ ${m.median_reactions ?? "?"} · fetched ${esc((m.fetched_at || "").slice(0, 10))}</div>
+    ${peerHtml(m)}
+    ${bar ? `<div class="levels" title="Content level of its newest community images">${bar}</div><div class="nums">${LEVEL_ORDER.filter(l => share[l]).map(l => `${l} ${Math.round(share[l] * 100)}%`).join(" · ")}</div>` : ""}
+    ${unasked}${w}
+    <h4 style="margin-top:10px">Test prompts <select id="tplevel" title="Show prompts up to this content level">${LEVEL_ORDER.map(l =>
+      `<option value="${l}"${l === cap ? " selected" : ""}>up to ${l}</option>`).join("")}</select></h4>
+    ${picked.map(tp).join("") || `<div class="muted">none at this level</div>`}
+    ${rest.length ? `<details><summary>${rest.length} more prompts</summary>${rest.map(tp).join("")}</details>` : ""}
+  </div>`;
+}
+// Against the other LoRAs of the same platform (base model): percentile per feature (community.peer_ranks)
+const PEER_LABELS = [["downloads", "downloads"], ["engagement", "likes / download"], ["images_per_day", "images / day"],
+                     ["top_reactions_median", "top-50 reactions"]];
+function peerHtml(m) {
+  const p = m.peer || {};
+  const cells = PEER_LABELS.filter(([k]) => p[k] != null).map(([k, label]) =>
+    `<span class="pc${p[k] >= 75 ? " hi" : p[k] < 25 ? " lo" : ""}" title="percentile ${p[k]} of ${p.n} ${esc(p.group)} LoRAs collected">${label} <b>${topText(p[k])}</b></span>`);
+  const count = m.images_exact != null ? `${Number(m.images_exact).toLocaleString()} images in all` :
+    (m.images_per_day != null ? "200+ images" : "");
+  const rate = m.images_per_day != null ? `${m.images_per_day < 1 ? m.images_per_day.toFixed(2) : Math.round(m.images_per_day * 10) / 10} posted / day` : "";
+  const top = m.top_reactions_median != null ? `top ${m.top_sampled} images: median ♥ ${m.top_reactions_median}, ${Number(m.top_reactions_total).toLocaleString()} in all` : "";
+  const facts = [count, rate, top].filter(Boolean).join(" · ");
+  if (!cells.length && !facts) return "";
+  return `<div class="peers">${facts ? `<div class="nums">${facts}</div>` : ""}${cells.length ?
+    `<div class="pcs"><span class="muted">vs ${p.n} ${esc(p.group)} LoRAs:</span> ${cells.join("")}</div>` : ""}</div>`;
+}
+function wireAudience() {
+  document.querySelectorAll(".aud [data-copy]").forEach(b => b.onclick = () =>
+    navigator.clipboard?.writeText(b.dataset.copy).then(() => msg("prompt copied")));
+  document.querySelectorAll(".aud .tp .txt").forEach(t => t.onclick = () => t.classList.toggle("open"));
+  const lv = $("#tplevel"); if (lv) lv.onchange = () => { remember("tp_level", lv.value); $("#audience").innerHTML = audienceHtml(); wireAudience(); };
+  const use = $("#usecomm"); if (use) use.onclick = () => {
+    const m = CARD.community;
+    STATE.weight_low = m.weight_p25; STATE.weight = m.weight_median; STATE.weight_high = m.weight_p75;
+    drawFacets(); msg("community weights filled in - Enter saves");
+  };
+}
+
+function evidenceHtml() {
+  const c = CARD, k = c.card, f = k.free || {};
+  const list = a => a.map(x => `<code>${esc(x)}</code>`).join(" ");
+  return `<div class="evidence">
+    <h4>Model says</h4><p>${esc(k.effect)}</p>
+    <dl>${[["medium", f.medium], ["era", f.era], ["genre", f.genre], ["mood", f.mood], ["palette", f.palette], ["lines", f.lines], ["good for", f.subjects]]
+        .filter(r => r[1]).map(r => `<dt>${r[0]}</dt><dd>${esc(r[1])}</dd>`).join("")}
+      <dt>takes over</dt><dd>${esc(k.overrides.join(", ") || "-")}</dd>
+      ${c.civitai_nsfw ? `<dt>Civitai</dt><dd>example images rated ${esc(c.civitai_nsfw)} (the posted images, not the LoRA)</dd>` : ""}
+      <dt>weight</dt><dd>${k.weight ?? "?"} (${k.weight_low ?? "?"} to ${k.weight_high ?? "?"})</dd>
+      <dt>written by</dt><dd>${esc(k.model)}</dd></dl>
+    ${c.civitai_tags.length ? `<h4>Civitai tags</h4><p>${list(c.civitai_tags)}</p>` : ""}
+    ${c.trained_words.length ? `<h4>Trained words</h4><p>${list(c.trained_words)}</p>` : ""}
+    ${c.examples.length ? `<h4>Prompts people used</h4>${c.examples.map(e =>
+        `<div class="prompt">${e.weight != null ? `<small>(${e.weight})</small> ` : ""}${esc(e.prompt)}</div>`).join("")}` : ""}
+    ${c.description ? `<h4>Description</h4><p>${esc(c.description)}</p>` : ""}
+  </div>`;
+}
+
+// ---------- the two input columns --------------------------------------------------------------------------
+const GROUPS_A = [
+  ["What it is", ["role", "use", "medium", "period", "genre", "mood", "rendering"]],
+  ["Fits in a stack", ["subjects", "side_effects"]],
+];
+const GROUPS_B = [
+  ["Character", ["depicts", "figure", "appearance", "costume"]],
+  ["Look in detail", ["dimension", "line", "palette", "lighting", "composition"]],
+  ["Effects", ["pattern", "material", "detail"]],
+  ["Photo and film", ["photo_style", "cinematic", "film_stock"]],
+  ["Content", ["nsfw", "mature_content"]],
+];
+// Shown names (the stored facet ids stay the same).
+const LABELS = {dimension:"depth", palette:"colour palette", photo_style:"photo style", film_stock:"film stock",
+                side_effects:"side effects", mature_content:"mature content"};
+const facetLabel = name => LABELS[name] || name.replace(/_/g, " ");
+const LOOK_FACETS = ["period", "medium", "rendering", "dimension", "line", "palette", "lighting"];
+
+function termLabel(facet, id) { const t = VOCAB.facets[facet]?.terms?.[id]; return t ? t.label : id; }
+function lookSummary() {
+  const parts = [];
+  for (const f of LOOK_FACETS) for (const id of (STATE.facets[f] || []).slice(0, 2)) parts.push(termLabel(f, id));
+  return `<div class="look" title="Worked out from what is chosen below"><span class="lab">Look</span>${
+    parts.length ? parts.map(esc).join(" · ") : `<span class="muted">nothing chosen yet</span>`}</div>`;
+}
+
+function drawFacets() {
+  const placed = new Set([...GROUPS_A, ...GROUPS_B].flatMap(g => g[1]));
+  const others = VOCAB.order.filter(n => !placed.has(n));
+  const groupsHtml = groups => groups.map(([title, names]) => {
+    names = names.filter(n => VOCAB.facets[n]);
+    return names.length ? `<h2 class="group">${esc(title)}</h2>` + names.map(facetSection).join("") : "";
+  }).join("");
+  let a = lookSummary() + groupsHtml(GROUPS_A);
+  a += `<h2 class="group">About this LoRA</h2>`;
+  a += textSection("artists", "Artists", "Whose work it imitates. Type to search the artist list; suggestions come from the LoRA's name.");
+  a += creatorSection() + triggerSection() + weightSection();
+  a += `<section class="facet"><h3>Notes</h3>
+    <textarea id="notes" placeholder="Anything else: what it is great for, what it ruins, pairings that work...">${esc(STATE.notes)}</textarea></section>`;
+  let b = `<div class="legend"><span class="chip sel">chosen</span> <span class="chip model">model picked, you removed</span>
+     <span class="chip free sel">your own word</span> · groups (bold) open with ▸</div>`;
+  b += groupsHtml(GROUPS_B.concat(others.length ? [["Other", others]] : []));
+  $("#colA").innerHTML = a;
+  $("#colB").innerHTML = b;
+  wireFacets();
+  updateSaveButton();
+}
+
+const ALWAYS_OPEN = new Set(["role", "use", "medium", "period", "genre", "mood", "rendering", "nsfw", "side_effects"]);
+// Facets added after some cards were already reviewed: an edit saved before they existed takes the model's picks
+// for them (an edit saved since keeps yours, even when empty). Same rule in facets.py.
+const NEWER_FACETS = ["genre", "mood"];
+const CHARACTER_FACETS = new Set(["depicts", "figure", "appearance", "costume"]);
+function isOpen(name) {
+  if (STATE.open && name in STATE.open) return STATE.open[name];
+  if (ALWAYS_OPEN.has(name)) return true;
+  if (CHARACTER_FACETS.has(name) && (STATE.facets.role || []).includes("subject")) return true;
+  if ((STATE.facets[name] || []).length || (CARD.prefill[name] || []).length) return true;
+  return recall("open_" + name) === "1";
+}
+function facetSection(name) {
+  const f = VOCAB.facets[name], chosen = new Set(STATE.facets[name] || []), model = new Set(CARD.prefill[name] || []);
+  const label = esc(facetLabel(name));
+  if (!isOpen(name)) {
+    return `<section class="facet closed"><h3 class="toggle" data-open="${name}"><span class="tw">▸</span>${label}
+      <span class="help">${esc(f.help)}</span><span class="pick">${chosen.size ? chosen.size + " chosen" : "open"}</span></h3></section>`;
+  }
+  const chip = (id, cls) => {
+    const t = f.terms[id], kids = t.children.length;
+    const open = STATE.expanded[name + ":" + id] || t.children.some(ch => chosen.has(ch) || model.has(ch) ||
+                  f.terms[ch].children.some(g => chosen.has(g) || model.has(g)));
+    const more = kids ? `<span class="more" data-toggle="${esc(id)}">${open ? "▾" : "▸"}${kids}</span>` : "";
+    let out = `<span class="chip ${cls}${kids ? " group" : ""}${chosen.has(id) ? " sel" : ""}${model.has(id) ? " model" : ""}"
+                 data-facet="${name}" data-term="${esc(id)}" title="${esc(t.aliases.join(", "))}">${esc(t.label)}${more}</span>`;
+    if (kids && open) out += t.children.map(ch => chip(ch, "child")).join("");
+    return out;
+  };
+  const free = [...chosen].filter(id => !f.terms[id]).map(id =>
+    `<span class="chip free sel" data-facet="${name}" data-free="${esc(id)}" title="your own word: + makes it a button for every card, × removes it">${esc(id)}<span class="mk" data-make="1">＋</span><span class="x">×</span></span>`).join("");
+  const groups = f.top.filter(id => f.terms[id].children.length);
+  const promote = STATE.promote && STATE.promote.facet === name ? `<div class="promote">Make "${esc(STATE.promote.word)}" a button in ${esc(facetLabel(name))}
+      <select id="promote_parent"><option value="">at the top level</option>${groups.map(g => `<option value="${esc(g)}">under ${esc(f.terms[g].label)}</option>`).join("")}</select>
+      <button class="go" id="promote_go">Add button</button><button id="promote_cancel">cancel</button></div>` : "";
+
+  return `<section class="facet" data-name="${name}"><h3 class="${ALWAYS_OPEN.has(name) ? "" : "toggle"}" data-close="${name}">${ALWAYS_OPEN.has(name) ? "" : '<span class="tw">▾</span>'}${label} <span class="help">${esc(f.help)}</span>
+      <span class="pick">${f.pick === "one" ? "pick one" : "pick any"}</span></h3>
+    <div class="chips">${f.top.map(id => chip(id, "")).join("")}${free}</div>${promote}
+    <div class="addbox"><div class="suggest"><input data-add="${name}" placeholder="find or add a word..." autocomplete="off"><ul hidden></ul></div></div>
+  </section>`;
+}
+
+function creatorSection() {
+  const auto = CARD.creator || "", now = STATE.creator || "";
+  return `<section class="facet"><h3>Creator <span class="help">Who made the LoRA (Civitai username, or self-trained).</span></h3>
+    <div class="chips">${now ? `<span class="chip sel" data-creator-clear="1">${esc(now)}<span class="x">×</span></span>` : `<small class="muted">unknown</small>`}
+      ${auto && auto !== now ? `<span class="chip model" data-creator-set="${esc(auto)}" title="from Civitai - click to use">+ ${esc(auto)}</span>` : ""}</div>
+    <div class="addbox"><div class="suggest"><input data-creator="1" placeholder="type a username..." autocomplete="off"><ul hidden></ul></div></div>
+  </section>`;
+}
+function textSection(key, title, help) {
+  const values = STATE[key], cands = key === "artists" ? CARD.artist_candidates.filter(n => !values.includes(n)) : [];
+  return `<section class="facet"><h3>${title} <span class="help">${esc(help)}</span></h3>
+    <div class="chips">${values.map(v => `<span class="chip sel" data-list="${key}" data-value="${esc(v)}">${esc(v)}<span class="x">×</span></span>`).join("")
+      || `<small class="muted">none</small>`}
+      ${cands.map(n => `<span class="chip model" data-cand="${esc(n)}" title="name match - click to add">+ ${esc(n)}</span>`).join("")}</div>
+    <div class="addbox"><div class="suggest"><input data-text="${key}" placeholder="type a name..." autocomplete="off"><ul hidden></ul></div></div>
+  </section>`;
+}
+
+// trigger words: click cycles normal -> priority -> off; double-click edits; x removes
+const TRIGGER_CYCLE = {normal:"priority", priority:"off", off:"normal"};
+function triggerSection() {
+  const chips = STATE.triggers.map((v, i) => {
+    const s = STATE.trigger_states[v] || "normal";
+    return `<span class="chip trig ${s}" data-trig="${i}" title="${s}: click to change (normal → ★ priority → off) · double-click to edit">${
+      s === "priority" ? "★ " : ""}${esc(v)}<span class="x" data-trig-x="${i}">×</span></span>`;
+  }).join("") || `<small class="muted">none</small>`;
+  return `<section class="facet"><h3>Trigger words <span class="help">Click: normal → ★ priority (goes first) → off (never added to prompts). Double-click to edit.</span></h3>
+    <div class="chips" id="trigchips">${chips}</div>
+    <div class="addbox"><div class="suggest"><input data-text="triggers" placeholder="add a trigger..." autocomplete="off"><ul hidden></ul></div></div>
+  </section>`;
+}
+function cycleTrigger(i) {
+  const v = STATE.triggers[i]; if (v == null) return;
+  const next = TRIGGER_CYCLE[STATE.trigger_states[v] || "normal"];
+  if (next === "normal") delete STATE.trigger_states[v]; else STATE.trigger_states[v] = next;
+  drawFacets();
+}
+function editTrigger(el, i) {
+  const old = STATE.triggers[i]; if (old == null) return;
+  const input = document.createElement("input");
+  input.className = "trigedit"; input.value = old;
+  el.replaceWith(input); input.focus(); input.select();
+  let finished = false;
+  const done = keep => {
+    if (finished) return; finished = true;
+    const v = input.value.trim();
+    if (keep && v !== old) {
+      const state = STATE.trigger_states[old]; delete STATE.trigger_states[old];
+      if (!v || STATE.triggers.includes(v)) STATE.triggers.splice(i, 1);
+      else { STATE.triggers[i] = v; if (state) STATE.trigger_states[v] = state; }
+    }
+    drawFacets();
+  };
+  input.onkeydown = ev => {
+    if (ev.key === "Enter") { ev.preventDefault(); ev.stopPropagation(); done(true); }
+    else if (ev.key === "Escape") { ev.preventDefault(); ev.stopPropagation(); done(false); }
+  };
+  input.onblur = () => done(true);
+}
+
+// weights: typical and the range you trust, -10..+10, with the model's range drawn behind yours
+function weightSection() {
+  const k = CARD.card, v = x => x == null ? "" : x;
+  const box = (id, label, value, model) => `<label>${label}<input type="number" step="0.05" min="-10" max="10" id="${id}"
+      value="${v(value)}" placeholder="${v(model)}"></label>`;
+  return `<section class="facet"><h3>Weights <span class="help">typical, and the range you trust (−10 to +10; sliders often go negative)</span></h3>
+    <div class="row wts">${box("w_low", "low", STATE.weight_low, k.weight_low)}${box("weight", "typical", STATE.weight, k.weight)}${box("w_high", "high", STATE.weight_high, k.weight_high)}</div>
+    <div class="wbar" id="wbar">${weightBar()}</div>
+    <div class="wkey"><i style="background:var(--accent)"></i>yours<i style="border:1.5px dashed var(--warn)"></i>model ${k.weight_low ?? "?"} to ${k.weight_high ?? "?"} (typ ${k.weight ?? "?"})${
+      CARD.community && CARD.community.weight_n >= 10 ? `<i style="background:var(--good);height:4px"></i>Civitai users ${CARD.community.weight_p25} to ${CARD.community.weight_p75} (median ${CARD.community.weight_median}, ${CARD.community.weight_n} images)` : ""}</div>
+  </section>`;
+}
+function weightBar() {
+  const k = CARD.card;
+  const comm = CARD.community && CARD.community.weight_n >= 10 ? CARD.community : null;
+  const values = [k.weight_low, k.weight_high, k.weight, STATE.weight_low, STATE.weight_high, STATE.weight,
+                  ...(comm ? [comm.weight_p25, comm.weight_p75] : [])]
+    .filter(x => x != null && x !== "" && !isNaN(x)).map(Number);
+  let lo = Math.min(0, ...values), hi = Math.max(1, ...values);
+  const pad = (hi - lo) * 0.06; lo -= pad; hi += pad;
+  const at = x => ((Number(x) - lo) / (hi - lo) * 100).toFixed(2) + "%";
+  const band = (a, b, cls) => (a == null || b == null) ? "" :
+    `<div class="band ${cls}" style="left:${at(Math.min(a, b))};width:calc(${at(Math.max(a, b))} - ${at(Math.min(a, b))})"></div>`;
+  const fmt = x => Math.round(x * 100) / 100;
+  return `<div class="track">${lo < 0 ? `<div class="zero" style="left:${at(0)}" title="0"></div>` : ""}
+      ${band(k.weight_low, k.weight_high, "model")}${band(STATE.weight_low, STATE.weight_high, "mine")}
+      ${comm ? band(comm.weight_p25, comm.weight_p75, "comm") + `<div class="ctick" style="left:${at(comm.weight_median)}" title="community median ${comm.weight_median}"></div>` : ""}
+      ${STATE.weight != null ? `<div class="tick" style="left:${at(STATE.weight)}" title="typical ${STATE.weight}"></div>` : ""}</div>
+    <div class="scale"><span>${fmt(lo)}</span><span>${fmt(hi)}</span></div>`;
+}
+
+function toggleTerm(name, id) {
+  const f = VOCAB.facets[name], list = STATE.facets[name] = STATE.facets[name] || [];
+  const at = list.indexOf(id);
+  if (at >= 0) list.splice(at, 1);
+  else if (f.pick === "one") STATE.facets[name] = [id];
+  else list.push(id);
+}
+
+function wireFacets() {
+  const box = $("#inputs");
+  box.querySelectorAll(".chip[data-term]").forEach(el => el.onclick = ev => {
+    const name = el.dataset.facet, id = el.dataset.term;
+    if (ev.target.dataset.toggle) { STATE.expanded[name + ":" + id] = !STATE.expanded[name + ":" + id]; return drawFacets(); }
+    toggleTerm(name, id); drawFacets();
+  });
+  box.querySelectorAll(".chip[data-free]").forEach(el => el.onclick = ev => {
+    const name = el.dataset.facet;
+    if (ev.target.dataset.make) { STATE.promote = {facet:name, word:el.dataset.free}; return drawFacets(); }
+    STATE.facets[name] = (STATE.facets[name] || []).filter(x => x !== el.dataset.free); drawFacets();
+  });
+  const go = $("#promote_go");
+  if (go) {
+    go.onclick = async () => {
+      const {facet, word} = STATE.promote, parent = $("#promote_parent").value;
+      go.disabled = true;
+      try {
+        const r = await api("/api/add_term", {facet, word, parent});
+        VOCAB = await api("/api/vocab");
+        STATE.facets[facet] = (STATE.facets[facet] || []).map(x => x === word ? r.id : x);
+        STATE.promote = null; drawFacets();
+        msg(`"${word}" is now a button in ${facetLabel(facet)}${parent ? " under " + termLabel(facet, parent) : ""}, for every card`);
+      } catch (e) { go.disabled = false; msg(e.message, true); }
+    };
+    $("#promote_cancel").onclick = () => { STATE.promote = null; drawFacets(); };
+  }
+  box.querySelectorAll(".chip[data-list]").forEach(el => el.onclick = () => {
+    STATE[el.dataset.list] = STATE[el.dataset.list].filter(v => v !== el.dataset.value); drawFacets();
+  });
+  box.querySelectorAll(".chip[data-trig]").forEach(el => {
+    let timer = null;
+    el.onclick = ev => {
+      const i = +el.dataset.trig;
+      if (ev.target.dataset.trigX !== undefined) {
+        const v = STATE.triggers[i]; STATE.triggers.splice(i, 1); delete STATE.trigger_states[v]; return drawFacets();
+      }
+      clearTimeout(timer); timer = setTimeout(() => cycleTrigger(i), 240);     // wait: a double-click edits instead
+    };
+    el.ondblclick = ev => { clearTimeout(timer); if (ev.target.dataset.trigX === undefined) editTrigger(el, +el.dataset.trig); };
+  });
+  box.querySelectorAll(".chip[data-cand]").forEach(el => el.onclick = () => { STATE.artists.push(el.dataset.cand); drawFacets(); });
+  box.querySelectorAll("h3[data-open]").forEach(el => el.onclick = () => {
+    const n = el.dataset.open; (STATE.open = STATE.open || {})[n] = true; remember("open_" + n, "1"); drawFacets(); });
+  box.querySelectorAll("h3.toggle[data-close]").forEach(el => el.onclick = ev => {
+    if (ev.target.closest(".chip")) return;
+    const n = el.dataset.close; (STATE.open = STATE.open || {})[n] = false; remember("open_" + n, "0"); drawFacets(); });
+  box.querySelectorAll("[data-creator-clear]").forEach(el => el.onclick = () => { STATE.creator = ""; drawFacets(); });
+  box.querySelectorAll("[data-creator-set]").forEach(el => el.onclick = () => { STATE.creator = el.dataset.creatorSet; drawFacets(); });
+  box.querySelectorAll("input[data-creator]").forEach(input => suggestBox(input,
+    async q => { const names = await api("/api/creators?q=" + encodeURIComponent(q));
+                 const out = names.map(n => ({label:n, text:n}));
+                 if (q.trim() && !names.includes(q.trim())) out.push({text:q.trim(), label:`use "${q.trim()}"`});
+                 return out; },
+    pick => { STATE.creator = (pick.text || "").trim(); drawFacets(); }));
+  box.querySelectorAll("input[data-add]").forEach(input => suggestBox(input, async q => termMatches(input.dataset.add, q), pick => {
+    const name = input.dataset.add, typed = input.value.trim().toLowerCase();
+    const before = [...(STATE.facets[name] || [])], one = VOCAB.facets[name].pick === "one";
+    let added = "";
+    if (pick.id) { if (!before.includes(pick.id)) { toggleTerm(name, pick.id); added = termLabel(name, pick.id); } }
+    else if (pick.text) { const w = pick.text.trim().toLowerCase(); if (w && !before.includes(w)) {
+      if (one) STATE.facets[name] = [w]; else (STATE.facets[name] = STATE.facets[name] || []).push(w); added = w; } }
+    const notes = [];
+    if (pick.id && typed && typed !== termLabel(name, pick.id).toLowerCase()) notes.push(`"${typed}" is listed as ${termLabel(name, pick.id)}`);
+    if (added && one && before.length) notes.push(`${facetLabel(name)} is pick one: ${before.map(id => termLabel(name, id)).join(", ")} replaced by ${added}`);
+    msg(notes.join(" · "));
+    drawFacets(); focusAdd("data-add", name);
+  }));
+  box.querySelectorAll("input[data-text]").forEach(input => suggestBox(input,
+    async q => input.dataset.text === "artists" ? (await api("/api/artists?q=" + encodeURIComponent(q))).map(n => ({label:n, text:n})) : [],
+    pick => { const v = (pick.text || "").trim(); const key = input.dataset.text;
+              if (v && !STATE[key].includes(v)) STATE[key].push(v); drawFacets(); focusAdd("data-text", key); }));
+  const read = id => { const raw = $("#" + id).value; if (raw === "" || isNaN(raw)) return null;
+                       return Math.max(-10, Math.min(10, Number(raw))); };
+  ["w_low", "weight", "w_high"].forEach(id => $("#" + id).oninput = () => {
+    STATE.weight_low = read("w_low"); STATE.weight = read("weight"); STATE.weight_high = read("w_high");
+    $("#wbar").innerHTML = weightBar(); updateSaveButton();
+  });
+  const n = $("#notes"); n.oninput = () => { STATE.notes = n.value; updateSaveButton(); };
+}
+function focusAdd(attr, name) { const el = document.querySelector(`input[${attr}="${name}"]`); if (el) el.focus(); }
+
+function termMatches(name, q) {
+  const f = VOCAB.facets[name], w = q.trim().toLowerCase();
+  if (!w) return [];
+  const hits = [];
+  for (const [id, t] of Object.entries(f.terms)) {
+    const words = [t.label, ...t.aliases].map(x => x.toLowerCase());
+    const best = words.find(x => x.startsWith(w)) || words.find(x => x.includes(w));
+    if (best) hits.push({id, label: t.label + (best !== t.label.toLowerCase() ? `  (${best})` : ""), rank: best.startsWith(w) ? 0 : 1});
+  }
+  hits.sort((a, b) => a.rank - b.rank || a.label.localeCompare(b.label));
+  const exact = hits.filter(h => [f.terms[h.id].label, ...f.terms[h.id].aliases].some(x => x.toLowerCase() === w));
+  const rest = hits.filter(h => !exact.includes(h)).slice(0, 10);
+  if (exact.length) return [...exact.map(h => ({...h, exact:true})), ...rest];   // typed a known word: Enter picks it
+  return [{text: w, label: `add "${w}" as your own word`}, ...rest];              // otherwise Enter adds what you typed
+}
+
+function suggestBox(input, source, choose) {
+  const ul = input.nextElementSibling; let items = [], on = 0, timer = null;
+  const render = () => { ul.hidden = !items.length;
+    ul.innerHTML = items.map((it, i) => `<li class="${i === on ? "on" : ""}" data-i="${i}">${esc(it.label)}</li>`).join("");
+    ul.querySelectorAll("li").forEach(li => li.onmousedown = ev => { ev.preventDefault(); choose(items[+li.dataset.i]); }); };
+  input.oninput = () => { clearTimeout(timer); timer = setTimeout(async () => {
+    try { items = await source(input.value); } catch (e) { items = []; }
+    if (!items.length && input.value.trim() && input.dataset.text) items = [{text: input.value.trim(), label: `add "${input.value.trim()}"`}];
+    on = 0; render(); }, 120); };
+  input.onkeydown = ev => {
+    if (ev.key === "ArrowDown") { on = Math.min(on + 1, items.length - 1); render(); ev.preventDefault(); }
+    else if (ev.key === "ArrowUp") { on = Math.max(on - 1, 0); render(); ev.preventDefault(); }
+    else if (ev.key === "Enter") { ev.preventDefault(); ev.stopPropagation();
+      if (items[on]) choose(items[on]); else if (input.value.trim()) choose({text: input.value.trim()}); }
+    else if (ev.key === "Escape") { items = []; render(); input.blur(); }
+  };
+  input.onblur = () => setTimeout(() => { items = []; render(); }, 150);
+}
+
+// ---------- actions ----------------------------------------------------------------------------------------
+async function save(unsure) {
+  if (!CARD) return;
+  try {
+    const r = await api("/api/save", {path: CARD.path, facets: STATE.facets, artists: STATE.artists, triggers: STATE.triggers,
+                                       trigger_states: STATE.trigger_states, weight: STATE.weight,
+                                       weight_low: STATE.weight_low, weight_high: STATE.weight_high, rating: STATE.rating,
+                                       notes: STATE.notes, creator: STATE.creator,
+                                       unsure: !!unsure, other_changed: otherChanged()});
+    QUEUE[POS].status = r.status; QUEUE[POS].rating = STATE.rating;
+    START = snapshot();
+    msg(`saved: ${r.status}${STATE.rating ? " ★" + STATE.rating : ""}`);
+    advance(true);
+    loadShelves().then(() => {});
+  } catch (e) { msg(e.message, true); }
+}
+function guarded(go) {        // leaving a card with unsaved changes: warn once, go on the second try
+  if (CARD && dirty() && WARNED !== CARD.path) {
+    WARNED = CARD.path; msg("unsaved changes: Enter saves · press again to leave without saving", true); return;
+  }
+  go();
+}
+function advance(saved) {
+  const filter = $("#status").value, rf = $("#rating").value, item = QUEUE[POS];
+  const leaves = item && ((filter !== "all" && item.status !== filter) ||
+    (rf === "unrated" && item.rating) || (rf === "low" && !(item.rating && item.rating <= 2)) || (rf === "high" && !(item.rating >= 3)));
+  if (saved && leaves) {
+    QUEUE.splice(POS, 1); drawQueue();
+    if (QUEUE.length) open(Math.min(POS, QUEUE.length - 1)); else { CARD = null; $("#main").innerHTML = `<div class="empty">All done on this list.</div>`; }
+  } else if (POS + 1 < QUEUE.length) open(POS + 1);
+}
+$("#overlay").onclick = unzoom;
+$("#save").onclick = () => save(false);
+$("#unsure").onclick = () => save(true);
+$("#skip").onclick = () => guarded(() => advance(false));
+$("#prev").onclick = () => guarded(() => open(POS - 1));
+["shelf", "status", "order", "rating"].forEach(id => $("#" + id).onchange = () => {
+  if (id === "shelf" && $("#shelf").value !== "__folder__") {
+    remember("shelf", $("#shelf").value); folderFromShelf(); syncShelfSelect();
+  }
+  loadQueue(); });
+let SEARCH_TIMER = null, LAST_Q = "";
+function runSearch(now) {
+  clearTimeout(SEARCH_TIMER);
+  const go = () => { const q = $("#q").value.trim(); if (q === LAST_Q) return; LAST_Q = q; guarded(() => loadQueue()); };
+  if (now) go(); else SEARCH_TIMER = setTimeout(go, 350);
+}
+$("#q").oninput = () => runSearch(false);
+$("#q").onkeydown = ev => {
+  if (ev.key === "Enter") { ev.preventDefault(); ev.stopPropagation(); LAST_Q = null; runSearch(true); }
+  else if (ev.key === "Escape") { ev.stopPropagation(); if ($("#q").value) { $("#q").value = ""; runSearch(true); } else $("#q").blur(); }
+};
+document.addEventListener("keydown", ev => {
+  if ($("#modalback").classList.contains("on")) {          // a folder dialog is open: its own keys only
+    if (ev.key === "Escape") closeModal();
+    return;
+  }
+  const typing = /INPUT|TEXTAREA|SELECT/.test(document.activeElement?.tagName || "");
+  const zoomed = $("#overlay").classList.contains("on");
+  if (ev.key === "Escape") { unzoom(); if (typing) document.activeElement.blur(); return; }
+  if (zoomed && (ev.key === "ArrowRight" || ev.key === "ArrowLeft")) {
+    ev.preventDefault(); const n = CARD.image_count;
+    zoom((ZOOM + (ev.key === "ArrowRight" ? 1 : -1) + n) % n); return;
+  }
+  if (typing || ev.ctrlKey || ev.metaKey || ev.altKey) return;
+  if (ev.key === "/") { ev.preventDefault(); $("#q").focus(); $("#q").select(); return; }
+  if (ev.shiftKey && /^Digit[0-5]$/.test(ev.code)) { ev.preventDefault(); setRating(+ev.code.slice(5), true); return; }
+  if (ev.key === "Enter") { ev.preventDefault(); unzoom(); save(false); }
+  else if (ev.key === "u" || ev.key === "U") save(true);
+  else if (ev.key === "j" || ev.key === "J" || ev.key === "ArrowRight") { unzoom(); guarded(() => advance(false)); }
+  else if (ev.key === "k" || ev.key === "K" || ev.key === "ArrowLeft") { unzoom(); guarded(() => open(POS - 1)); }
+  else if (/^[1-4]$/.test(ev.key)) zoom(IMGPAGE * PER_PAGE + +ev.key - 1);
+});
+window.addEventListener("beforeunload", ev => { if (CARD && dirty()) { ev.preventDefault(); ev.returnValue = ""; } });
+
+// ---------- folders: move LoRAs, new / rename folder, undo (organise.py) ----------------------------------------
+let FOLDERS = [], FOLDER = null, SEL = new Set(), LASTPICK = -1, FOLDERS_OPEN = recall("folders") === "1";
+function pick(i, on, range) {
+  const [a, b] = range && LASTPICK >= 0 ? [Math.min(LASTPICK, i), Math.max(LASTPICK, i)] : [i, i];
+  for (let k = a; k <= b; k++) { if (on) SEL.add(QUEUE[k].path); else SEL.delete(QUEUE[k].path); }
+  LASTPICK = i; selChanged();
+}
+function selChanged() { drawQueue(); drawFolderTools(); }
+function selected() { return SEL.size ? [...SEL] : (CARD ? [CARD.path] : []); }
+// <lora:file name:weight> plus the trigger words (priority first, "off" left out): A1111 / Forge prompt syntax.
+function promptTag(c) {
+  const stem = String(c.file || "").replace(/\.[^.]+$/, "");
+  const w = Number(STATE.weight); const weight = Number.isFinite(w) && w !== 0 ? +w.toFixed(2) : 1;
+  const state = t => STATE.trigger_states[t] || "normal";
+  const words = [...STATE.triggers.filter(t => state(t) === "priority"), ...STATE.triggers.filter(t => state(t) === "normal")];
+  return `<lora:${stem}:${weight}>` + (words.length ? " " + words.join(", ") : "");
+}
+async function loadFolders() { FOLDERS = await api("/api/folders"); drawFolders(); }
+function drawFolderTools() {
+  const n = SEL.size, what = n ? `${n} selected · <a id="clearsel" style="color:var(--accent);cursor:pointer">clear</a>` :
+    (CARD ? "nothing ticked: Move takes the open card" : "tick LoRAs in the list to move them");
+  $("body").classList.toggle("selecting", FOLDERS_OPEN && (n > 0 || !!CARD));
+  const tools = $("#folders .tools"); if (!tools) return;
+  tools.querySelector(".sel").innerHTML = `${what}<br>hover a folder and press <b>here</b> to move into it`;
+  tools.querySelector("#f_rename").disabled = !FOLDER || FOLDER.depth < 2;
+  const c = $("#clearsel"); if (c) c.onclick = () => { SEL.clear(); selChanged(); };
+}
+function drawFolders() {
+  if (!FOLDERS_OPEN) return;
+  const rows = FOLDERS.filter(f => f.depth > 0).map(f => `<div class="f${FOLDER && FOLDER.path === f.path ? " on" : ""}" data-p="${esc(f.path)}"
+      style="padding-left:${8 + (f.depth - 1) * 14}px" title="${esc(f.rel)}">
+      <span class="nm">${esc(f.rel.split("/").pop())}</span><small>${f.loras || ""}</small>
+      <button class="here" data-p="${esc(f.path)}" title="Move the selected LoRAs into ${esc(f.rel)}">here</button></div>`).join("");
+  $("#folders").innerHTML = `<div class="tools">
+      <button id="f_new" title="Make a folder inside the highlighted one (or at the top of the library)">New folder</button>
+      <button id="f_rename" title="Rename or move the highlighted folder (type a new path to move it)">Rename / move</button>
+      <button id="f_hist" title="Past moves; undo them newest first">Undo…</button>
+      <button id="f_del" class="danger" title="Move the ticked LoRAs (or the open card) with all their files to the _lora_trash folder beside the library: out of ComfyUI, undoable with Undo…. Empty the trash yourself when sure.">Delete…</button>
+      <div class="sel"></div></div>${rows}`;
+  $("#folders").querySelectorAll(".f").forEach(el => el.onclick = ev => {
+    if (ev.target.classList.contains("here")) return;
+    const f = FOLDERS.find(x => x.path === el.dataset.p);
+    guarded(() => {
+      FOLDER = (FOLDER && FOLDER.path === f.path) ? null : f;       // clicking the highlighted folder again = all shelves
+      if (!FOLDER) $("#shelf").value = "";
+      syncShelfSelect(); drawFolders(); loadQueue();
+    });
+  });
+  $("#folders").querySelectorAll(".here").forEach(el => el.onclick = ev => { ev.stopPropagation(); planMove(el.dataset.p); });
+  $("#f_new").onclick = newFolderDialog;
+  $("#f_rename").onclick = renameDialog;
+  $("#f_hist").onclick = historyDialog;
+  $("#f_del").onclick = planDelete;
+  drawFolderTools();
+}
+function toggleFolders(on) {
+  FOLDERS_OPEN = on; remember("folders", on ? "1" : "0");
+  $("body").classList.toggle("folders-on", on); $("#foldbtn").classList.toggle("on", on);
+  if (on) {
+    if (!FOLDERS.length) $("#folders").innerHTML = `<div class="empty">Loading folders…</div>`;
+    loadFolders().then(() => { if (!FOLDER) { folderFromShelf(); syncShelfSelect(); } }).catch(e => msg(e.message, true));
+  } else { $("body").classList.remove("selecting"); }
+  drawQueue();
+}
+// The shelf picker and the folder panel show one selection. A shelf is a folder two levels down (Krea2/graphic-art);
+// a folder the picker has no entry for shows as a "folder: ..." entry at its top.
+function folderFromShelf() {
+  if (!FOLDERS.length) return;
+  const v = $("#shelf").value;
+  if (v === "__folder__") return;
+  FOLDER = v ? (FOLDERS.find(f => f.rel.toLowerCase() === v.toLowerCase()) || null) : null;
+  drawFolders();
+}
+function syncShelfSelect() {
+  const sel = $("#shelf");
+  const old = sel.querySelector('option[value="__folder__"]'); if (old) old.remove();
+  if (!FOLDER) { if (!sel.value && sel.selectedIndex < 0) sel.value = ""; return; }
+  const match = [...sel.options].find(o => o.value && o.value.toLowerCase() === FOLDER.rel.toLowerCase());
+  if (match) { sel.value = match.value; return; }
+  const o = document.createElement("option");
+  o.value = "__folder__"; o.textContent = `folder: ${FOLDER.rel || "(library root)"}  (${FOLDER.loras})`;
+  sel.insertBefore(o, sel.options[1] || null); sel.value = "__folder__";
+}
+$("#foldbtn").onclick = () => toggleFolders(!FOLDERS_OPEN);
+
+function modal(html) { $("#modal").innerHTML = html; $("#modalback").classList.add("on"); }
+function closeModal() { $("#modalback").classList.remove("on"); }
+$("#modalback").onclick = ev => { if (ev.target.id === "modalback") closeModal(); };
+const relOf = p => { const f = FOLDERS.find(x => x.path === p); return f ? f.rel : p; };
+const short = p => { const f = FOLDERS.find(x => x.depth === 0 && p.toLowerCase().startsWith(x.path.toLowerCase())); return f ? p.slice(f.path.length + 1) : p; };
+
+function planHtml(plan, title) {
+  const c = plan.counts || {};
+  const busy = plan.busy && plan.busy.length ? `<p class="warn">A LoRA Catalog run is going (${esc(plan.busy.join(", "))}). It writes by path: wait for it to finish before applying.</p>` : "";
+  const skipped = plan.skipped.length ? `<p class="warn">Skipped (${plan.skipped.length}):</p><ul>${plan.skipped.map(s =>
+      `<li>${esc(s.label)} — ${esc(s.reason)}</li>`).join("")}</ul>` : "";
+  const units = plan.units.map(u => `${u.label}  [${u.kind === "version_folder" ? "whole downloader folder" : u.kind}]\n` +
+      u.ops.map(([a, b]) => `   ${short(a)}\n → ${short(b)}`).join("\n")).join("\n\n");
+  const mk = plan.mkdirs.length ? `<li>new folders: ${plan.mkdirs.map(d => esc(short(d))).join(", ")}</li>` : "";
+  const cl = plan.cleanup.length ? `<li>empty downloader folders removed afterwards: ${plan.cleanup.length}</li>` : "";
+  const trash = plan.kind === "delete" && plan.target ? `<li>to ${esc(plan.target)} - out of ComfyUI's lists; Undo… brings them back, empty that folder yourself when sure</li>` : "";
+  const lines = plan.kind === "new_folder" ? "" : `<ul><li>${c.loras} LoRA${c.loras === 1 ? "" : "s"}, ${c.files} file${c.files === 1 ? "" : "s"}</li>${trash}${mk}${cl}</ul>`;
+  return `<h3>${title}</h3>${busy}${lines}${skipped}
+    ${units ? `<details><summary>every file move (${plan.units.length} unit${plan.units.length === 1 ? "" : "s"})</summary><div class="ops">${esc(units)}</div></details>` : ""}
+    <p class="muted" style="font-size:12px">Nothing has changed yet. Apply makes it happen; Undo… can take it back.</p>
+    <div class="row"><button class="go" id="m_apply" ${(plan.units.length || plan.mkdirs.length) ? "" : "disabled"}>Apply</button><button id="m_cancel">Cancel</button></div>`;
+}
+function showPlan(plan, title) {
+  if (plan.error) { modal(`<h3>${title}</h3><p class="warn">${esc(plan.error)}</p><div class="row"><button id="m_cancel">Close</button></div>`); }
+  else { modal(planHtml(plan, title)); $("#m_apply").onclick = () => applyPlan(plan.id); }
+  $("#m_cancel").onclick = closeModal;
+}
+async function postPlan(body) {
+  const r = await fetch("/api/organise/plan", {method:"POST", headers:{"Content-Type":"application/json"}, body:JSON.stringify(body)});
+  return r.json();
+}
+async function planMove(target) {
+  const paths = selected();
+  if (!paths.length) { msg("tick some LoRAs first", true); return; }
+  if (CARD && dirty()) { msg("save or undo this card's changes first", true); return; }
+  modal(`<h3>Planning…</h3>`);
+  try { showPlan(await postPlan({action:"move", paths, target}), `Move ${paths.length} LoRA${paths.length === 1 ? "" : "s"} to ${esc(relOf(target))}`); }
+  catch (e) { modal(`<p class="warn">${esc(e.message)}</p>`); }
+}
+let DUPES = false;
+function toggleDupes(on) {
+  DUPES = on; $("#dupbtn").classList.toggle("on", on); $("body").classList.toggle("dupes", on);
+  if (on && !FOLDERS_OPEN) toggleFolders(true);           // the checkboxes and Delete… live with the folder panel
+  SEL.clear(); loadQueue().catch(e => msg(e.message, true));
+}
+$("#dupbtn").onclick = () => guarded(() => toggleDupes(!DUPES));
+async function planDelete() {
+  const paths = selected();
+  if (!paths.length) { msg("tick some LoRAs first", true); return; }
+  if (CARD && dirty()) { msg("save or undo this card's changes first", true); return; }
+  let warn = "";
+  if (DUPES) {                                                 // every copy of something ticked = it would be gone
+    const all = QUEUE.filter(q => paths.includes(q.path)).map(q => q.group);
+    const whole = [...new Set(all)].filter(g => QUEUE.filter(q => q.group === g).every(q => paths.includes(q.path)));
+    if (whole.length) warn = `<p class="warn">Every copy of ${whole.map(g => esc(QUEUE.find(q => q.group === g).name)).join(", ")} is ticked - none would be left in the library.</p>`;
+  }
+  modal(`<h3>Planning…</h3>`);
+  try {
+    const plan = await postPlan({action:"delete", paths});
+    showPlan(plan, `Move ${paths.length} LoRA${paths.length === 1 ? "" : "s"} to the trash`);
+    if (warn) $("#modal h3").insertAdjacentHTML("afterend", warn);
+  } catch (e) { modal(`<p class="warn">${esc(e.message)}</p>`); }
+}
+function newFolderDialog() {
+  const parent = FOLDER ? FOLDER : FOLDERS.find(f => f.depth === 0);
+  modal(`<h3>New folder inside ${esc(parent.rel || "the library root")}</h3>
+    <div class="row"><input type="text" id="m_name" placeholder="e.g. comic" spellcheck="false"><button class="go" id="m_plan">Next</button><button id="m_cancel">Cancel</button></div>`);
+  $("#m_cancel").onclick = closeModal;
+  const go = async () => showPlan(await postPlan({action:"new", parent: parent.path, name: $("#m_name").value}), `New folder ${esc(parent.rel ? parent.rel + "/" : "")}${esc($("#m_name").value)}`);
+  $("#m_plan").onclick = go; $("#m_name").onkeydown = ev => { if (ev.key === "Enter") go(); }; $("#m_name").focus();
+}
+function renameDialog() {
+  if (!FOLDER) return;
+  modal(`<h3>Rename or move ${esc(FOLDER.rel)}</h3>
+    <p class="muted" style="font-size:12px">Change the last part to rename it; change the path to move it (with everything in it). Path from the library root.</p>
+    <div class="row"><input type="text" id="m_path" value="${esc(FOLDER.rel)}" spellcheck="false"><button class="go" id="m_plan">Next</button><button id="m_cancel">Cancel</button></div>`);
+  $("#m_cancel").onclick = closeModal;
+  const root = FOLDER.root;
+  const go = async () => {
+    const rel = $("#m_path").value.trim().replace(/^[\\/]+|[\\/]+$/g, "");
+    showPlan(await postPlan({action:"rename", folder: FOLDER.path, new_path: root + "\\" + rel.replace(/\//g, "\\")}), `${esc(FOLDER.rel)} → ${esc(rel)}`);
+  };
+  $("#m_plan").onclick = go; $("#m_path").onkeydown = ev => { if (ev.key === "Enter") go(); };
+  const input = $("#m_path"); input.focus(); input.setSelectionRange(FOLDER.rel.lastIndexOf("/") + 1, FOLDER.rel.length);
+}
+async function applyPlan(id) {
+  modal(`<h3>Working…</h3>`);
+  let r;
+  try { r = await api("/api/organise/apply", {id}); }
+  catch (e) { modal(`<h3>Problem</h3><p class="warn">${esc(e.message)}</p><div class="row"><button id="m_cancel">Close</button></div>`); $("#m_cancel").onclick = closeModal; await afterChange(); return; }
+  if (!r.moved && !r.failed.length) {                          // a new folder: nothing moved
+    modal(`<h3 class="good">Done</h3><p>Folder made: ${esc(r.created_dirs.map(short).join(", "))}</p><div class="row"><button class="go" id="m_cancel">Close</button></div>`);
+    $("#m_cancel").onclick = closeModal; await afterChange(null, r.created_dirs[0]); return;
+  }
+  const failed = r.failed.length ? `<p class="warn">Not moved (${r.failed.length}):</p><ul>${r.failed.map(f => `<li>${esc(f.label)} — ${esc(f.reason)}</li>`).join("")}</ul>` : "";
+  modal(`<h3 class="good">Done</h3><ul><li>${r.moved} LoRA${r.moved === 1 ? "" : "s"} ${r.kind === "delete" ? "moved to the trash" : "moved"}${r.created_dirs.length && r.kind !== "delete" ? `, ${r.created_dirs.length} folder(s) made` : ""}${
+      r.removed_dirs.length ? `, ${r.removed_dirs.length} empty downloader folder(s) removed` : ""}</li>
+      ${r.lm_metadata ? `<li>LoRA Manager metadata updated for ${r.lm_metadata}; it is asked to rescan if ComfyUI is running</li>` : ""}</ul>${failed}
+    <div id="m_refs">${r.moved ? `<button id="m_findrefs">Find saved workflows / notes that still name them</button>` : ""}</div>
+    <div class="row"><button class="go" id="m_cancel">Close</button></div>`);
+  $("#m_cancel").onclick = closeModal;
+  const fr = $("#m_findrefs"); if (fr) fr.onclick = () => showRefs(r.id);
+  const moved = r.mapping || {}, open_ = CARD && moved[CARD.path];
+  SEL = new Set([...SEL].filter(p => !(p in moved)));
+  await afterChange(open_, r.target);
+}
+async function showRefs(id) {
+  $("#m_refs").innerHTML = `<p class="muted">searching…</p>`;
+  try {
+    const r = await api("/api/organise/references?id=" + encodeURIComponent(id));
+    $("#m_refs").innerHTML = r.files.length ? `<p>${r.files.length} saved file(s) of ${r.searched} still name a moved LoRA (they were not changed):</p>
+      <ul>${r.files.map(f => `<li>${esc(f.file)}<br><span class="muted">${esc(f.loras.join(", "))}</span></li>`).join("")}</ul>`
+      : `<p class="good">None of ${r.searched} saved files name the moved LoRAs.</p>`;
+  } catch (e) { $("#m_refs").innerHTML = `<p class="warn">${esc(e.message)}</p>`; }
+}
+async function historyDialog() {
+  const list = await api("/api/organise/batches");
+  const newest = list.find(b => !b.undone_at && (b.moved || b.created_dirs));
+  modal(`<h3>Past changes</h3><p class="muted" style="font-size:12px">Undo works newest first.</p>
+    <table>${list.map(b => `<tr><td>${esc(b.applied_at || "").replace("T", " ")}</td>
+      <td>${b.kind === "delete" ? `deleted ${b.moved} (to the trash)` : b.kind === "move" ? `moved ${b.moved} to ${esc(short(b.target || ""))}` : b.kind === "rename_folder" ? `${esc(short(b.source || ""))} → ${esc(short(b.target || ""))} (${b.moved} LoRAs)` : `new folder ${esc(short(b.target || ""))}`}</td>
+      <td>${b.undone_at ? `<span class="muted">undone</span>` : (newest && b.id === newest.id ? `<button data-id="${esc(b.id)}" class="m_undo">Undo</button>` : "")}</td></tr>`).join("") || "<tr><td>nothing yet</td></tr>"}</table>
+    <div id="m_undo_msg"></div><div class="row"><button id="m_cancel">Close</button></div>`);
+  $("#m_cancel").onclick = closeModal;
+  document.querySelectorAll(".m_undo").forEach(el => el.onclick = async () => {
+    el.disabled = true; $("#m_undo_msg").innerHTML = `<p class="muted">undoing…</p>`;
+    try { const r = await api("/api/organise/undo", {id: el.dataset.id}); $("#m_undo_msg").innerHTML = `<p class="good">Put back ${r.restored} LoRA(s).</p>`; }
+    catch (e) { $("#m_undo_msg").innerHTML = `<p class="warn">${esc(e.message)}</p>`; }
+    SEL.clear(); await afterChange(); setTimeout(historyDialog, 900);
+  });
+}
+async function afterChange(newPath, followFolder) {
+  try {
+    await loadFolders();
+    if (FOLDER) FOLDER = FOLDERS.find(f => f.path === FOLDER.path)            // still there
+      || (followFolder && FOLDERS.find(f => f.path.toLowerCase() === followFolder.toLowerCase())) || null;   // renamed / moved
+    drawFolders();
+    await loadShelves();
+    await loadQueue(newPath || (CARD && CARD.path));
+  } catch (e) { msg(e.message, true); }
+}
+
+(async () => {
+  try { VOCAB = await api("/api/vocab"); await loadShelves(); await loadQueue(); if (FOLDERS_OPEN) toggleFolders(true); }
+  catch (e) { $("#main").innerHTML = `<div class="empty">Could not load: ${esc(e.message)}</div>`; }
+})();
+</script>
+</body>
+</html>

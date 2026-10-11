@@ -1,0 +1,249 @@
+# Slider axes - the dials a slider LoRA moves, and the prompt words that ask for each end.
+#
+# EDIT FREELY. Read by the slider card pass (run.py sliders) and by the LoRA Suggester in video_prompter.
+# After editing, re-run video_prompter\dev\slider_cue_table.py to see what each slider would do.
+#
+#   sets:                                       named word lists for "+ @name" cues
+#   axes:
+#     <axis id>:
+#       ends: [<negative end>, <positive end>]  a slider card says which end a POSITIVE weight moves toward
+#       stages: early | late | all               when the Suggester applies it (S1 shape/framing, S2-S3 surface)
+#       ladder:                                  phrase: position, -1 .. +1 (preferred, revision 3)
+#                                                -1 = the slider's full useful low end, +1 = its full high end;
+#                                                every slider on the axis scales it to its own range
+#       neg / pos:                               older form: cues per strength 1 .. 3 = position 0.33 / 0.67 / 1.0
+#       numbers: optional rule turning a number in the prompt into a strength (age only for now)
+#   sliders:                                     optional EXACT weights for a slider you have calibrated by hand
+#     <part of the LoRA's name or file name>:
+#       axis: <axis id>
+#       weights: {phrase: weight}                each phrase must also be a cue on that axis (ladder or neg/pos)
+#
+# Cue forms:
+#   elderly                    the phrase as whole words
+#   "old + @people"            only when a word of the set is within 4 words of it ("an old fisherman", not "an old car")
+#   "wet + skin|hair|body"     the same with the words inline
+# Strength 1 does nothing at the Suggester's default slider_min_strength (2): it is the place for everyday words
+# that usually describe a style, not a degree ("detailed", "dark", "illustration", "busy").
+# Modifiers in front of a cue move it one step: slightly / a little -1, very / extremely / super +1 (kept in 1..3).
+# Revision 2 (2026-10-08): everyday words down to 1, ambiguous words need a context word. v1 in backup_2026-10-08_sliders.
+# Revision 3 (2026-10-08): ladders (any number of rungs per direction) and exact per-slider weights. Waist first,
+# from Eric's calibration of the Krea2 Waist slider (-14 .. +7).
+
+version: 3
+
+sets:
+  people: [man, men, woman, women, person, people, lady, ladies, gentleman, girl, boy, guy, couple, figure, face,
+           hands, portrait, fisherman, sailor, farmer, monk, priest, nun, wizard, witch, king, queen, soldier, warrior,
+           knight, grandmother, grandfather, grandma, grandpa, mother, father, beggar, merchant, peasant, worker,
+           character, model, actor, actress, dancer, musician, artist, scholar, hermit, shaman, chief, villager]
+  body: [body, build, figure, frame, physique, arms, legs, waist, torso]
+  light: [lighting, light, lit, scene, room, interior, shadows, atmosphere, photo, photograph, image, night, alley]
+  colour: [colour, colours, color, colors, palette, tones, hues, tone]
+  place: [street, streets, room, city, town, station, square, beach, road, hall, corridor, plaza, mall, market, park,
+          landscape, desert, field, office, building, house, church, platform, subway, airport, stadium]
+
+axes:
+  age:
+    ends: [younger, older]
+    stages: early
+    neg: {1: [young, youthful, young-looking], 2: [very young, teenage, teen], 3: [child, toddler, little girl, little boy]}
+    pos: {1: [middle-aged, mature, "aged + @people"], 2: ["old + @people", elderly, senior citizen, grey-haired, gray-haired],
+          3: [very old, ancient, wizened, centenarian, decrepit]}
+    numbers: {pattern: "(\\d{1,3})[- ]?(?:year|yr)s?[- ]?old", map: [[6, -3], [15, -2], [22, -1], [35, 0], [50, 1], [68, 2], [85, 3]]}
+
+  body_weight:
+    ends: [thinner, heavier]
+    stages: early
+    neg: {1: [slim, slender, lean], 2: [skinny, "thin + @people|@body"], 3: [gaunt, emaciated, "bony + @people|@body"]}
+    pos: {1: [curvy, stocky, full-figured], 2: [plump, chubby, heavyset, plus-size, overweight], 3: [obese, very fat, morbidly obese]}
+
+  muscle:
+    ends: [softer, more muscular]
+    stages: early
+    neg: {2: [scrawny, frail]}
+    pos: {1: [toned, fit, athletic], 2: [muscular, buff, brawny], 3: [bodybuilder, ripped, hulking, massive muscles]}
+
+  height:
+    ends: [shorter, taller]
+    stages: early
+    neg: {2: ["short + @people", petite], 3: [tiny person, dwarfish]}
+    pos: {2: ["tall + @people"], 3: ["very tall + @people", "towering + @people", "giant + @people"]}
+
+  breast_size:
+    ends: [smaller, larger]
+    stages: early
+    neg: {2: [small breasts, flat-chested], 3: [completely flat chest]}
+    pos: {1: [full breasts], 2: [large breasts, big breasts, busty], 3: [huge breasts, enormous breasts]}
+
+  hips:
+    ends: [narrower, wider]
+    stages: early
+    neg: {2: [narrow hips, boyish hips]}
+    pos: {2: [wide hips, broad hips], 3: [very wide hips]}
+
+  buttocks:
+    ends: [smaller, larger]
+    stages: early
+    neg: {2: [small butt, flat butt]}
+    pos: {2: [big butt, round butt, thick thighs], 3: [huge butt]}
+
+  waist:
+    ends: [narrower, wider]
+    stages: early
+    ladder:                       # positions from Eric's Waist slider weights / 14 (narrow side) and / 7 (wide side)
+      wasp waist: -1.0            # -14
+      tiny waist: -0.71           # -10
+      hourglass waist: -0.57      # -8
+      hour glass waist: -0.57
+      hourglass figure: -0.57
+      thin waist: -0.36           # -5
+      narrow waist: -0.36
+      slim waist: -0.36
+      no waist: 0.29              # +2 (below the default slider_min_strength 2 = 0.35, see note in the review)
+      thick waist: 0.43           # +3
+      wide waist: 0.43
+      fat waist: 0.57             # +4
+
+  hair_length:
+    ends: [shorter, longer]
+    stages: early
+    neg: {2: [short hair, cropped hair, pixie cut], 3: [buzz cut, shaved head]}
+    pos: {2: [long hair], 3: [very long hair, floor-length hair]}
+
+  hair_volume:
+    ends: [flatter, fuller]
+    stages: all
+    neg: {2: [sleek hair, flat hair, slicked-back hair]}
+    pos: {1: [curly hair, wavy hair], 2: [voluminous hair, big hair], 3: [huge afro, enormous hair]}
+
+  skin_tone:
+    ends: [lighter, darker]
+    stages: all
+    neg: {2: [pale skin, fair skin, fair-skinned, porcelain skin], 3: [albino, ghostly pale skin]}
+    pos: {1: [tanned, tan skin, olive skin], 2: [brown skin, dark skin, dark-skinned], 3: [very dark skin, ebony skin, deep dark skin]}
+
+  skin_detail:
+    ends: [smoother, more textured]
+    stages: late
+    neg: {2: [flawless skin, smooth skin, airbrushed skin], 3: [porcelain doll skin]}
+    pos: {1: [freckles], 2: [skin texture, visible pores, detailed skin, textured skin], 3: [rough skin, weathered skin, pockmarked]}
+
+  body_hair:
+    ends: [smoother, hairier]
+    stages: late
+    neg: {2: [hairless body, smooth-shaven]}
+    pos: {2: [body hair, chest hair, "hairy + @people|@body|chest|legs|arms"], 3: [very hairy]}
+
+  makeup:
+    ends: [less makeup, more makeup]
+    stages: late
+    neg: {2: [no makeup, bare-faced, makeup-free]}
+    pos: {2: [heavy makeup, glamour makeup], 3: [dramatic makeup, theatrical makeup]}
+
+  tattoo:
+    ends: [no tattoos, heavily tattooed]
+    stages: late
+    pos: {1: [small tattoo, a tattoo], 2: [tattooed, tattoos], 3: [heavily tattooed, full-body tattoos, covered in tattoos]}
+
+  clothing_coverage:
+    ends: [more covered, more revealing]
+    stages: early
+    neg: {2: [modest clothing, fully clothed, covered up]}
+    pos: {1: [low-cut], 2: [revealing outfit, deep cleavage, short skirt, miniskirt], 3: [barely clothed, micro skirt]}
+
+  wetness:
+    ends: [dry, wet]
+    stages: late
+    pos: {1: ["damp + skin|hair|body|clothes|shirt|dress|face", dewy skin],
+          2: ["wet + skin|hair|body|clothes|shirt|dress|face|@people", rain-soaked, soaked],
+          3: [drenched, soaking wet, dripping wet]}
+
+  shot_size:
+    ends: [closer, wider]
+    stages: early
+    neg: {1: [medium close-up, head and shoulders], 2: [close-up, close up portrait], 3: [extreme close-up, macro shot]}
+    pos: {1: [medium shot, waist-up], 2: [full body shot, full-length shot, wide shot], 3: [extreme wide shot, establishing shot]}
+
+  crowd:
+    ends: [emptier, more crowded]
+    stages: early
+    neg: {1: [alone, quiet], 2: ["empty + @place", "deserted + @place"], 3: [completely empty, abandoned city]}
+    pos: {1: [a few people, busy], 2: [crowd, crowded, "packed + @place"], 3: [packed crowd, dense crowd, teeming crowd]}
+
+  candid:
+    ends: [posed, candid]
+    stages: early
+    neg: {1: [posed, posing], 2: [studio portrait, formal portrait]}
+    pos: {2: [candid, unposed, candid snapshot], 3: [paparazzi, caught off guard]}
+
+  amateur:
+    ends: [professional, amateur]
+    stages: all
+    neg: {1: [professional photo], 2: [studio photography, commercial photography]}
+    pos: {2: [amateur photo, phone photo, smartphone snapshot], 3: [low quality phone photo, webcam photo]}
+
+  realism:
+    ends: [more illustrated, more photographic]
+    stages: all
+    neg: {1: [illustration, illustrated, painting, cartoon, anime], 2: [flat cartoon, chibi]}
+    pos: {1: [photograph, photographic, realistic, photo], 2: [photorealistic, ultra realistic], 3: [hyperrealistic, hyper-realistic]}
+
+  detail:
+    ends: [simpler, more detailed]
+    stages: late
+    neg: {1: [simple, minimal, minimalist, clean], 2: [extremely minimal, "flat + @colour"]}
+    pos: {1: [detailed, highly detailed, intricate, ornate, hyper-detailed, ultra detailed],
+          2: ["intricate + detail|details|texture|textures", "fine + detail|details", dense detail],
+          3: [extreme detail, microscopic detail]}
+
+  brightness:
+    ends: [darker, brighter]
+    stages: all
+    neg: {1: [dim, moody, dark], 2: ["dark + @light", low-key lighting, underexposed, dimly lit], 3: [pitch black, near darkness]}
+    pos: {1: [bright], 2: ["high-key + @light", brightly lit, "bright + @light"], 3: [overexposed, blown out]}
+
+  contrast:
+    ends: [flatter, more contrast]
+    stages: late
+    neg: {2: [low contrast, flat lighting, washed out]}
+    pos: {1: [chiaroscuro], 2: [high contrast, contrasty], 3: [extreme contrast, harsh contrast]}
+
+  saturation:
+    ends: [muted, vivid]
+    stages: late
+    neg: {1: [subdued, pastel], 2: ["muted + @colour", desaturated], 3: [monochrome, black and white, greyscale, grayscale]}
+    pos: {1: [colourful, colorful, vibrant], 2: ["vivid + @colour", "vibrant + @colour", saturated colours, saturated colors],
+          3: [hyper-saturated, neon colours, neon colors, oversaturated]}
+
+  warmth:
+    ends: [cooler, warmer]
+    stages: late
+    neg: {1: [blue hour], 2: [cool tones, cold light, blue tones, icy light]}
+    pos: {1: [golden hour], 2: [warm tones, warm light, golden light], 3: [orange glow, fiery light]}
+
+  wear:
+    ends: [pristine, decayed]
+    stages: late
+    neg: {1: [new, clean], 2: [pristine, brand new, spotless, polished]}
+    pos: {1: [worn], 2: [weathered, rusty, peeling paint, dilapidated], 3: [decayed, ruined, rotting, crumbling]}
+
+  greeble:
+    ends: [sleek, greebled]
+    stages: late
+    neg: {1: [sleek], 2: ["sleek + design|surfaces|surface|hull|car|ship|spaceship|robot", smooth surfaces]}
+    pos: {2: [greebles, greebled, mechanical detail, panel lines], 3: [dense greebles, kitbashed]}
+
+# Exact weights for sliders calibrated by hand. Phrases not listed fall back to ladder position x the slider's range.
+sliders:
+  waist slider:                   # "Waist slider | [Krea 2]" (Krea2/sliders/2777139-...)
+    axis: waist
+    weights:
+      wasp waist: -14
+      tiny waist: -10
+      hourglass waist: -8
+      hour glass waist: -8
+      hourglass figure: -8
+      thin waist: -5
+      no waist: 2
+      thick waist: 3
+      fat waist: 4

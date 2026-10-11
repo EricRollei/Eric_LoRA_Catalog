@@ -1,0 +1,257 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Sweep Verdicts</title>
+<style>
+:root {
+  --bg:#f6f4ef; --panel:#ffffff; --fg:#1f1f1d; --muted:#7a776f; --line:#e2ded4; --soft:#efece4;
+  --accent:#2f5d8a; --accent-fg:#ffffff; --accent-soft:#dde7f2; --good:#2e7d4f; --bad:#b23b2e; --unsure:#c08a12;
+}
+@media (prefers-color-scheme: dark) {
+  :root { --bg:#151617; --panel:#1e2022; --fg:#e8e6e1; --muted:#9a978f; --line:#33363a; --soft:#26292c;
+          --accent:#7fa8d6; --accent-fg:#10161d; --accent-soft:#24364a; --good:#6cc28f; --bad:#ef7a6c; --unsure:#f0c050; }
+}
+* { box-sizing:border-box; }
+html, body { height:100%; }
+body { margin:0; background:var(--bg); color:var(--fg); font:14px/1.45 system-ui, -apple-system, "Segoe UI", sans-serif; }
+button, select, input { font:inherit; color:inherit; }
+a { color:var(--accent); }
+header { display:flex; gap:10px; align-items:center; flex-wrap:wrap; padding:8px 14px; border-bottom:1px solid var(--line);
+         background:var(--panel); position:sticky; top:0; z-index:5; }
+header h1 { font-size:15px; margin:0 6px 0 0; }
+header select, header button { background:var(--soft); border:1px solid var(--line); border-radius:6px; padding:4px 8px; cursor:pointer; }
+header select#sweep { max-width:420px; }
+header .keys { color:var(--muted); font-size:12px; }
+header .count { margin-left:auto; color:var(--muted); font-size:13px; white-space:nowrap; }
+.info { padding:8px 14px; color:var(--muted); font-size:13px; border-bottom:1px solid var(--line); }
+.info b { color:var(--fg); }
+#grid { display:grid; grid-template-columns:repeat(auto-fill, minmax(var(--tile, 300px), 1fr)); gap:12px; padding:14px; }
+.tile { background:var(--panel); border:2px solid var(--line); border-radius:8px; overflow:hidden; display:flex; flex-direction:column; cursor:pointer; }
+.tile.on { outline:3px solid var(--accent); outline-offset:2px; }
+.tile.good { border-color:var(--good); } .tile.bad { border-color:var(--bad); } .tile.unsure { border-color:var(--unsure); }
+.tile img { width:100%; display:block; background:var(--soft); aspect-ratio:1 / 1; object-fit:contain; }
+.tile .failed { aspect-ratio:1 / 1; display:flex; align-items:center; justify-content:center; padding:12px; color:var(--bad); font-size:12px; text-align:center; }
+.tile .cap { padding:6px 8px 4px; font-size:12px; line-height:1.35; overflow-wrap:anywhere; flex:1; }
+.tile .cap .kind { font-size:10px; text-transform:uppercase; letter-spacing:.5px; border:1px solid var(--line); border-radius:8px; padding:0 6px; color:var(--muted); margin-right:4px; }
+.tile .cap .kind.stack { color:var(--accent); border-color:var(--accent); }
+.tile .cap .meta { color:var(--muted); }
+.tile .cap .warn { color:var(--bad); }
+.tile .marks { display:flex; border-top:1px solid var(--line); }
+.tile .marks button { flex:1; border:0; background:none; padding:5px 0; cursor:pointer; color:var(--muted); font-size:12px; }
+.tile .marks button:hover { background:var(--soft); }
+.tile .marks button.g.on { background:var(--good); color:#fff; } .tile .marks button.b.on { background:var(--bad); color:#fff; }
+.tile .marks button.u.on { background:var(--unsure); color:#111; }
+.empty { color:var(--muted); padding:40px; text-align:center; }
+.overlay { position:fixed; inset:0; background:rgba(0,0,0,.88); display:none; z-index:20; color:#eee; flex-direction:column; }
+.overlay.on { display:flex; }
+.overlay .strip { flex:1; display:flex; gap:10px; padding:14px; align-items:stretch; justify-content:center; min-height:0; }
+.overlay figure { margin:0; flex:1 1 0; display:flex; flex-direction:column; justify-content:center; min-width:0; max-width:100%; }
+.overlay figure img { flex:0 1 auto; min-height:0; max-height:calc(100% - 40px); width:100%; object-fit:contain; }
+.overlay figcaption { font-size:12px; padding:6px 2px; text-align:center; color:#ccc; overflow-wrap:anywhere; }
+.overlay figure.main figcaption { color:#fff; font-weight:600; }
+.overlay .bar { display:flex; gap:10px; align-items:center; padding:8px 14px 12px; flex-wrap:wrap; }
+.overlay .bar input { flex:1; min-width:240px; background:#222; border:1px solid #444; border-radius:6px; padding:5px 8px; color:#eee; }
+.overlay .bar button { background:#2a2a2a; border:1px solid #555; color:#eee; border-radius:6px; padding:5px 12px; cursor:pointer; }
+.overlay .bar .v { font-weight:600; }
+#results { display:none; padding:14px 18px 40px; }
+body.results #results { display:block; } body.results #grid, body.results .info { display:none; }
+#results table { border-collapse:collapse; width:100%; max-width:1100px; font-size:13px; background:var(--panel); }
+#results th, #results td { text-align:left; padding:5px 8px; border-bottom:1px solid var(--line); }
+#results td.n { text-align:right; width:60px; font-variant-numeric:tabular-nums; }
+#results h2 { font-size:15px; margin:18px 0 8px; }
+.gtxt { color:var(--good); } .btxt { color:var(--bad); }
+@media (max-width:700px) { #grid { grid-template-columns:repeat(auto-fill, minmax(160px, 1fr)); } header select#sweep { max-width:100%; } }
+</style>
+</head>
+<body>
+<header>
+  <h1>Sweep Verdicts</h1>
+  <a href="/" title="Back to the card editor">Card editor</a>
+  <select id="sweep" title="A sweep folder (newest first). LoRA sweeps show their lora mode."></select>
+  <select id="show" title="Which cells to show">
+    <option value="all">all cells</option><option value="unmarked">not marked</option>
+    <option value="good">good</option><option value="bad">bad</option><option value="unsure">unsure</option>
+  </select>
+  <select id="kind" title="stack = several LoRAs together; single = one LoRA alone (its part); baseline = no swept LoRA">
+    <option value="all">every kind</option><option value="stack">stacks</option><option value="single">singles</option>
+    <option value="baseline">baseline</option>
+  </select>
+  <select id="size" title="Tile size"><option value="220">small</option><option value="300" selected>medium</option><option value="420">large</option></select>
+  <button id="resultsbtn" title="Everything you have marked, by stack and by LoRA pair">Results</button>
+  <span class="keys">G good · B bad · U unsure · 0 clear · arrows move · Space compare with its parts</span>
+  <span class="count" id="count"></span>
+</header>
+<div class="info" id="info"></div>
+<div id="grid"><div class="empty">Loading…</div></div>
+<div id="results"></div>
+<div class="overlay" id="overlay">
+  <div class="strip" id="strip"></div>
+  <div class="bar"><span class="v" id="ov_v"></span>
+    <input id="ov_notes" placeholder="note on this cell (saved with the mark): what works, what breaks…" spellcheck="false">
+    <button data-v="good">G good</button><button data-v="bad">B bad</button><button data-v="unsure">U unsure</button>
+    <button data-v="">0 clear</button><button id="ov_close">Esc close</button></div>
+</div>
+
+<script>
+const $ = s => document.querySelector(s);
+const esc = s => String(s ?? "").replace(/[&<>"']/g, c => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
+const remember = (k, v) => { try { localStorage.setItem("swv_" + k, v); } catch (e) {} };
+const recall = k => { try { return localStorage.getItem("swv_" + k); } catch (e) { return null; } };
+async function api(url, body) {
+  const r = await fetch(url, body ? {method:"POST", headers:{"Content-Type":"application/json"}, body:JSON.stringify(body)} : {});
+  const data = await r.json().catch(() => ({error:"bad response"}));
+  if (!r.ok || data.error) throw new Error(data.error || r.statusText);
+  return data;
+}
+let SWEEP = null, VIEW = [], POS = 0, ZOOMED = false;
+
+async function loadSweeps() {
+  const list = await api("/api/sweeps");
+  const sel = $("#sweep");
+  sel.innerHTML = list.map(s => `<option value="${esc(s.id)}">${esc(s.created || s.id)} · ${esc(s.checkpoint)} · ${s.ok} cells${
+      s.lora_mode ? " · " + esc(s.lora_mode) : ""}${s.marked ? ` · ${s.marked} marked` : ""}${s.incomplete ? " · incomplete" : ""}</option>`).join("")
+    || `<option value="">no sweeps found</option>`;
+  const last = recall("sweep");
+  const loraFirst = list.find(s => s.lora_mode);
+  sel.value = last && list.some(s => s.id === last) ? last : (loraFirst ? loraFirst.id : (list[0] ? list[0].id : ""));
+}
+async function loadSweep() {
+  const id = $("#sweep").value;
+  if (!id) { $("#grid").innerHTML = `<div class="empty">No sweep folders in the sweeps folder yet.</div>`; return; }
+  remember("sweep", id);
+  SWEEP = await api("/api/sweep?id=" + encodeURIComponent(id));
+  const lora = SWEEP.lora || {};
+  $("#info").innerHTML = `<b>${esc(SWEEP.checkpoint)}</b> · ${esc(SWEEP.created)} · ${SWEEP.cells.length} cells` +
+    (lora.mode ? ` · lora mode <b>${esc(lora.mode)}</b>${lora.keep_panel_stack ? " on top of the panel stack" : ""}` :
+     " · <span>not a LoRA sweep: marks are kept but count no LoRA pair</span>");
+  POS = 0; draw();
+}
+function filtered() {
+  const show = $("#show").value, kind = $("#kind").value;
+  return SWEEP.cells.filter(c => (show === "all" || (show === "unmarked" ? !c.verdict : c.verdict === show)) &&
+                                 (kind === "all" || c.kind === kind));
+}
+function caption(c) {
+  const stack = c.stack ? `<span title="${esc(c.stack)}">${esc(c.display || c.stack).replace(/ \| /g, " <b>+</b> ")}</span>` : esc(c.label || "(base)");
+  const extra = [c.mult != null ? "×" + c.mult : "", c.prompt ? "prompt: " + esc(c.prompt.slice(0, 60)) + (c.prompt.length > 60 ? "…" : "") : "",
+                 c.seed != null ? "seed " + c.seed : ""].filter(Boolean).join(" · ");
+  const clip = c.clip != null && c.clip > 4 ? ` <span class="warn" title="clipped pixels: over ~4% often means a blown, over-saturated stack">clip ${c.clip.toFixed(1)}%</span>` : "";
+  return `${c.kind ? `<span class="kind ${c.kind}">${c.kind}</span>` : ""}${stack}<div class="meta">${extra}${clip}</div>`;
+}
+function draw() {
+  document.documentElement.style.setProperty("--tile", $("#size").value + "px");
+  VIEW = filtered();
+  const marked = SWEEP.cells.filter(c => c.verdict).length;
+  $("#count").textContent = `${VIEW.length} shown · ${marked}/${SWEEP.cells.length} marked`;
+  POS = Math.min(POS, Math.max(0, VIEW.length - 1));
+  $("#grid").innerHTML = VIEW.map((c, i) => `<div class="tile ${c.verdict || ""}${i === POS ? " on" : ""}" data-i="${i}">
+      ${c.file ? `<img loading="lazy" src="/sweepimg?id=${encodeURIComponent(SWEEP.id)}&file=${encodeURIComponent(c.file)}&side=512" alt="">`
+               : `<div class="failed">FAILED: ${esc(c.error || "")}</div>`}
+      <div class="cap">${caption(c)}${c.notes ? `<div class="meta">✎ ${esc(c.notes)}</div>` : ""}</div>
+      ${c.file ? `<div class="marks"><button class="g${c.verdict === "good" ? " on" : ""}" data-v="good">G good</button>
+        <button class="b${c.verdict === "bad" ? " on" : ""}" data-v="bad">B bad</button>
+        <button class="u${c.verdict === "unsure" ? " on" : ""}" data-v="unsure">U unsure</button></div>` : ""}</div>`).join("")
+    || `<div class="empty">Nothing to show with these filters.</div>`;
+  document.querySelectorAll(".tile").forEach(el => el.onclick = ev => {
+    const i = +el.dataset.i;
+    if (ev.target.dataset.v !== undefined) { setPos(i); mark(VIEW[i], VIEW[i].verdict === ev.target.dataset.v ? "" : ev.target.dataset.v, false); return; }
+    setPos(i); if (ev.target.tagName === "IMG") openZoom();
+  });
+}
+function setPos(i) {
+  POS = Math.max(0, Math.min(VIEW.length - 1, i));
+  document.querySelectorAll(".tile").forEach(el => el.classList.toggle("on", +el.dataset.i === POS));
+  const on = document.querySelector(".tile.on"); if (on) on.scrollIntoView({block:"nearest", behavior:"smooth"});
+}
+async function mark(cell, verdict, advance) {
+  // Shown and moved on at once (fast G G B keystrokes each land on their own cell); saved in the background,
+  // put back if the save fails.
+  if (!cell || !cell.file) return;
+  const notes = ZOOMED ? $("#ov_notes").value : null;
+  const before = {verdict: cell.verdict, notes: cell.notes};
+  cell.verdict = verdict || null;
+  if (notes !== null) cell.notes = notes;
+  const target = advance && $("#show").value === "all" ? POS + 1 : POS;   // a filtered list drops the cell itself
+  draw();
+  setPos(target);
+  if (ZOOMED) { if (advance && VIEW[POS]) openZoom(); else drawZoomBar(); }
+  try { await api("/api/stacks/mark", {id: SWEEP.id, file: cell.file, verdict, notes}); }
+  catch (e) { cell.verdict = before.verdict; cell.notes = before.notes; draw(); alertBar("not saved: " + e.message); }
+}
+function alertBar(text) { $("#count").textContent = "error: " + text; }
+
+// Compare: the cell, its parts (each of its LoRAs alone) and the no-LoRA reference, same prompt / seed / multiplier.
+function partsOf(c) {
+  if (c.kind !== "stack") return [];
+  const names = c.stack.split(" | ");
+  const same = x => x.file && x.prompt === c.prompt && x.seed === c.seed && x.mult === c.mult;
+  const parts = names.map(n => SWEEP.cells.find(x => same(x) && x.kind === "single" && x.stack === n)).filter(Boolean);
+  const base = SWEEP.cells.find(x => x.file && x.kind === "baseline" && x.prompt === c.prompt && x.seed === c.seed);
+  return (base ? [base] : []).concat(parts);
+}
+function openZoom() {
+  const c = VIEW[POS]; if (!c || !c.file) return;
+  ZOOMED = true;
+  const figs = partsOf(c).map(p => ({c: p, main: false})).concat([{c, main: true}]);
+  $("#strip").innerHTML = figs.map(f => `<figure class="${f.main ? "main" : ""}">
+      <img src="/sweepimg?id=${encodeURIComponent(SWEEP.id)}&file=${encodeURIComponent(f.c.file)}&side=${figs.length > 1 ? 1024 : 0}" alt="">
+      <figcaption>${f.main ? "" : (f.c.kind === "baseline" ? "no swept LoRA" : "part: ")}${esc(f.c.display || f.c.stack || f.c.label)}${f.c.verdict ? ` · ${f.c.verdict}` : ""}</figcaption></figure>`).join("");
+  $("#ov_notes").value = c.notes || "";
+  drawZoomBar();
+  $("#overlay").classList.add("on");
+}
+function drawZoomBar() {
+  const c = VIEW[POS];
+  $("#ov_v").textContent = c ? `${POS + 1}/${VIEW.length} · ${c.verdict || "not marked"}` : "";
+}
+function closeZoom() { ZOOMED = false; $("#overlay").classList.remove("on"); }
+$("#ov_close").onclick = closeZoom;
+document.querySelectorAll(".overlay .bar button[data-v]").forEach(b => b.onclick = () => mark(VIEW[POS], b.dataset.v, !!b.dataset.v));
+
+async function showResults(on) {
+  document.body.classList.toggle("results", on);
+  $("#resultsbtn").textContent = on ? "Back to cells" : "Results";
+  if (!on) return;
+  const r = await api("/api/stacks/summary");
+  const row = (n, g, b, u) => `<td class="n gtxt">${g}</td><td class="n btxt">${b}</td><td class="n">${u}</td><td>${n}</td>`;
+  $("#results").innerHTML = `<h2>Stacks you marked (${r.stacks.length})</h2>
+    <table><tr><th>good</th><th>bad</th><th>unsure</th><th>stack</th></tr>${
+      r.stacks.map(s => `<tr>${row(esc(s.stack) + (s.sweeps > 1 ? ` <span class="gtxt" style="color:var(--muted)">(${s.sweeps} sweeps)</span>` : ""), s.good, s.bad, s.unsure)}</tr>`).join("")
+      || `<tr><td colspan="4">nothing yet</td></tr>`}</table>
+    <h2>LoRA pairs (${r.pairs.length}) - what the Suggester will learn from</h2>
+    <table><tr><th>good</th><th>bad</th><th>unsure</th><th>pair</th></tr>${
+      r.pairs.map(p => `<tr>${row(esc(p.a) + " + " + esc(p.b), p.good, p.bad, p.unsure)}</tr>`).join("")
+      || `<tr><td colspan="4">nothing yet - pairs come from stack cells (2+ LoRAs)</td></tr>`}</table>`;
+}
+$("#resultsbtn").onclick = () => showResults(!document.body.classList.contains("results"));
+
+document.addEventListener("keydown", ev => {
+  if (document.activeElement === $("#ov_notes")) {        // typing a note: Enter / Esc leave the box, then G B U mark
+    if (ev.key === "Escape" || ev.key === "Enter") { ev.preventDefault(); $("#ov_notes").blur(); }
+    return;
+  }
+  if (/INPUT|SELECT/.test(document.activeElement?.tagName || "")) return;
+  if (ev.ctrlKey || ev.metaKey || ev.altKey || document.body.classList.contains("results") || !SWEEP) return;
+  const k = ev.key.toLowerCase();
+  const cols = Math.max(1, Math.round($("#grid").clientWidth / ((document.querySelector(".tile")?.offsetWidth || 300) + 12)));
+  if (k === "g" || k === "b" || k === "u") { ev.preventDefault(); mark(VIEW[POS], {g:"good", b:"bad", u:"unsure"}[k], true); }
+  else if (k === "0" || k === "backspace") { ev.preventDefault(); mark(VIEW[POS], "", false); }
+  else if (k === "escape") closeZoom();
+  else if (k === " " || k === "enter") { ev.preventDefault(); if (ZOOMED) closeZoom(); else openZoom(); }
+  else if (k === "arrowright") { ev.preventDefault(); setPos(POS + 1); if (ZOOMED) openZoom(); }
+  else if (k === "arrowleft") { ev.preventDefault(); setPos(POS - 1); if (ZOOMED) openZoom(); }
+  else if (k === "arrowdown" && !ZOOMED) { ev.preventDefault(); setPos(POS + cols); }
+  else if (k === "arrowup" && !ZOOMED) { ev.preventDefault(); setPos(POS - cols); }
+});
+["show", "kind", "size"].forEach(id => $("#" + id).onchange = () => { remember(id, $("#" + id).value); POS = 0; draw(); });
+$("#sweep").onchange = () => loadSweep().catch(e => alertBar(e.message));
+(async () => {
+  for (const id of ["show", "kind", "size"]) { const v = recall(id); if (v && [...$("#" + id).options].some(o => o.value === v)) $("#" + id).value = v; }
+  try { await loadSweeps(); await loadSweep(); }
+  catch (e) { $("#grid").innerHTML = `<div class="empty">Could not load: ${esc(e.message)}</div>`; }
+})();
+</script>
+</body>
+</html>

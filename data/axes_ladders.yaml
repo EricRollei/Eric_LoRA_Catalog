@@ -1,0 +1,502 @@
+# LIVE slider ladders - read by the LoRA Suggester (video_prompter) on every run; no ComfyUI restart needed.
+# Each line:  "phrase": position   -1 .. +1 on the axis (-1 = the slider's full useful low end, +1 = its high end).
+# 0.3 = seen but off by default (the node's slider_min_strength 2 fires at 0.35). Quote phrases with + : # or @.
+# A ladder here REPLACES that axis's neg/pos lists in axes.yaml; a hand ladder inside axes.yaml wins over this file.
+# Edit freely. Full guide: SLIDERS_AND_AXES.md. Check: video_prompter\dev\slider_cue_table.py krea2
+# Accepted 2026-10-09 00:35 from axes_ladders_draft.yaml.
+
+axes:
+  age:
+    ladder:
+      "toddler": -1.00
+      "child": -1.00
+      "little girl": -1.00
+      "little boy": -1.00
+      "very young": -0.95
+      "teenage": -0.72
+      "teen": -0.72
+      "baby-faced": -0.38
+      "young": -0.30
+      "youthful": -0.30
+      "young-looking": -0.30
+      "middle-aged": +0.30
+      "mature": +0.30
+      "aged + @people": +0.30
+      "grey-haired": +0.62
+      "gray-haired": +0.62
+      "old + @people": +0.75
+      "elderly": +0.78
+      "senior citizen": +0.82
+      "very old": +0.95
+      "ancient": +1.00
+      "wizened": +1.00
+      "centenarian": +1.00
+      "decrepit": +1.00
+
+  amateur:
+    ladder:
+      "commercial photography": -0.72
+      "studio photography": -0.70
+      "fine art photography": -0.30
+      "professional photo": -0.30
+      "poorly lit": +0.30
+      "grainy": +0.30
+      "amateur photo": +0.60
+      "phone photo": +0.65
+      "smartphone snapshot": +0.70
+      "low quality phone photo": +1.00
+      "webcam photo": +1.00
+
+  body_hair:
+    ladder:
+      "hairless": -1.00
+      "shaved body": -0.80
+      "shaved legs": -0.70
+      "glabrous": -0.30
+      "body hair": +0.30
+      "chest hair": +0.45
+      "hairy": +0.60
+      "thick body hair": +0.75
+      "hirsute": +0.90
+      "very hairy": +1.00
+
+  body_weight:
+    ladder:
+      "emaciated": -1.00
+      "gaunt": -1.00
+      "bony + @people|@body": -1.00
+      "anorexic": -0.90
+      "rail-thin": -0.85
+      "skinny": -0.72
+      "thin + @people|@body": -0.60
+      "wiry": -0.50
+      "lean": -0.30
+      "slender": -0.30
+      "slim": -0.30
+      "curvy": +0.30
+      "stocky": +0.30
+      "full-figured": +0.30
+      "fat": +0.55
+      "plump": +0.72
+      "chubby": +0.72
+      "heavyset": +0.78
+      "overweight": +0.78
+      "plus-size": +0.78
+      "obese": +1.00
+      "very fat": +1.00
+      "morbidly obese": +1.00
+
+  breast_size:
+    ladder:
+      "completely flat chest": -1.00
+      "flat-chested": -0.90
+      "tiny breasts": -0.75
+      "small breasts": -0.60
+      "full breasts": +0.30
+      "busty": +0.60
+      "big breasts": +0.80
+      "large breasts": +0.80
+      "huge breasts": +0.95
+      "enormous breasts": +1.00
+
+  brightness:
+    ladder:
+      "pitch black": -1.00
+      "near darkness": -1.00
+      "underexposed": -0.75
+      "dimly lit": -0.70
+      "low-key lighting": -0.68
+      "dark + @light": -0.65
+      "shadowy": -0.30
+      "gloomy": -0.30
+      "dim": -0.30
+      "moody": -0.30
+      "dark": -0.28
+      "glowing": +0.30
+      "luminous": +0.30
+      "radiant": +0.30
+      "high-key + @light": +0.42
+      "brightly lit": +0.45
+      "bright + @light": +0.48
+      "overexposed": +1.00
+      "blown out": +1.00
+
+  buttocks:
+    ladder:
+      "tiny butt": -0.95
+      "flat butt": -0.80
+      "narrow butt": -0.70
+      "thin butt": -0.60
+      "slim butt": -0.45
+      "small butt": -0.35
+      "big butt": +0.45
+      "round butt": +0.55
+      "thick thighs": +0.60
+      "full butt": +0.72
+      "plump butt": +0.82
+      "wide butt": +0.90
+      "huge butt": +1.00
+
+  candid:
+    ladder:
+      "studio portrait": -1.00
+      "formal portrait": -0.85
+      "classic portrait": -0.72
+      "staged photo": -0.60
+      "professional portrait": -0.48
+      "posing": -0.30
+      "posed": -0.20
+      "natural": +0.15
+      "spontaneous": +0.30
+      "unposed": +0.45
+      "candid": +0.60
+      "candid snapshot": +0.72
+      "caught off guard": +0.85
+      "paparazzi": +1.00
+
+  clothing_coverage:
+    ladder:
+      "fully covered": -1.00
+      "modest clothing": -0.60
+      "covered up": -0.55
+      "high neck": -0.50
+      "fully clothed": -0.45
+      "long sleeves": -0.40
+      "low-cut": +0.30
+      "deep cleavage": +0.62
+      "short skirt": +0.70
+      "miniskirt": +0.80
+      "revealing outfit": +0.90
+      "micro skirt": +0.95
+      "barely clothed": +1.00
+
+  contrast:
+    ladder:
+      "low contrast": -0.75
+      "flat lighting": -0.75
+      "washed out": -0.65
+      "chiaroscuro": +0.30
+      "high contrast": +0.65
+      "contrasty": +0.75
+      "extreme contrast": +1.00
+      "harsh contrast": +1.00
+
+  crowd:
+    ladder:
+      "completely empty": -1.00
+      "abandoned city": -1.00
+      "deserted + @place": -0.85
+      "empty + @place": -0.72
+      "quiet": -0.30
+      "alone": -0.30
+      "a few people": +0.30
+      "busy": +0.30
+      "crowd": +0.65
+      "crowded": +0.72
+      "packed + @place": +0.85
+      "teeming crowd": +1.00
+      "dense crowd": +1.00
+      "packed crowd": +1.00
+
+  detail:
+    ladder:
+      "flat + @colour": -0.78
+      "extremely minimal": -0.72
+      "minimal": -0.30
+      "minimalist": -0.30
+      "simple": -0.30
+      "detailed": +0.30
+      "highly detailed": +0.30
+      "intricate": +0.30
+      "ornate": +0.30
+      "hyper-detailed": +0.30
+      "ultra detailed": +0.30
+      "fine detail": +0.88
+      "dense detail": +0.92
+      "extreme detail": +1.00
+      "microscopic detail": +1.00
+
+  greeble:
+    ladder:
+      "smooth surfaces": -0.72
+      "sleek + design|surfaces|surface|hull|car|ship|spaceship|robot": -0.72
+      "streamlined": -0.55
+      "clean lines": -0.45
+      "sleek": -0.30
+      "wires": +0.30
+      "pipes": +0.30
+      "rivets": +0.30
+      "cluttered": +0.30
+      "greebles": +0.72
+      "mechanical detail": +0.75
+      "panel lines": +0.80
+      "greebled": +0.85
+      "kitbashed": +0.92
+      "dense greebles": +1.00
+
+  hair_length:
+    ladder:
+      "buzz cut": -1.00
+      "shaved head": -1.00
+      "pixie cut": -0.85
+      "cropped hair": -0.72
+      "short hair": -0.60
+      "bob cut": -0.50
+      "chin-length hair": -0.45
+      "long hair": +0.70
+      "waist-length hair": +0.90
+      "very long hair": +0.95
+      "floor-length hair": +1.00
+
+  hair_volume:
+    ladder:
+      "flat hair": -0.95
+      "sleek hair": -0.82
+      "slicked-back hair": -0.78
+      "limp hair": -0.65
+      "thin hair": -0.50
+      "curly hair": +0.30
+      "wavy hair": +0.30
+      "voluminous hair": +0.55
+      "big hair": +0.62
+      "thick hair": +0.70
+      "puffy hair": +0.80
+      "poofy hair": +0.85
+      "bushy hair": +0.90
+      "huge afro": +1.00
+      "enormous hair": +1.00
+
+  height:
+    ladder:
+      "tiny person": -1.00
+      "dwarfish": -1.00
+      "short stature": -0.90
+      "short + @people": -0.70
+      "petite": -0.50
+      "tall + @people": +0.85
+      "very tall + @people": +1.00
+      "towering + @people": +1.00
+      "giant + @people": +1.00
+
+  hips:
+    ladder:
+      "flat hips": -0.95
+      "boyish hips": -0.78
+      "narrow hips": -0.60
+      "thin hips": -0.40
+      "slim hips": -0.25
+      "thick hips": +0.45
+      "wide hips": +0.72
+      "broad hips": +0.80
+      "very wide hips": +1.00
+
+  makeup:
+    ladder:
+      "no makeup": -1.00
+      "bare-faced": -1.00
+      "makeup-free": -1.00
+      "natural makeup": -0.70
+      "minimal makeup": -0.60
+      "subtle makeup": -0.55
+      "light makeup": -0.45
+      "full makeup": +0.72
+      "heavy makeup": +0.85
+      "glamour makeup": +0.92
+      "dramatic makeup": +1.00
+      "theatrical makeup": +1.00
+
+  muscle:
+    ladder:
+      "scrawny": -0.72
+      "frail": -0.68
+      "flabby": -0.60
+      "toned": +0.30
+      "fit": +0.30
+      "athletic": +0.30
+      "muscular": +0.72
+      "buff": +0.80
+      "brawny": +0.88
+      "bodybuilder": +1.00
+      "ripped": +1.00
+      "hulking": +1.00
+      "massive muscles": +1.00
+
+  realism:
+    ladder:
+      "flat cartoon": -0.72
+      "chibi": -0.72
+      "hand-drawn": -0.30
+      "drawn": -0.30
+      "cel-shaded": -0.30
+      "comic": -0.30
+      "manga": -0.30
+      "sketch": -0.30
+      "illustration": -0.30
+      "illustrated": -0.30
+      "painting": -0.30
+      "cartoon": -0.30
+      "anime": -0.30
+      "photograph": +0.30
+      "photo": +0.30
+      "photographic": +0.30
+      "realistic": +0.30
+      "lifelike": +0.55
+      "true-to-life": +0.55
+      "photorealistic": +0.72
+      "ultra realistic": +0.72
+      "hyperrealistic": +1.00
+      "hyper-realistic": +1.00
+
+  saturation:
+    ladder:
+      "monochrome": -1.00
+      "black and white": -1.00
+      "greyscale": -1.00
+      "grayscale": -1.00
+      "desaturated": -0.78
+      "muted + @colour": -0.72
+      "dull + @colour": -0.55
+      "faded colours": -0.55
+      "faded colors": -0.55
+      "pastel": -0.30
+      "subdued": -0.30
+      "colourful": +0.30
+      "colorful": +0.30
+      "vibrant": +0.30
+      "bright colours": +0.60
+      "bright colors": +0.60
+      "vivid + @colour": +0.72
+      "saturated colours": +0.72
+      "saturated colors": +0.72
+      "intense colours": +0.82
+      "intense colors": +0.82
+      "electric colours": +0.90
+      "electric colors": +0.90
+      "hyper-saturated": +1.00
+      "neon colours": +1.00
+      "neon colors": +1.00
+      "oversaturated": +1.00
+
+  shot_size:
+    ladder:
+      "macro shot": -1.00
+      "extreme close-up": -1.00
+      "face fills frame": -0.92
+      "close-up": -0.88
+      "tight crop": -0.60
+      "chest-up": -0.42
+      "bust portrait": -0.40
+      "upper body": -0.32
+      "medium close-up": -0.30
+      "head and shoulders": -0.30
+      "medium shot": +0.30
+      "waist-up": +0.30
+      "full body shot": +0.60
+      "tiny in frame": +0.64
+      "small figure in frame": +0.70
+      "full-length shot": +0.70
+      "far away": +0.76
+      "wide shot": +0.80
+      "distant view": +0.82
+      "panoramic view": +0.92
+      "establishing shot": +1.00
+
+  skin_detail:
+    ladder:
+      "porcelain doll skin": -1.00
+      "flawless skin": -0.85
+      "airbrushed skin": -0.72
+      "smooth skin": -0.60
+      "freckles": +0.30
+      "visible pores": +0.52
+      "skin texture": +0.60
+      "detailed skin": +0.68
+      "textured skin": +0.75
+      "rough skin": +0.90
+      "weathered skin": +1.00
+      "pockmarked": +1.00
+
+  skin_tone:
+    ladder:
+      "albino": -1.00
+      "ghostly pale skin": -1.00
+      "porcelain skin": -0.90
+      "pale skin": -0.80
+      "fair skin": -0.65
+      "fair-skinned": -0.65
+      "white skin": -0.50
+      "light skin": -0.40
+      "tanned": +0.25
+      "tan skin": +0.30
+      "olive skin": +0.30
+      "brown skin": +0.60
+      "dark skin": +0.70
+      "dark-skinned": +0.70
+      "very dark skin": +0.90
+      "ebony skin": +1.00
+      "deep dark skin": +1.00
+
+  tattoo:
+    ladder:
+      "no tattoos": -1.00
+      "tattoo-free": -0.80
+      "small tattoo": +0.25
+      "a tattoo": +0.25
+      "one tattoo": +0.40
+      "some tattoos": +0.50
+      "few tattoos": +0.60
+      "tattooed": +0.72
+      "tattoos": +0.80
+      "lots of tattoos": +0.90
+      "heavily tattooed": +1.00
+      "full-body tattoos": +1.00
+      "covered in tattoos": +1.00
+
+  warmth:
+    ladder:
+      "icy light": -1.00
+      "cold light": -0.75
+      "cool tones": -0.60
+      "blue tones": -0.60
+      "blue cast": -0.40
+      "blue hour": -0.30
+      "pale blue": -0.20
+      "golden hour": +0.30
+      "amber glow": +0.50
+      "warm tones": +0.60
+      "sunset glow": +0.70
+      "warm light": +0.75
+      "golden light": +0.85
+      "orange glow": +1.00
+      "fiery light": +1.00
+
+  wear:
+    ladder:
+      "brand new": -1.00
+      "spotless": -0.88
+      "polished": -0.80
+      "pristine": -0.72
+      "new": -0.30
+      "clean": -0.30
+      "worn": +0.30
+      "weathered": +0.50
+      "rusty": +0.60
+      "peeling paint": +0.72
+      "dilapidated": +0.80
+      "crumbling": +0.90
+      "rotting": +0.95
+      "decayed": +1.00
+      "ruined": +1.00
+
+  wetness:
+    ladder:
+      "dry + skin|hair|body|clothes": -0.50
+      "moist + skin|lips|body": +0.30
+      "damp + skin|hair|body|clothes|shirt|dress|face": +0.35
+      "dewy skin": +0.40
+      "wet + skin|hair|body|clothes|shirt|dress|face|@people": +0.50
+      "soaked": +0.65
+      "rain-soaked": +0.65
+      "drenched": +0.80
+      "soaking wet": +0.85
+      "dripping wet": +0.95

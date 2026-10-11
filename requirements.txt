@@ -1,0 +1,6 @@
+# ComfyUI already has these; standalone installs need them.
+# OpenCV is optional (only for preview videos) and deliberately not listed: ComfyUI ships one of the opencv
+# packages already, and installing a second one overwrites the shared cv2 folder.
+requests
+pyyaml
+Pillow
