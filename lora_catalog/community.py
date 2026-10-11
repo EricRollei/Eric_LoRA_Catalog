@@ -85,6 +85,7 @@ CREATOR_PER_LORA, TOP_PER_LORA, NEWEST_PER_LORA = 3, 4, 1     # test prompts pic
 NEW_COLUMNS = {"images_per_day": "REAL", "images_exact": "INTEGER", "top_reactions_median": "REAL",
                "top_reactions_total": "INTEGER", "top_sampled": "INTEGER", "peer": "TEXT", "stats_version": "INTEGER"}
 STATS_VERSION = 2
+GONE_RETRY_DAYS = 90       # a model Civitai answered 404 for is asked again after this many days (or with --force)
 # What each LoRA is compared on, within its platform (base model): (column, label)
 PEER_FEATURES = [("downloads", "downloads"), ("engagement", "likes per download"),
                  ("images_per_day", "images posted per day"), ("top_reactions_median", "reactions on its top 50 images")]
@@ -206,11 +207,14 @@ class Collector:
         self.settings = settings
         self.client = CivitaiClient(settings)
         self.models: Dict[int, Optional[Dict[str, Any]]] = {}
+        self.missing: Dict[int, Optional[int]] = {}    # model id -> HTTP status when there was no record
 
     def model(self, model_id: int) -> Optional[Dict[str, Any]]:
         """Fresh model record (stats change), written back to the crawl cache so the index sees new versions too."""
         if model_id not in self.models:
             data = self.client.get_json(f"models/{model_id}", {})
+            if not data:
+                self.missing[model_id] = self.client.last_status
             if data:
                 try:
                     with open(os.path.join(CACHE_DIR, f"m{model_id}.json"), "w", encoding="utf-8") as handle:
@@ -297,9 +301,12 @@ def collect_one(collector: Collector, connection: sqlite3.Connection, local: Loc
     version_id, model_id = int(row["civitai_version_id"]), row["civitai_model_id"]
     model = collector.model(int(model_id)) if model_id else None
     if not model:
+        # 404 = the model was deleted from Civitai: remembered, so refreshes skip it for GONE_RETRY_DAYS (2026-10-11).
+        # Anything else (timeout, 5xx, rate limit) stays 'no model record' and is tried again next time.
+        status = "not on civitai" if model_id and collector.missing.get(int(model_id)) == 404 else "no model record"
         connection.execute("insert or replace into community_stats (version_id, model_id, fetched_at, status) "
-                           "values (?, ?, ?, 'no model record')", (version_id, model_id, _now()))
-        return "no model record"
+                           "values (?, ?, ?, ?)", (version_id, model_id, _now(), status))
+        return status
     version, newer = _version_facts(model, version_id)
     vstats, mstats = version.get("stats") or {}, model.get("stats") or {}
     top = collector.images(version_id, "Most Reactions", 1, 50)
@@ -438,14 +445,19 @@ def collect(settings: Settings, only: str = "", limit: int = 0, force: bool = Fa
     fresh = {r[0] for r in connection.execute(         # recent AND has today's numbers (stats_version)
         "select version_id from community_stats where status = 'ok' and fetched_at >= ? and coalesce(stats_version, 1) >= ?",
         (time.strftime("%Y-%m-%d", time.localtime(time.time() - refresh_days * 86400)), STATS_VERSION))}
-    todo = [r for r in unique if force or int(r["civitai_version_id"]) not in fresh]
-    recent = len(unique) - len(todo)
+    gone = {r[0] for r in connection.execute(          # deleted from Civitai: asked again only every GONE_RETRY_DAYS
+        "select version_id from community_stats where status = 'not on civitai' and fetched_at >= ?",
+        (time.strftime("%Y-%m-%d", time.localtime(time.time() - GONE_RETRY_DAYS * 86400)),))}
+    todo = [r for r in unique if force or int(r["civitai_version_id"]) not in fresh | gone]
+    skipped_gone = sum(1 for r in unique if int(r["civitai_version_id"]) in gone) if not force else 0
+    recent = len(unique) - len(todo) - skipped_gone
     if limit:
         todo = todo[:limit]
     collector = Collector(settings)
-    print(f"[community] {len(todo)} LoRAs to fetch ({recent} fetched in the last {refresh_days} days) "
+    print(f"[community] {len(todo)} LoRAs to fetch ({recent} fetched in the last {refresh_days} days, {skipped_gone} "
+          f"no longer on Civitai) "
           f"from {collector.client.api}; API key {'found' if collector.client.has_key else 'NOT found'}", flush=True)
-    counts = {"ok": 0, "failed": 0}
+    counts = {"ok": 0, "failed": 0, "not_on_civitai": 0}
     started = time.time()
     for number, row in enumerate(todo, 1):
         try:
@@ -453,7 +465,7 @@ def collect(settings: Settings, only: str = "", limit: int = 0, force: bool = Fa
         except Exception as error:                     # one bad record never stops the run
             status = f"{type(error).__name__}: {error}"
             print(f"[community] {row['model_name'] or row['stem']}: {status}", flush=True)
-        counts["ok" if status == "ok" else "failed"] += 1
+        counts["ok" if status == "ok" else "not_on_civitai" if status == "not on civitai" else "failed"] += 1
         if number % 10 == 0 or number == len(todo):
             connection.commit()
             rate = (time.time() - started) / number

@@ -84,8 +84,10 @@ def _start(args: List[str], log_name: str) -> int:
     kwargs: Dict[str, Any] = {"stdout": log, "stderr": subprocess.STDOUT, "stdin": subprocess.DEVNULL,
                               "cwd": config.TOOL_DIR, "env": dict(os.environ, PYTHONIOENCODING="utf-8")}
     if os.name == "nt":
-        kwargs["creationflags"] = (subprocess.CREATE_NEW_PROCESS_GROUP | subprocess.CREATE_NO_WINDOW
-                                   | 0x00000008)                                     # DETACHED_PROCESS
+        # Its own hidden console (CREATE_NO_WINDOW): anything the job starts inherits it, so no windows pop up, and it
+        # is not ComfyUI's console, so closing ComfyUI does not stop the job. (DETACHED_PROCESS, used before, left the
+        # job with no console at all, and Windows opened a visible one for every step it started.)
+        kwargs["creationflags"] = subprocess.CREATE_NEW_PROCESS_GROUP | subprocess.CREATE_NO_WINDOW
     else:
         kwargs["start_new_session"] = True
     process = subprocess.Popen([sys.executable, "-X", "utf8", RUN_PY] + args, **kwargs)

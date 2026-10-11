@@ -48,10 +48,12 @@ class CivitaiClient:
         self.api = str(getattr(settings, "civitai_host", "") or "https://civitai.com").rstrip("/") + "/api/v1"
         os.makedirs(CACHE_DIR, exist_ok=True)
         self.live_calls = 0
+        self.last_status: Optional[int] = None    # HTTP status of the last get_json (None: no answer at all)
 
     def get_json(self, endpoint: str, params: Dict[str, Any], timeout: int = 60) -> Optional[Dict[str, Any]]:
         """An uncached API call (e.g. /images) with the same retries and politeness as get(). None on failure."""
         url = f"{self.api}/{endpoint.lstrip('/')}"
+        self.last_status = None
         for attempt in range(3):
             time.sleep(PAUSE_SECONDS * (attempt + 1))
             try:
@@ -60,6 +62,7 @@ class CivitaiClient:
                 print(f"[civitai] {url}: {error}", flush=True)
                 continue
             self.live_calls += 1
+            self.last_status = response.status_code
             if response.status_code == 200:
                 return response.json()
             if response.status_code == 429:

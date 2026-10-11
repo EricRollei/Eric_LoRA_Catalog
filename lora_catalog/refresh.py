@@ -105,8 +105,11 @@ def run(settings: Settings, workers: int = 3, model: str = "", skip_internet: bo
         if name == "genre-mood" and text_model and text_model != card_model and "cards" in dict(steps):
             _log(f"    {unload(settings, card_model)}")
         with open(LOG_PATH, "a", encoding="utf-8") as handle:
+            # no window: started from the ComfyUI panel the refresh has no console, and Windows would otherwise open
+            # a new console window for every step (2026-10-11)
             code = subprocess.call([sys.executable, "-X", "utf8", run_py] + args, stdout=handle,
-                                   stderr=subprocess.STDOUT, cwd=TOOL_DIR, env=env)
+                                   stderr=subprocess.STDOUT, stdin=subprocess.DEVNULL, cwd=TOOL_DIR, env=env,
+                                   creationflags=getattr(subprocess, "CREATE_NO_WINDOW", 0))
         if code == 0:
             _log(f"[{label}] ok")
             continue
