@@ -28,6 +28,7 @@ __pycache__/
 .history/
 .vscode/
 .idea/
+*.code-workspace
 
 # Local notes and scratch
 CLAUDE.md

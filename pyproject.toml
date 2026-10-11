@@ -1,6 +1,6 @@
 [project]
 name = "eric-lora-catalog"
-description = "A local catalog of your LoRA library: LLM-written cards, a browser card editor, Civitai audience data, and the LoRA Suggester node that picks LoRAs for a prompt."
+description = "Find your LoRAs by what they do, not by folder name. A local vision LLM (LM Studio or Ollama, e.g. Qwen3-VL) writes a card for every LoRA in your library: its role (style, lighting, detailer, subject...), look, genre and mood, trigger words, good weights and NSFW level. You review and correct the cards in a fast browser editor that also searches, rates, de-duplicates and moves files with undo. Civitai data shows how each LoRA ranks against others of its base model, the weights people really use and the prompts they make with it. The LoRA Suggester node reads your prompt and stacks the LoRAs that fit, with per-stage weights and an NSFW gate. A ComfyUI sidebar panel refreshes the catalog. Everything runs on your machine; works standalone for Forge and A1111 too."
 version = "0.9.0"
 license = { file = "LICENSE" }
 requires-python = ">=3.12"
