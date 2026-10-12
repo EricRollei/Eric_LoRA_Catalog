@@ -168,7 +168,7 @@ function buildPanel(root) {
     const test = el("button", { text: "Test LLM" });
     test.onclick = async () => {
       result.textContent = "Testing (a text call and an image call)…";
-      try { const r = await post("/lora_catalog/llm_test"); result.textContent = [r.server, r.text, r.vision, r.json].filter(Boolean).join("\n"); }
+      try { const r = await post("/lora_catalog/llm_test"); result.textContent = [r.server, r.text, r.vision, r.json, r.memory].filter(Boolean).join("\n"); }
       catch (error) { result.textContent = error.message; }
     };
     const presets = el("div", { class: "row" });

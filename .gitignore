@@ -29,6 +29,7 @@ __pycache__/
 .vscode/
 .idea/
 *.code-workspace
+node.zip
 
 # Local notes and scratch
 CLAUDE.md

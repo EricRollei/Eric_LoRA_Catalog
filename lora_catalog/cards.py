@@ -51,6 +51,7 @@ from typing import Any, Dict, List, Optional
 
 from .artists import fold, get_index
 from .config import Settings
+from .llm import LLMTimeout, backend, ollama_check, timeout_hint
 from .local_sources import read_json
 from .store import Catalog
 from .vocab import load_vocab
@@ -430,6 +431,11 @@ def write_cards(settings: Settings, only: str = "", limit: int = 0, force: bool 
         catalog.close()
         return {"shown": len(todo)}
 
+    if todo and backend(settings) == "ollama":       # warn before the first card, not after 300 s of silence
+        for note in ollama_check(settings, settings.card_model):
+            print(f"[cards] warning: {note}", flush=True)
+    hinted = False
+
     def results():
         """(row, images, candidates, text, card or error) in completion order, keeping `workers` requests in flight."""
         from concurrent.futures import FIRST_COMPLETED, ThreadPoolExecutor, wait
@@ -460,6 +466,9 @@ def write_cards(settings: Settings, only: str = "", limit: int = 0, force: bool 
         if isinstance(card, Exception):
             counts["failed"] += 1
             print(f"[cards] failed {row['file_name']}: {str(card)[:120]}", flush=True)
+            if isinstance(card, LLMTimeout) and not hinted:
+                print(timeout_hint(settings, workers), flush=True)
+                hinted = True
             continue
         # A trigger the model made up is dropped: it must appear somewhere in the evidence.
         lowered = text.lower()

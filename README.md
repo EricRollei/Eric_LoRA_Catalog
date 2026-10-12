@@ -87,6 +87,28 @@ keeps working and restarting it does not stop them - but a card pass and image g
 Then open the card editor (sidebar → **Open card editor**, or `launch.bat`) and go through the cards: Enter accepts,
 fix what is wrong, rate what you like. Everything you change wins over the model's card from then on.
 
+### LLM server notes (read this if cards time out)
+
+A card request carries 2 preview images, up to 7,000 characters of evidence and a JSON schema, and needs about
+**8,192 tokens of context** - far more than **Test LLM**, which sends one tiny image. So the test can pass while
+every card times out. The two usual causes:
+
+- **The model spills out of VRAM.** If ComfyUI (or anything else) holds the GPU, the server loads part of the
+  model on the CPU, and image requests become very slow. Unload ComfyUI's models first, or run `refresh.bat` with
+  ComfyUI closed.
+- **The context is too small.**
+
+**Ollama:** set the environment variable `OLLAMA_CONTEXT_LENGTH=16384` and restart Ollama (its default context is
+smaller, and the OpenAI-style API cannot raise it per request). `ollama ps` shows where the model sits - the
+PROCESSOR column should read *100% GPU*. The refresh sends 1 card request at a time on Ollama; the card pass and
+**Test LLM** warn when the model is partly on the CPU or its context is too small.
+
+**LM Studio:** load the vision model with a 16384 context (`lms load <model> --context-length 16384`, or in the
+model's load settings) and full GPU offload. The refresh sends 3 card requests at once here; if they time out or
+report "context size has been exceeded", run `refresh.bat --workers 1`.
+
+To time a single card: `python run.py cards --limit 1`.
+
 ## LoRA Suggester (ComfyUI)
 
 Inputs: a prompt as `text` (or a Wildcard Composer's `sections` from the

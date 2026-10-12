@@ -137,7 +137,8 @@ def main(argv=None) -> int:
     who.add_argument("--no-api", action="store_true", help="cache and mirror only, no network")
     fresh = sub.add_parser("refresh", help="every step after adding LoRAs: index, hash, Civitai, cards, genre-mood, "
                                            "review pages, facets")
-    fresh.add_argument("--workers", type=int, default=3, help="cards: LLM requests in flight at once (default 3)")
+    fresh.add_argument("--workers", type=int, default=0, help="cards: LLM requests in flight at once (default: 1 on "
+                                                              "Ollama, 3 on LM Studio and other servers)")
     fresh.add_argument("--model", default="", help="cards: another vision model than settings.card_model")
     fresh.add_argument("--skip-internet", action="store_true", help="leave out the Civitai steps")
     fresh.add_argument("--steps", default="", help="only these steps, comma list (e.g. cards,genre-mood,facets)")
@@ -179,7 +180,7 @@ def _run(args, settings) -> int:
         for problem in settings.problems():
             print(f"PROBLEM: {problem}")
         result = test(settings)
-        for key in ("server", "text", "vision", "json"):
+        for key in ("server", "text", "vision", "json", "memory"):
             if result.get(key):
                 print(f"LLM {key}: {result[key]}")
         return 0 if result.get("ok") and not settings.problems() else 1

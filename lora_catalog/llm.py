@@ -12,7 +12,12 @@ reasoning blocks and code fences removed, the outer {...} taken, trailing commas
 unload(settings, model) frees the GPU between the card model and the text model: LM Studio through its `lms` command,
 Ollama through keep_alive 0; other servers are left alone.
 
-test(settings) is the setup page's Test button: one small text call and one small image call.
+test(settings) is the setup page's Test button: one small text call and one small image call (and, on Ollama, where
+the card model sits: GPU or partly CPU, and its context length).
+
+A read timeout raises LLMTimeout; timeout_hint() says what usually causes one. ollama_check() loads the card model
+and reads /api/ps before the card pass, to warn when it spills onto the CPU or has too small a context (2026-10-12,
+after a tester's Ollama refresh timed out on every card while the setup test passed).
 
 (c) Eric Hiss. Dual license, see LICENSE.
 """
@@ -38,6 +43,16 @@ _schema_refused: Dict[str, bool] = {}       # chat url -> the server does not ta
 
 class LLMError(RuntimeError):
     pass
+
+
+class LLMTimeout(LLMError):
+    """The server took the request but did not answer within the timeout."""
+
+
+# The card pass needs about this much context: MAX_EVIDENCE_CHARS of text with 2 images, the schema and the answer
+# (cards.py). Ollama's default context is smaller on many setups.
+CARD_CONTEXT_MIN = 8192
+CARD_CONTEXT_ADVISED = 16384
 
 
 def _headers(settings) -> Dict[str, str]:
@@ -78,6 +93,8 @@ def _post(settings, body: Dict[str, Any], timeout: int) -> Dict[str, Any]:
         response = requests.post(url, json=body, headers=_headers(settings), timeout=timeout)
     except requests.ConnectionError as error:
         raise LLMError(f"no LLM server at {url} - start LM Studio / Ollama, or set llm_base_url") from error
+    except requests.Timeout as error:             # read timeout: the server has the request but is too slow
+        raise LLMTimeout(f"no answer from {url} within {timeout} s (read timeout)") from error
     if response.status_code in (400, 422) and "response_format" in body:
         message = response.text[:400].lower()
         if any(word in message for word in ("response_format", "json_schema", "schema", "grammar")):
@@ -183,6 +200,67 @@ def _lms() -> str:
     return ""
 
 
+def _ollama_root(settings) -> str:
+    root = str(getattr(settings, "llm_base_url", "") or settings.chat_url()).rstrip("/")
+    for tail in ("/chat/completions", "/v1"):
+        if root.endswith(tail):
+            root = root[:-len(tail)]
+    return root
+
+
+def ollama_check(settings, model: str) -> List[str]:
+    """Load `model` on Ollama and read /api/ps. Returns warnings in plain words (empty = all well); never raises.
+    Warns when part of the model runs on the CPU (very slow with images) and when the context is too small for a
+    card."""
+    import requests
+    root = _ollama_root(settings)
+    try:
+        requests.post(root + "/api/generate", json={"model": model, "keep_alive": "10m", "stream": False},
+                      timeout=300).raise_for_status()          # no prompt: Ollama only loads the model
+        loaded = requests.get(root + "/api/ps", timeout=30).json().get("models") or []
+    except Exception as error:
+        return [f"could not ask Ollama about {model}: {type(error).__name__}: {error}"]
+    names = {model, model + ":latest"}
+    entry = next((m for m in loaded if m.get("name") in names or m.get("model") in names), None)
+    if entry is None:
+        return [f"Ollama does not list {model} as loaded after loading it - check the model name"]
+    notes: List[str] = []
+    size, vram = int(entry.get("size") or 0), int(entry.get("size_vram") or 0)
+    if size and vram < size:
+        cpu = round(100 * (size - vram) / size)
+        notes.append(f"{model} runs {cpu}% on the CPU ({vram / 2**30:.1f} of {size / 2**30:.1f} GB in VRAM). Image "
+                     f"requests get very slow and time out. Free VRAM first: unload ComfyUI's models, close other "
+                     f"GPU apps, or run refresh.bat with ComfyUI closed.")
+    context = int(entry.get("context_length") or 0)            # reported by newer Ollama versions
+    if context and context < CARD_CONTEXT_MIN:
+        notes.append(f"{model} is loaded with a {context}-token context; a card needs about {CARD_CONTEXT_MIN}. "
+                     f"Set the environment variable OLLAMA_CONTEXT_LENGTH={CARD_CONTEXT_ADVISED} and restart Ollama.")
+    return notes
+
+
+def timeout_hint(settings, workers: int = 1) -> str:
+    """What usually causes a read timeout on this server, for the log (printed once per run)."""
+    kind = backend(settings)
+    lines = ["[llm] read timeouts mean the server is too slow with these requests. Usual causes:"]
+    if kind == "ollama":
+        lines += ["  - the model does not fit in VRAM and runs partly on the CPU: `ollama ps` should show 100% GPU. "
+                  "ComfyUI holding VRAM is the common reason - unload its models, or run refresh.bat with ComfyUI "
+                  "closed.",
+                  f"  - the context is too small for the images and text: set OLLAMA_CONTEXT_LENGTH="
+                  f"{CARD_CONTEXT_ADVISED} and restart Ollama."]
+    elif kind == "lmstudio":
+        lines += ["  - the model does not fit in VRAM (partial GPU offload): free VRAM or pick a smaller quant.",
+                  f"  - the context is too small: load the model with --context-length {CARD_CONTEXT_ADVISED}."]
+    else:
+        lines += ["  - the model does not fit in VRAM, or its context is too small for images plus text "
+                  f"(about {CARD_CONTEXT_MIN} tokens)."]
+    if workers > 1:
+        lines.append(f"  - {workers} requests at once: a server that answers one at a time queues the rest, and the "
+                     f"wait counts against the timeout. Try --workers 1.")
+    lines.append("  Try one card to time it: python run.py cards --limit 1")
+    return "\n".join(lines)
+
+
 def unload(settings, model: str) -> str:
     """Free the model's memory where the server allows it. Returns what was done (for the log); never raises."""
     if not model:
@@ -198,8 +276,7 @@ def unload(settings, model: str) -> str:
             return f"lms unload {model}: " + (done.stdout or done.stderr or "").strip()[:200]
         if kind == "ollama":
             import requests
-            root = str(settings.llm_base_url).rstrip("/")
-            root = root[:-3] if root.endswith("/v1") else root
+            root = _ollama_root(settings)
             requests.post(root + "/api/generate", json={"model": model, "keep_alive": 0}, timeout=60)
             return f"ollama: {model} unloaded"
     except Exception as error:                         # unloading is a nicety; a failure must not stop a run
@@ -239,6 +316,9 @@ def test(settings) -> Dict[str, Any]:
         out["vision"] = f"{settings.card_model}: sees '{answer.get('color', '?')}'"
         mode = "prompt (server ignores JSON schemas)" if _schema_refused.get(settings.chat_url()) else "schema"
         out["json"] = f"structured answers: {mode}"
+        if backend(settings) == "ollama":          # the tiny test passes even when the real cards will time out
+            notes = ollama_check(settings, settings.card_model)
+            out["memory"] = "\n".join("warning: " + n for n in notes) if notes else f"{settings.card_model}: 100% GPU"
     except Exception as error:
         out["ok"] = False
         out["vision"] = (f"{settings.card_model}: {error} - the card pass needs a vision model "

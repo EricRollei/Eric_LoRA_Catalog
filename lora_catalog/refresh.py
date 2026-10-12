@@ -34,7 +34,7 @@ from typing import Any, Dict, List, Tuple
 
 from .config import DATA_DIR, TOOL_DIR, Settings
 from .jobs import busy_writers
-from .llm import unload
+from .llm import backend, unload
 
 LOG_DIR = os.path.join(DATA_DIR, "logs")
 LOG_PATH = os.path.join(LOG_DIR, "refresh.log")
@@ -83,9 +83,17 @@ def _log(line: str) -> None:
     print(line, flush=True)
 
 
-def run(settings: Settings, workers: int = 3, model: str = "", skip_internet: bool = False,
+def default_workers(settings: Settings) -> int:
+    """Card requests in flight when none was asked for: 1 on Ollama (it serves a vision model one request at a time on
+    most setups, and queued requests time out), 3 on LM Studio and others (parallel slots)."""
+    return 1 if backend(settings) == "ollama" else 3
+
+
+def run(settings: Settings, workers: int = 0, model: str = "", skip_internet: bool = False,
         only_steps: str = "") -> int:
-    """0 when every step finished (internet steps may have failed and been skipped), 1 when a step stopped the run."""
+    """0 when every step finished (internet steps may have failed and been skipped), 1 when a step stopped the run.
+    workers 0 = default_workers()."""
+    workers = workers if workers > 0 else default_workers(settings)
     others = busy_writers()
     if others:
         names = ", ".join(f"{o['command']} (since {o['started']})" for o in others)
