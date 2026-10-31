@@ -17,6 +17,13 @@ card (vocab.prefill). Readers such as the LoRA Suggester only need this table an
         triggers             JSON list of the triggers prompts should get: your priority ones first, then normal
                              ones; ones you switched off are left out (they are in triggers_off)
         triggers_off         JSON list of triggers you switched off (still the LoRA's words, never added to prompts)
+        prompt_text          the words this LoRA's prompt should get (2026-10-15, trigger_picks.py): your pick, else a
+                             trigger test's pick, else the recipe's trigger+phrase, else the first trigger
+        trigger_status       picked | tested | recipe | trigger | ''  (where prompt_text came from)
+        prompt_by_checkpoint JSON {checkpoint: {text, source}} - per-checkpoint picks, win over prompt_text
+        word_options         JSON [{name, text, default, source}] or null (2026-10-20, word_options.py): named sets of
+                             words to pick from per slot / per sweep cell; yours, else read from the Civitai trained
+                             words when they look like alternatives
         rating               your 1-5 stars, or null (unrated)
         slider               JSON or null: {axis, positive_toward, positive_pole, negative_pole, range, useful, stages,
                              confidence, source} from slider_cards; useful = your editor weight low/high when you
@@ -37,7 +44,7 @@ import json
 import sqlite3
 from typing import Any, Dict, List, Optional
 
-from . import creators, edits, sliders
+from . import creators, edits, sliders, trigger_picks, word_options
 from .config import Settings
 from .vocab import NSFW_TERMS, _card_nsfw, load_vocab, prefill
 
@@ -57,9 +64,13 @@ NEWER_FACETS = ("genre", "mood")         # 2026-10-10; same rule in editor.html
 COLUMNS = ["path", "key", "name", "file_name", "rel_dir", "arch_folder", "base_model", "role", "facets", "nsfw",
            "nsfw_shown", "artists", "depicts", "triggers", "creator", "weight_typical", "weight_low", "weight_high",
            "overrides", "confidence", "kind", "scope", "effect", "favorite", "exclude", "source", "status",
-           "updated_at", "rating", "triggers_off", "slider"]
+           "updated_at", "rating", "triggers_off", "slider", "prompt_text", "trigger_status",
+           "prompt_by_checkpoint", "word_options"]
 ADDED_COLUMNS = {"rating": "INTEGER", "triggers_off": "TEXT",       # 2026-10-07
-                 "slider": "TEXT"}                                   # 2026-10-08
+                 "slider": "TEXT",                                   # 2026-10-08
+                 "prompt_text": "TEXT", "trigger_status": "TEXT",    # 2026-10-15 (trigger_picks.py)
+                 "prompt_by_checkpoint": "TEXT",
+                 "word_options": "TEXT"}                             # 2026-10-20 (word_options.py)
 
 ROW_SQL = """select l.*, c.kind, c.scope, c.effect, c.triggers as card_triggers, c.weight_typical, c.weight_low,
                     c.weight_high, c.overrides, c.nsfw_level as card_nsfw, c.confidence, c.artists as card_artists,
@@ -76,6 +87,8 @@ def ensure(connection: sqlite3.Connection) -> None:
     edits.ensure(connection)
     creators.ensure(connection)
     sliders.ensure(connection)
+    trigger_picks.ensure(connection)
+    word_options.ensure(connection)
 
 
 def _json_list(value: Any) -> list:
@@ -130,6 +143,8 @@ def facet_row(connection: sqlite3.Connection, row: sqlite3.Row, vocab: Any) -> D
     shown = model_terms.get("nsfw") or ["sfw"]
     role = (terms.get("role") or ["style"])[0]
     slider = _slider_view(connection, row["path"], edit, weight_low, weight_high)
+    options = word_options.options_for(connection, row["path"], row["trained_words"])
+    words = trigger_picks.resolve(connection, row["path"], triggers, word_options.default_text(options))
     if slider and (not edit or role in ("utility", "slider")):
         role = "slider"
         terms = dict(terms, role=["slider"] + [r for r in (terms.get("role") or []) if r not in ("slider", "utility")])
@@ -149,6 +164,9 @@ def facet_row(connection: sqlite3.Connection, row: sqlite3.Row, vocab: Any) -> D
         "updated_at": datetime.datetime.now().isoformat(timespec="seconds"),
         "rating": stars, "triggers_off": json.dumps(triggers_off, ensure_ascii=False),
         "slider": json.dumps(slider, ensure_ascii=False) if slider else None,
+        "prompt_text": words["prompt_text"], "trigger_status": words["trigger_status"],
+        "prompt_by_checkpoint": words["prompt_by_checkpoint"],
+        "word_options": json.dumps(options, ensure_ascii=False) if options else None,
     }
 
 

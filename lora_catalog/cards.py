@@ -51,7 +51,7 @@ from typing import Any, Dict, List, Optional
 
 from .artists import fold, get_index
 from .config import Settings
-from .llm import LLMTimeout, backend, ollama_check, timeout_hint
+from .llm import LLMContextError, LLMTimeout, backend, ollama_check, timeout_hint
 from .local_sources import read_json
 from .store import Catalog
 from .vocab import load_vocab
@@ -437,8 +437,11 @@ def write_cards(settings: Settings, only: str = "", limit: int = 0, force: bool 
     hinted = False
 
     def results():
-        """(row, images, candidates, text, card or error) in completion order, keeping `workers` requests in flight."""
+        """(row, images, candidates, text, card or error) in completion order, keeping `workers` requests in flight.
+        A card that overflowed the context while several requests were in flight (LM Studio splits its context between
+        them) is tried again alone after the others (2026-10-13)."""
         from concurrent.futures import FIRST_COMPLETED, ThreadPoolExecutor, wait
+        again = []
         pending = iter(todo)
         with ThreadPoolExecutor(max_workers=max(1, workers)) as pool:
             flying = {}
@@ -460,7 +463,19 @@ def write_cards(settings: Settings, only: str = "", limit: int = 0, force: bool 
                     if row is not None:
                         nxt = prepare(row)
                         flying[pool.submit(call_llm, settings, nxt[3], nxt[1])] = nxt
+                    if isinstance(outcome, LLMContextError) and workers > 1:
+                        again.append(job)
+                        continue
                     yield job + (outcome,)
+        if again:
+            print(f"[cards] {len(again)} card(s) did not fit the context with {workers} requests at once; trying them "
+                  f"one at a time", flush=True)
+        for job in again:
+            try:
+                outcome = call_llm(settings, job[3], job[1])
+            except Exception as error:
+                outcome = error
+            yield job + (outcome,)
 
     for number, (row, images, candidates, text, card) in enumerate(results(), 1):
         if isinstance(card, Exception):

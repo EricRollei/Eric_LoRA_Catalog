@@ -24,7 +24,7 @@ from .config import DATA_DIR
 
 LOCK_DIR = os.path.join(DATA_DIR, "locks")
 # Commands that write cards or move rows by path: two of these at once fight over the GPU or the catalog.
-WRITERS = {"cards", "genre-mood", "sliders", "refresh", "index", "facets"}
+WRITERS = {"cards", "genre-mood", "sliders", "refresh", "index", "facets", "triggers"}
 
 
 def _alive(pid: int) -> bool:

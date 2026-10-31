@@ -23,12 +23,26 @@ Endpoints (all JSON unless noted)
     POST /api/organise/apply     {id}  do a plan          POST /api/organise/undo  {id}  undo a batch (newest first)
     GET  /api/organise/batches   past batches             GET  /api/organise/references?id=  saved files naming them
     GET  /api/organise/status    LoRA Manager rescan state
-    GET  /sweeps                 the sweep verdict page (sweeps.html, stacks.py): mark cells good / bad / unsure
+    GET  /sweeps                 the sweep ratings page (sweeps.html, stacks.py): 1-5 stars, flaw / praise tags
     GET  /api/sweeps             sweep folders        GET /api/sweep?id=   one sweep's cells and your marks
     GET  /sweepimg?id=&file=&side=512   a cell as JPEG    POST /api/stacks/mark  {id, file, verdict, notes}
     GET  /api/stacks/summary     marked stacks and LoRA pairs with good / bad counts
+    POST /api/stacks/mark also takes stars, tags, push (stronger|weaker|'')     POST /api/stacks/update  backfill + refit
+    Style search (style.py; optional, settings.json style_enabled):
+    GET  /api/style_status       {enabled, image_search, reason}
+    GET  /api/similar?path=&n=8&scope=base|all&kinds=look|all&nsfw=0|1   closest looks to one LoRA, + {info}
+    GET  /api/queue?...&q=like:mignola   (likeall: across base models) the list in look order
+    GET  /api/queue?looks=1&shelf=&min=0.85   look-alike pairs (style LoRAs whose previews look the same)
+    POST /api/style_search?<queue filters>   body = an image file: the list in order of closeness to its look
     POST /api/save               {path, facets, artists, creator, triggers, trigger_states, weight, weight_low,
                                   weight_high, rating, notes, unsure, other_changed}
+    Prompt words (trigger_picks.py, 2026-10-15):
+    GET  /api/prompt_words?path=  recipe variants, trigger-test scores, your picks, known checkpoints, current words
+    POST /api/prompt_words       {path, checkpoint ('' = all), variant, text}  your pick;  {..., clear: true} removes it
+    POST /api/prompt_words/cell  {id, file, scope: checkpoint|all}  pick the variant a trigger-test cell used
+    POST /api/word_options       {path, options: [{name, text, default}]} or {path, reset: true}  (2026-10-20)
+    POST /api/share_sheets       {id, mode, background, group_by, ratings}  labelled strips / singles for posting
+                                 (Eric_Krea2's _sweep_sheets.py) into <sweep>/share/    GET /sharefile?id=&file=
 
 Nothing here writes to the generated cards; the overnight card run can keep writing while you edit (sqlite WAL).
 
@@ -40,9 +54,11 @@ from __future__ import annotations
 import io
 import json
 import os
+import re
 import socket
 import sqlite3
 import threading
+import time
 import webbrowser
 from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
 from typing import Any, Dict, List, Optional
@@ -54,13 +70,51 @@ from .cards import VIDEO_EXTENSIONS, _video_frame, artist_candidates, preview_im
 from .config import Settings, load_settings
 from .organise import Organiser
 from .search import SearchIndex
+from . import style
 from .stacks import Sweeps
 from .vocab import NSFW_TERMS, _civitai_nsfw, load_vocab, prefill
 
 HERE = os.path.dirname(os.path.abspath(__file__))
+
+
+def code_stamp() -> float:
+    """Newest change time of this package's Python files. The ComfyUI panel compares it with the running editor's (from
+    /api/health) to see that the editor runs older code than is on disk, and restarts it (2026-10-17). Pages (.html)
+    are read fresh on every request, so they do not count."""
+    stamps = [os.path.getmtime(os.path.join(HERE, name)) for name in os.listdir(HERE) if name.endswith(".py")]
+    return max(stamps) if stamps else 0.0
+
+
+STARTED = time.time()
+CODE_STAMP = code_stamp()
+
+
+def process_alive(pid: int) -> bool:
+    """Is that process still running? (Windows: OpenProcess + exit code - os.kill would end it there.)"""
+    if pid <= 0:
+        return False
+    if os.name == "nt":
+        import ctypes
+        kernel = ctypes.windll.kernel32
+        handle = kernel.OpenProcess(0x1000, False, int(pid))         # PROCESS_QUERY_LIMITED_INFORMATION
+        if not handle:
+            return False
+        try:
+            code = ctypes.c_ulong()
+            ok = kernel.GetExitCodeProcess(handle, ctypes.byref(code))
+            return bool(ok) and code.value == 259                    # STILL_ACTIVE
+        finally:
+            kernel.CloseHandle(handle)
+    try:
+        os.kill(pid, 0)
+        return True
+    except OSError:
+        return False
 IMAGES_PER_CARD = 4          # one page of the editor's 2x2 grid
 MAX_IMAGES = 24              # how many it can page through
 THUMB_SIDE = 720
+STYLE_TOP = 200              # like: / image search list at most this many LoRAs, closest first
+LIKE = re.compile(r'\b(like|likeall):(?:"([^"]+)"|(\S+))', re.IGNORECASE)
 
 
 def _json_list(value: Any) -> list:
@@ -82,6 +136,7 @@ class Editor:
     def __init__(self, settings: Settings):
         self.settings = settings
         self.lock = threading.Lock()
+        self.queue_lock = threading.Lock()
         self.prefill_cache: Dict[tuple, Dict[str, List[str]]] = {}
         self.image_cache: Dict[tuple, bytes] = {}
         self.image_list_cache: Dict[str, List[str]] = {}
@@ -90,6 +145,8 @@ class Editor:
         self.search = SearchIndex(settings)
         self.organiser = Organiser(settings)
         self.sweeps = Sweeps(settings)
+        self.style_index = style.StyleIndex(settings)     # stored vectors; no torch needed
+        self.style_model = style.ModelHolder(settings)    # loaded on the first image search, unloaded when idle
         threading.Thread(target=self.organiser.folders, daemon=True).start()   # folder panel ready before it opens
         with self.connect() as connection:
             edits.ensure(connection)
@@ -111,7 +168,10 @@ class Editor:
         if path:
             return list(connection.execute(sql + " where l.path = ?", (path,)))
         if shelf:
-            return list(connection.execute(sql + " where replace(l.rel_dir, '\\', '/') like ?", (shelf + "%",)))
+            # the folder itself and everything under it ('Flux2' no longer takes in 'Flux2klein', 2026-10-16)
+            shelf = shelf.replace("\\", "/").strip("/")
+            return list(connection.execute(sql + " where replace(l.rel_dir, '\\', '/') = ? or "
+                                           "replace(l.rel_dir, '\\', '/') like ?", (shelf, shelf + "/%")))
         return list(connection.execute(sql))
 
     def prefill_for(self, row: sqlite3.Row) -> Dict[str, List[str]]:
@@ -121,10 +181,28 @@ class Editor:
             self.prefill_cache[key] = prefill(vocab, row, row)
         return self.prefill_cache[key]
 
-    def priority(self, row: sqlite3.Row) -> float:
-        """Higher = look at it sooner: low confidence, sparse cards, and an artist hinted by name but not on the card."""
+    def facet_terms(self, connection: sqlite3.Connection) -> Dict[str, Dict[str, list]]:
+        """{path: facet terms} from card_facets (built by run.py facets, kept current by every save). Reading these is
+        one quick query; working the terms out again per card (prefill) took ~14 s for the whole library on the
+        first list after each editor start (2026-10-16)."""
+        out: Dict[str, Dict[str, list]] = {}
+        try:
+            for path, text in connection.execute("select path, facets from card_facets"):
+                try:
+                    terms = json.loads(text or "{}")
+                except (TypeError, ValueError):
+                    continue
+                if isinstance(terms, dict):
+                    out[path] = terms
+        except sqlite3.Error:
+            pass
+        return out
+
+    def priority(self, row: sqlite3.Row, terms: Optional[Dict[str, list]] = None) -> float:
+        """Higher = look at it sooner: low confidence, sparse cards, and an artist hinted by name but not on the card.
+        `terms`: the card's facet terms when the caller has them (card_facets), else they are worked out here."""
         confidence = row["confidence"] or 0.0
-        filled = self.prefill_for(row)
+        filled = terms if terms is not None else self.prefill_for(row)
         empty = sum(1 for facet in ("use", "medium", "period", "rendering", "line") if not filled.get(facet))
         score = (1.0 - confidence) * 2.0 + empty * 0.15
         if row["kind"] == "style_medium" and filled.get("role") == ["style"] and not _json_list(row["card_artists"]):
@@ -150,17 +228,93 @@ class Editor:
                               "priority": 0, "group": sha[:10], "copy": f"{n + 1}/{len(copies)}"})
         return items
 
-    def queue(self, shelf: str, order: str, status: str, rating: str = "any", q: str = "", folder: str = "") -> Any:
+    # -- style search (style.py) ---------------------------------------------------------------------------------
+    def style_status(self) -> Dict[str, Any]:
+        off = style.available(self.settings, need_model=False)
+        if not off:
+            self.style_index.ensure()
+        return {"enabled": not off, "image_search": not style.available(self.settings), "reason": off or
+                style.available(self.settings), "vectors": len(self.style_index.items) if not off else 0}
+
+    def similar(self, path: str, n: int, scope: str, kinds: str, nsfw: bool) -> Dict[str, Any]:
+        off = style.available(self.settings, need_model=False)
+        if off:
+            return {"off": off}
+        info = self.style_index.info(path)
+        if info is None:
+            return {"info": None, "items": [], "note": "no style vector: this LoRA has no readable preview images"}
+        return {"info": info, "items": self.style_index.similar(path, n=n, scope=scope, kinds=kinds, nsfw=nsfw)}
+
+    def _top(self, scores: Dict[str, float], arch: str = "") -> Dict[str, float]:
+        if arch:
+            keep = {item["path"] for item in self.style_index.items if item["arch"].lower() == arch.lower()}
+            scores = {p: s for p, s in scores.items() if p in keep}
+        return dict(sorted(scores.items(), key=lambda kv: -kv[1])[:STYLE_TOP])
+
+    def like_hits(self, words: str, every_base: bool) -> tuple:
+        """like:<name> -> ({path: cosine}, anchor name). The anchor is the best name match that has a style vector."""
+        self.style_index.ensure()
+        candidates = self.search.search(f'name:"{words}"') or self.search.search(words)
+        ranked = sorted(candidates.items(), key=lambda kv: -kv[1])
+        anchor = next((p for p, _s in ranked if self.style_index.vector(p) is not None), None)
+        if anchor is None:
+            lowered = words.lower()
+            anchor = next((i["path"] for i in self.style_index.items if lowered in i["name"].lower()), None)
+        if anchor is None:
+            return {}, ""
+        item = self.style_index.items[self.style_index.by_path[anchor]]
+        scores = self._top(self.style_index.rank(item["vec"]), "" if every_base else item["arch"])
+        return scores, item["name"]
+
+    def lookalikes(self, shelf: str, minimum: float) -> List[Dict[str, Any]]:
+        """Look-alike pairs as list items: a, b next to each other, grouped like the duplicates list."""
+        arch = (shelf or "").replace("\\", "/").split("/")[0]
+        pairs = self.style_index.twins(minimum=minimum, arch=arch)
+        with self.connect() as connection:
+            rows = {r["path"]: r for r in self.rows(connection)}
+        items = []
+        for n, pair in enumerate(pairs):
+            for side in ("a", "b"):
+                row = rows.get(pair[side]["path"])
+                if row is None:
+                    continue
+                items.append({"rating": row["edit_rating"], "path": row["path"], "name": row["model_name"] or row["stem"],
+                              "version": row["version_name"] or "", "folder": row["rel_dir"], "kind": row["kind"],
+                              "confidence": row["confidence"], "status": row["edit_status"] or "todo", "priority": 0,
+                              "group": f"p{n}", "score": pair["score"]})
+        return items
+
+    def queue(self, shelf: str, order: str, status: str, rating: str = "any", q: str = "", folder: str = "",
+              style_hits: Optional[Dict[str, float]] = None, style_mode: str = "", anchor: str = "") -> Any:
         """The list on the left. With a search `q`: {items, matched, mode, hidden} instead of a bare list, items in
         match order unless another order is picked. `folder` (a relative folder from the folder panel, any depth)
-        replaces the shelf."""
-        hits = self.search.search(q) if q.strip() else None
+        replaces the shelf. like:<name> in q, or style_hits from an image search: the list in order of look."""
+        like = LIKE.search(q or "") if style_hits is None else None
+        if like:
+            off = style.available(self.settings, need_model=False)
+            if off:
+                return {"items": [], "matched": 0, "hidden": 0, "mode": "style-off", "reason": off}
+            style_hits, anchor = self.like_hits(like.group(2) or like.group(3), like.group(1).lower() == "likeall")
+            style_mode = "like"
+            q = (q[:like.start()] + q[like.end():]).strip()
+            if q:                                                   # like:mucha poster -> look order, text filter
+                text = self.search.search(q)
+                style_hits = {p: s for p, s in style_hits.items() if p in text}
+        if style_hits is not None:
+            hits = style_hits
+        else:
+            hits = self.search.search(q) if q.strip() else None
+        extra = self.look_extras(hits) if hits and not style_mode else {}
         folder = folder.replace("\\", "/").strip("/")
-        with self.connect() as connection:
-            rows = self.rows(connection, shelf="" if folder else shelf)
+        with self.queue_lock:                       # one list at a time: changing the view quickly no longer piles
+            with self.connect() as connection:      # up several whole-library passes fighting each other
+                rows = self.rows(connection, shelf="" if folder else shelf)
+                terms_by_path = self.facet_terms(connection) if order == "priority" and hits is None else {}
         items = []
+        extra_items = []
         for row in rows:
-            if hits is not None and row["path"] not in hits:
+            is_extra = row["path"] in extra
+            if hits is not None and row["path"] not in hits and not is_extra:
                 continue
             if folder:
                 rel = (row["rel_dir"] or "").replace("\\", "/")
@@ -175,8 +329,12 @@ class Editor:
                 continue
             items.append({"rating": stars, "path": row["path"], "name": row["model_name"] or row["stem"], "version": row["version_name"] or "",
                           "folder": row["rel_dir"], "kind": row["kind"], "confidence": row["confidence"],
-                          "status": state, "priority": self.priority(row),
+                          "status": state,
+                          "priority": self.priority(row, terms_by_path.get(row["path"])) if order == "priority" and hits is None else 0,
                           "score": hits.get(row["path"]) if hits is not None else None})
+            if is_extra:
+                items[-1]["score"], items[-1]["extra"] = extra[row["path"]], True
+                extra_items.append(items.pop())
         if hits is not None and order == "priority":
             items.sort(key=lambda item: -(item["score"] or 0))
         elif order == "name":
@@ -187,10 +345,60 @@ class Editor:
             items.sort(key=lambda item: (item["folder"].lower(), item["name"].lower()))
         else:
             items.sort(key=lambda item: -item["priority"])
+        extra_items.sort(key=lambda item: -(item["score"] or 0))
+        items += extra_items
         if hits is None:
             return items
-        return {"items": items, "matched": len(hits), "hidden": len(hits) - len(items),
-                "mode": self.search.last.get("mode", "none")}
+        if style_mode:
+            return {"items": items, "matched": len(hits), "hidden": len(hits) - len(items), "mode": style_mode,
+                    "anchor": anchor}
+        return {"items": items, "matched": len(hits), "hidden": len(hits) - (len(items) - len(extra_items)),
+                "mode": self.search.last.get("mode", "none"), "extra": len(extra_items)}
+
+    def look_extras(self, hits: Dict[str, float], anchors: int = 3, per_anchor: int = 6) -> Dict[str, float]:
+        """Style search, widened text search: LoRAs that LOOK like the best text hits (style-type hits only) but that
+        the text search did not find, e.g. a Frazetta search also showing Brom whose card never names Frazetta.
+        {path: look similarity}; {} when style search is off."""
+        if style.available(self.settings, need_model=False):
+            return {}
+        self.style_index.ensure()
+        found: Dict[str, float] = {}
+        used = 0
+        for path, _score in sorted(hits.items(), key=lambda kv: -kv[1]):
+            info = self.style_index.info(path)
+            if not info or not info["look"]:
+                continue
+            for near in self.style_index.similar(path, n=per_anchor + 4):
+                if near["path"] not in hits and near["score"] >= 0.65:     # 0.60-0.65 was mostly noise (frazetta test)
+                    found[near["path"]] = max(found.get(near["path"], 0.0), near["score"])
+            used += 1
+            if used >= anchors:
+                break
+        return dict(sorted(found.items(), key=lambda kv: -kv[1])[:anchors * per_anchor])
+
+    def style_search(self, data: bytes, shelf: str, order: str, status: str, rating: str, folder: str) -> Any:
+        from . import image_meta
+        try:                               # the LoRAs the image's own metadata names (works with style search off too)
+            made_with = image_meta.match(self.settings.catalog_path, image_meta.read_bytes(data))
+        except Exception as error:       # never fail the search over metadata
+            print(f"[editor] image metadata not read: {error}")
+            made_with = []
+        off = style.available(self.settings)
+        if off:
+            return {"items": [], "matched": 0, "hidden": 0, "mode": "style-off", "reason": off, "made_with": made_with}
+        from PIL import Image, UnidentifiedImageError
+        try:
+            image = Image.open(io.BytesIO(data))
+            image.load()
+        except (UnidentifiedImageError, OSError):
+            return {"error": "that file is not an image this tool can read (jpg, png, webp...)"}
+        vector = self.style_model.embed_image(image)
+        arch = "" if folder else (shelf or "").replace("\\", "/").split("/")[0]
+        hits = self._top(self.style_index.rank(vector), arch)
+        result = self.queue(shelf, order, status, rating, "", folder, style_hits=hits, style_mode="image")
+        if isinstance(result, dict):
+            result["made_with"] = made_with
+        return result
 
     def shelves(self) -> List[Dict[str, Any]]:
         counts: Dict[str, List[int]] = {}
@@ -203,6 +411,13 @@ class Editor:
                 if row["status"]:
                     counts[shelf][0] += 1
         return [{"shelf": shelf, "reviewed": done, "total": total} for shelf, (done, total) in sorted(counts.items())]
+
+    def start_view(self) -> Dict[str, str]:
+        """What the editor opens on (settings.json editor_start_shelf / editor_start_status)."""
+        fresh = load_settings()                     # read now, so a settings change needs no editor restart
+        status = str(getattr(fresh, "editor_start_status", "all") or "all")
+        return {"shelf": str(getattr(fresh, "editor_start_shelf", "Krea2") or ""),
+                "status": status if status in ("todo", "unsure", "edited", "confirmed", "all") else "all"}
 
     def images(self, path: str) -> List[str]:
         if path not in self.image_list_cache:
@@ -422,6 +637,146 @@ class Editor:
             result.pop("mapping", None)
         return result
 
+    # -- prompt words: which recipe variant a LoRA's prompt gets (trigger_picks.py, 2026-10-15) ------------------
+    def prompt_words(self, path: str) -> Dict[str, Any]:
+        from . import trigger_picks
+        with self.connect() as connection:
+            facets.ensure(connection)
+            return trigger_picks.card_view(connection, path, self.settings.sweeps_dir)
+
+    def set_prompt_words(self, body: Dict[str, Any]) -> Dict[str, Any]:
+        from . import trigger_picks
+        path = str(body.get("path") or "")
+        checkpoint = str(body.get("checkpoint") or "").strip()
+        with self.connect() as connection:
+            facets.ensure(connection)
+            if not connection.execute("select 1 from loras where path = ?", (path,)).fetchone():
+                return {"ok": False, "error": "no such LoRA"}
+            if body.get("clear"):
+                trigger_picks.clear_pick(connection, path, checkpoint)
+            else:
+                trigger_picks.set_pick(connection, path, checkpoint, str(body.get("variant") or "custom"),
+                                       str(body.get("text") or "").strip())
+            connection.commit()
+            facets.refresh_one(connection, path)
+            return {"ok": True, **trigger_picks.card_view(connection, path, self.settings.sweeps_dir)}
+
+    def set_word_options(self, body: Dict[str, Any]) -> Dict[str, Any]:
+        """Your word options (word_options.py, 2026-10-20): {path, options: [{name, text, default}]} replaces them
+        ([] = none at all); {path, reset: true} forgets yours so the automatic ones come back."""
+        from . import trigger_picks, word_options
+        path = str(body.get("path") or "")
+        with self.connect() as connection:
+            facets.ensure(connection)
+            if not connection.execute("select 1 from loras where path = ?", (path,)).fetchone():
+                return {"ok": False, "error": "no such LoRA"}
+            if body.get("reset"):
+                word_options.reset(connection, path)
+            else:
+                word_options.set_options(connection, path, list(body.get("options") or []))
+            connection.commit()
+            facets.refresh_one(connection, path)
+            return {"ok": True, **trigger_picks.card_view(connection, path, self.settings.sweeps_dir)}
+
+    def share_sheets(self, body: Dict[str, Any]) -> Dict[str, Any]:
+        """Make share sheets for one sweep with Eric_Krea2's _sweep_sheets.py (2026-10-16), loaded by file path so
+        the catalog keeps no copy of it. Stars / notes come from this catalog's marks."""
+        import importlib.util
+        from .config import COMFY_DIR
+        sweep_id = str(body.get("id") or "")
+        folder = self.sweeps.folder(sweep_id)
+        if not folder or not os.path.isdir(folder):
+            return {"ok": False, "error": "no such sweep"}
+        module_path = os.path.join(COMFY_DIR or "", "custom_nodes", "Eric_Krea2", "_sweep_sheets.py")
+        if not os.path.isfile(module_path):
+            return {"ok": False, "error": f"Eric_Krea2 not found ({module_path})"}
+        spec = importlib.util.spec_from_file_location("eric_krea2_sweep_sheets", module_path)
+        module = importlib.util.module_from_spec(spec)
+        spec.loader.exec_module(module)
+        pick = lambda key, allowed, default: str(body.get(key)) if str(body.get(key)) in allowed else default
+        result = module.make_sheets(
+            folder, mode=pick("mode", ("strips", "singles", "strips + singles"), "strips"),
+            background=pick("background", ("black", "white"), "black"),
+            group_by=pick("group_by", ("auto", "prompt", "lora", "seed", "none"), "auto"),
+            ratings=pick("ratings", ("none", "stars", "stars + notes"), "none"),
+            catalog=self.settings.catalog_path, log=lambda *a: print("[editor]", *a))
+        if result.get("ok"):
+            result["folder"] = os.path.join(folder, "share")
+        return result
+
+    def share_file(self, sweep_id: str, file_name: str) -> Optional[bytes]:
+        """One share sheet JPEG (only files directly inside <sweep>/share/)."""
+        folder = self.sweeps.folder(sweep_id)
+        name = os.path.basename(file_name or "")
+        if not folder or not name.lower().endswith(".jpg"):
+            return None
+        path = os.path.join(folder, "share", name)
+        if not os.path.isfile(path):
+            return None
+        with open(path, "rb") as handle:
+            return handle.read()
+
+    def sweep_record(self, path: str) -> Dict[str, Any]:
+        """The card's Sweep record panel (stacks.lora_record): your marks on this LoRA, summed up, plus offers."""
+        weight = None
+        with self.connect() as connection:
+            try:
+                row = connection.execute("select weight_typical from card_facets where path = ?", (path,)).fetchone()
+                weight = row[0] if row else None
+            except sqlite3.Error:
+                weight = None
+        return self.sweeps.lora_record(path, weight)
+
+    def edit_recipe(self, body: Dict[str, Any]) -> Dict[str, Any]:
+        """Your correction of one recipe field (recipe_edits.py): {path, field, value}; value null = the model's."""
+        from . import recipe_edits, trigger_picks
+        path = str(body.get("path") or "")
+        value = body.get("value")
+        with self.connect() as connection:
+            facets.ensure(connection)
+            if not connection.execute("select 1 from loras where path = ?", (path,)).fetchone():
+                return {"ok": False, "error": "no such LoRA"}
+            recipe_edits.set_field(connection, path, str(body.get("field") or ""),
+                                   None if value is None else str(value))
+            recipe_edits.refresh(connection, path)
+            connection.commit()
+            facets.refresh_one(connection, path)
+            return {"ok": True, **trigger_picks.card_view(connection, path, self.settings.sweeps_dir)}
+
+    def pick_from_cell(self, body: Dict[str, Any]) -> Dict[str, Any]:
+        """Sweeps page: 'use these words' on a trigger-test cell -> that cell's variant becomes your pick."""
+        from . import trigger_picks
+        from .style import _find_lora
+        sweep_id, file_name = str(body.get("id") or ""), str(body.get("file") or "")
+        manifest = self.sweeps.manifest(sweep_id)
+        cell = next((c for c in manifest.get("cells") or [] if c.get("file") == file_name), None)
+        if cell is None:
+            return {"ok": False, "error": "no such cell"}
+        over = cell.get("overrides") or {}
+        if not over.get("lora_file"):
+            return {"ok": False, "error": "this cell has no LoRA (a words-only or plain cell)"}
+        prompt = str(over.get("prompt") or "")
+        with self.connect() as connection:
+            facets.ensure(connection)
+            found = _find_lora(connection, str(over["lora_file"]))
+            if not found:
+                return {"ok": False, "error": f"{over['lora_file']} is not in the catalog"}
+            path = found[0]
+            variants = trigger_picks.variants(connection, path)
+            match = next((v for v in variants if v.get("text")
+                          and prompt.startswith(v["text"].strip().rstrip(",.") + ".")), None)
+            if match is None:
+                match = next((v for v in variants if not v.get("text")), None)      # the subject alone = 'none'
+            if match is None:
+                return {"ok": False, "error": "this cell's words match none of the LoRA's recipe variants"}
+            checkpoint = "" if body.get("scope") == "all" else str(manifest.get("checkpoint") or "")
+            trigger_picks.set_pick(connection, path, checkpoint, match["name"], match.get("text") or "",
+                                   sweep=sweep_id)
+            connection.commit()
+            facets.refresh_one(connection, path)
+        return {"ok": True, "path": path, "variant": match["name"], "text": match.get("text") or "",
+                "checkpoint": checkpoint or "all checkpoints"}
+
     def save(self, body: Dict[str, Any]) -> Dict[str, Any]:
         path = body.get("path") or ""
         with self.connect() as connection:
@@ -489,6 +844,21 @@ def make_handler(editor: Editor):
                     self._json(load_vocab().to_json())
                 elif url.path == "/api/shelves":
                     self._json(editor.shelves())
+                elif url.path == "/api/start":
+                    self._json(editor.start_view())
+                elif url.path == "/api/queue" and query.get("looks") == "1":
+                    off = style.available(editor.settings, need_model=False)
+                    self._json({"items": [] if off else editor.lookalikes(query.get("shelf", ""), float(query.get("min", "0.85"))),
+                                "looks": True, "reason": off})
+                elif url.path == "/api/discover":                 # 2026-10-29, discover.py
+                    from . import discover
+                    self._json(discover.candidates(editor.settings, query.get("shelf", ""), query.get("all") == "1",
+                                                   int(query.get("top", "100"))))
+                elif url.path == "/api/style_status":
+                    self._json(editor.style_status())
+                elif url.path == "/api/similar":
+                    self._json(editor.similar(query.get("path", ""), int(query.get("n", "8")), query.get("scope", "base"),
+                                              query.get("kinds", "look"), query.get("nsfw", "0") == "1"))
                 elif url.path == "/api/queue" and query.get("dupes") == "1":
                     self._json({"items": editor.duplicates(), "dupes": True})
                 elif url.path == "/api/queue":
@@ -497,12 +867,22 @@ def make_handler(editor: Editor):
                 elif url.path in ("/sweeps", "/sweeps.html"):
                     with open(os.path.join(HERE, "sweeps.html"), "rb") as handle:
                         self._send(200, handle.read(), "text/html; charset=utf-8")
+                elif url.path == "/api/health":
+                    # 2026-10-17: who is running, since when, on which code (the ComfyUI panel's editor switch)
+                    self._json({"ok": True, "pid": os.getpid(), "started": STARTED, "code": CODE_STAMP,
+                                "parent": getattr(editor, "parent_pid", 0)})
                 elif url.path == "/api/sweeps":
                     self._json(editor.sweeps.list())
                 elif url.path == "/api/sweep":
                     self._json(editor.sweeps.cells(query.get("id", "")))
                 elif url.path == "/api/stacks/summary":
                     self._json({"stacks": editor.sweeps.summary(), "pairs": editor.sweeps.pairs()})
+                elif url.path == "/sharefile":
+                    data = editor.share_file(query.get("id", ""), query.get("file", ""))
+                    if data is None:
+                        self._send(404, b"", "text/plain")
+                    else:
+                        self._send(200, data, "image/jpeg")
                 elif url.path == "/sweepimg":
                     data = editor.sweeps.image(query.get("id", ""), query.get("file", ""), int(query.get("side", "512")))
                     if data is None:
@@ -517,6 +897,10 @@ def make_handler(editor: Editor):
                     self._json(editor.organiser.references(query.get("id", "")))
                 elif url.path == "/api/organise/status":
                     self._json({"lora_manager_scan": editor.organiser.scan_state})
+                elif url.path == "/api/prompt_words":
+                    self._json(editor.prompt_words(query.get("path", "")))
+                elif url.path == "/api/sweep_record":
+                    self._json(editor.sweep_record(query.get("path", "")))
                 elif url.path == "/api/card":
                     card = editor.card(query.get("path", ""))
                     self._json(card if card else {"error": "not found"}, 200 if card else 404)
@@ -539,6 +923,15 @@ def make_handler(editor: Editor):
             url = urlparse(self.path)
             try:
                 length = int(self.headers.get("Content-Length") or 0)
+                if url.path == "/api/style_search":               # the body is an image file, not JSON
+                    if length > 40 * 1024 * 1024:
+                        self._json({"error": "image too large (40 MB at most)"}, 413)
+                        return
+                    query = {k: v[0] for k, v in parse_qs(url.query).items()}
+                    self._json(editor.style_search(self.rfile.read(length), query.get("shelf", ""),
+                                                   query.get("order", "priority"), query.get("status", "all"),
+                                                   query.get("rating", "any"), query.get("folder", "")))
+                    return
                 body = json.loads(self.rfile.read(length) or b"{}")
                 if url.path == "/api/save":
                     self._json(editor.save(body))
@@ -548,9 +941,39 @@ def make_handler(editor: Editor):
                     self._json({"ok": True, "id": term})
                 elif url.path == "/api/fetch_images":
                     self._json(editor.fetch_images(str(body.get("path") or "")))
+                elif url.path == "/api/prompt_words":
+                    self._json(editor.set_prompt_words(body))
+                elif url.path == "/api/recipe_edit":
+                    self._json(editor.edit_recipe(body))
+                elif url.path == "/api/word_options":
+                    self._json(editor.set_word_options(body))
+                elif url.path == "/api/prompt_words/cell":
+                    self._json(editor.pick_from_cell(body))
                 elif url.path == "/api/stacks/mark":
-                    self._json(editor.sweeps.mark(str(body.get("id") or ""), str(body.get("file") or ""),
-                                                  body.get("verdict") or None, body.get("notes")))
+                    # 2026-10-16: stars and tags too; a field left out keeps the cell's value, clear removes the mark
+                    self._json(editor.sweeps.mark(
+                        str(body.get("id") or ""), str(body.get("file") or ""),
+                        body.get("verdict") if body.get("verdict") is not None else None, body.get("notes"),
+                        stars=body.get("stars"), tags=body.get("tags"), clear=bool(body.get("clear")),
+                        push=body.get("push")))     # 2026-10-17: stronger / weaker / '' (none)
+                elif url.path == "/api/discover/dismiss":         # 2026-10-29: Not interested / undo
+                    from . import discover
+                    self._json(discover.dismiss(editor.settings, str(body.get("key") or ""), str(body.get("name") or ""),
+                                                bool(body.get("undo"))))
+                elif url.path == "/api/shutdown":
+                    # 2026-10-17: the ComfyUI panel's Stop. Answer first, then stop serving (this machine only: the
+                    # server listens on 127.0.0.1)
+                    self._json({"ok": True, "pid": os.getpid()})
+                    if getattr(editor, "httpd", None) is not None:
+                        threading.Thread(target=editor.httpd.shutdown, daemon=True).start()
+                elif url.path == "/api/stacks/update":
+                    # 2026-10-17: prompt fit / type for older marks, then refit the marks model (markmodel.py)
+                    filled = editor.sweeps.backfill()
+                    self._json({"ok": True, **filled, **editor.sweeps.update_model()})
+                elif url.path == "/api/stacks/import":
+                    self._json(editor.sweeps.import_workbook(str(body.get("id") or "")))
+                elif url.path == "/api/share_sheets":
+                    self._json(editor.share_sheets(body))
                 elif url.path == "/api/organise/plan":
                     self._json(editor.organise_plan(body))
                 elif url.path == "/api/organise/apply":
@@ -577,9 +1000,12 @@ class EditorServer(ThreadingHTTPServer):
         super().server_bind()
 
 
-def serve(port: int = 8765, open_browser: bool = True) -> None:
+def serve(port: int = 8765, open_browser: bool = True, parent_pid: int = 0) -> None:
+    """parent_pid (2026-10-17): started from the ComfyUI panel, the editor stops by itself within ~10 s of ComfyUI
+    closing, so no invisible editor is left running old code. 0 = runs until stopped (launch.bat, a terminal)."""
     settings = load_settings()
     editor = Editor(settings)
+    editor.parent_pid = int(parent_pid or 0)
     try:
         server = EditorServer(("127.0.0.1", port), make_handler(editor))
     except OSError as error:
@@ -587,8 +1013,19 @@ def serve(port: int = 8765, open_browser: bool = True) -> None:
               f"[editor] Another card editor is probably still running: close it, or run card_editor.bat, which stops"
               f" old ones first.")
         raise SystemExit(1)
+    editor.httpd = server
+    if editor.parent_pid:
+        def watch():
+            while True:
+                time.sleep(10)
+                if not process_alive(editor.parent_pid):
+                    print(f"[editor] ComfyUI (pid {editor.parent_pid}) has closed - stopping the card editor")
+                    server.shutdown()
+                    return
+        threading.Thread(target=watch, daemon=True).start()
     url = f"http://127.0.0.1:{port}/"
-    print(f"[editor] {url}   (Ctrl+C to stop)  catalog: {settings.catalog_path}")
+    print(f"[editor] {url}   (Ctrl+C to stop)  catalog: {settings.catalog_path}"
+          + (f"  - stops when ComfyUI (pid {editor.parent_pid}) closes" if editor.parent_pid else ""))
     if open_browser:
         threading.Timer(0.8, lambda: webbrowser.open(url)).start()
     try:

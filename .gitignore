@@ -38,3 +38,11 @@ RELEASE_PLAN.md
 dev/scratch/
 _not_shipped/
 dev/scratch_lib/
+
+# Dev run artifacts (logs / timing / test output)
+dev/object_info_timing.txt
+dev/*.err
+dev/*.jsonl
+
+# Large media (screen recordings, etc.)
+assets/

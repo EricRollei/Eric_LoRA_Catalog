@@ -49,6 +49,16 @@ class LLMTimeout(LLMError):
     """The server took the request but did not answer within the timeout."""
 
 
+class LLMContextError(LLMError):
+    """HTTP 400 because the request does not fit the model's context (LM Studio splits its context between parallel
+    requests, so this can happen with several workers and not with one)."""
+
+
+CONTEXT_WORDS = ("context", "n_ctx", "too many tokens", "maximum length", "exceeds")
+LOOP_GUARD = ("Your previous answer ran too long and was cut off. Answer again: keep every list to at most 6 items, "
+              "never repeat an item, and finish the JSON object.")
+
+
 # The card pass needs about this much context: MAX_EVIDENCE_CHARS of text with 2 images, the schema and the answer
 # (cards.py). Ollama's default context is smaller on many setups.
 CARD_CONTEXT_MIN = 8192
@@ -100,6 +110,8 @@ def _post(settings, body: Dict[str, Any], timeout: int) -> Dict[str, Any]:
         if any(word in message for word in ("response_format", "json_schema", "schema", "grammar")):
             _schema_refused[url] = True
             raise _SchemaRefused(message)
+    if response.status_code == 400 and any(word in response.text.lower() for word in CONTEXT_WORDS):
+        raise LLMContextError(f"the request does not fit the model's context ({response.text[:200]})")
     if response.status_code == 404 and "model" in response.text.lower():
         raise LLMError(f"the server does not have model '{body.get('model')}' ({response.text[:200]})")
     response.raise_for_status()
@@ -150,9 +162,13 @@ def chat_json(settings, model: str, messages: List[Dict[str, Any]], response_for
     url = settings.chat_url()
     last: Exception = LLMError("no attempt")
     attempts = 0
+    cut_off = False
     while attempts <= retries:
         refused = _schema_refused.get(url, False)
         text = ""
+        if cut_off:              # the last answer looped until max_tokens: say so, and loosen the sampling a little
+            messages = list(messages) + [{"role": "user", "content": LOOP_GUARD}]
+            temperature = max(temperature, 0.4)
         try:
             if refused:
                 text = chat(settings, model, _with_schema_prompt(messages, response_format), temperature, max_tokens,
@@ -173,6 +189,7 @@ def chat_json(settings, model: str, messages: List[Dict[str, Any]], response_for
             stripped = FENCE.sub("", text).strip()
             if not refused and stripped and not stripped.startswith("{"):
                 _schema_refused[url] = True
+            cut_off = stripped.startswith("{") and len(stripped) > 2000     # a long answer that broke off
     raise last
 
 

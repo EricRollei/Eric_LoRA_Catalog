@@ -53,6 +53,7 @@ from typing import Any, Dict, Iterable, List, Optional, Tuple
 from .config import Settings
 from .crawl import CACHE_DIR, CivitaiClient
 from .harvest import LocalIndex, image_loras, person
+from .harvest import ensure as harvest_ensure
 
 TABLES = """
 CREATE TABLE IF NOT EXISTS community_stats (
@@ -83,7 +84,9 @@ CREATOR_PER_LORA, TOP_PER_LORA, NEWEST_PER_LORA = 3, 4, 1     # test prompts pic
 
 # Added 2026-10-10 (peer comparison). stats_version 2 = a row that has them; older rows are fetched again.
 NEW_COLUMNS = {"images_per_day": "REAL", "images_exact": "INTEGER", "top_reactions_median": "REAL",
-               "top_reactions_total": "INTEGER", "top_sampled": "INTEGER", "peer": "TEXT", "stats_version": "INTEGER"}
+               "top_reactions_total": "INTEGER", "top_sampled": "INTEGER", "peer": "TEXT", "stats_version": "INTEGER",
+               # 2026-10-13: base models this Civitai model also has versions for, none of which you own
+               "other_bases": "TEXT"}
 STATS_VERSION = 2
 GONE_RETRY_DAYS = 90       # a model Civitai answered 404 for is asked again after this many days (or with --force)
 # What each LoRA is compared on, within its platform (base model): (column, label)
@@ -97,6 +100,10 @@ def ensure(connection: sqlite3.Connection) -> None:
     for column, kind in NEW_COLUMNS.items():
         if column not in have:
             connection.execute(f"alter table community_stats add column {column} {kind}")
+    # 2026-10-29: Civitai's exact level number (browsingLevel 1/2/4/8/16 = PG/PG-13/R/X/XXX): the text level "X"
+    # covers both X and XXX. Filled as prompts are collected; the prompt library prefers it.
+    if "nsfw_num" not in {r[1] for r in connection.execute("pragma table_info(community_prompts)")}:
+        connection.execute("alter table community_prompts add column nsfw_num INTEGER")
 
 
 def _when(item: Dict[str, Any]) -> Optional[datetime]:
@@ -281,9 +288,53 @@ def _successor(old: Any, new: Any) -> bool:
     return bool(small) and small <= big
 
 
+def _other_bases(model: Dict[str, Any], version_id: int, owned: set) -> str:
+    """'Krea 2: v1.0 (3204319); Flux.1 D: ...' - for each base model this Civitai model has a version for, other than
+    this version's base, where you own no version of the model: its newest version. '' when there is none."""
+    versions = model.get("modelVersions") or []
+    mine = next((v for v in versions if v.get("id") == version_id), {})
+    have_bases = {v.get("baseModel") for v in versions if v.get("id") in owned} | {mine.get("baseModel")}
+    best: Dict[str, Dict[str, Any]] = {}
+    for v in versions:
+        base = v.get("baseModel")
+        if not base or base in have_bases:
+            continue
+        if base not in best or (v.get("publishedAt") or "") > (best[base].get("publishedAt") or ""):
+            best[base] = v
+    return "; ".join(f"{base}: {v.get('name')} ({v.get('id')})" for base, v in sorted(best.items()))
+
+
+def _owned_versions(connection: sqlite3.Connection) -> set:
+    return {int(v) for (v,) in connection.execute("select civitai_version_id from loras where civitai_version_id is not null")}
+
+
+def _keep_images(connection: sqlite3.Connection, local: LocalIndex, version_id: int, path: str, *groups) -> None:
+    """2026-10-13: the images the community step fetched anyway go into harvest_images with the LoRAs each one used
+    (what run.py pairs counts), and the LoRA is marked harvested - no second API call by run.py harvest."""
+    images: Dict[int, Dict[str, Any]] = {}
+    for items in groups:
+        for item in items or []:
+            if item.get("id") is not None:
+                images[int(item["id"])] = item
+    stamp = time.strftime("%Y-%m-%d %H:%M")
+    with_loras = 0
+    for image_id, item in images.items():
+        loras = image_loras(item, local)
+        with_loras += len(loras) >= 2
+        connection.execute(
+            "insert or replace into harvest_images values (?,?,?,?,?,?,?,?,?)",
+            (image_id, item.get("baseModel") or "", str(item.get("nsfwLevel") or ""), _reactions(item.get("stats") or {}),
+             item.get("createdAt") or "", person(item.get("username") or ""), item.get("postId"),
+             json.dumps(loras, ensure_ascii=False), stamp))
+    connection.execute("insert or replace into harvest_seeds values (?,?,?,?,?,?)",
+                       (version_id, path, stamp, len(images), with_loras, "ok"))
+
+
 def refresh_newer(connection: sqlite3.Connection) -> int:
-    """Recompute newer_version from the cached model records (no network). Returns how many are flagged."""
+    """Recompute newer_version (and other_bases) from the cached model records (no network). Returns how many have a
+    newer version."""
     flagged = 0
+    owned = _owned_versions(connection)
     for version_id, model_id in connection.execute(
             "select version_id, model_id from community_stats where status = 'ok' and model_id is not null").fetchall():
         try:
@@ -292,7 +343,8 @@ def refresh_newer(connection: sqlite3.Connection) -> int:
         except (OSError, ValueError):
             continue
         _mine, newer = _version_facts(model, int(version_id))
-        connection.execute("update community_stats set newer_version = ? where version_id = ?", (newer, version_id))
+        connection.execute("update community_stats set newer_version = ?, other_bases = ? where version_id = ?",
+                           (newer, _other_bases(model, int(version_id), owned), version_id))
         flagged += bool(newer)
     return flagged
 
@@ -311,6 +363,7 @@ def collect_one(collector: Collector, connection: sqlite3.Connection, local: Loc
     vstats, mstats = version.get("stats") or {}, model.get("stats") or {}
     top = collector.images(version_id, "Most Reactions", 1, 50)
     newest = collector.images(version_id, "Newest", 2, 100)
+    _keep_images(connection, local, version_id, row["path"], top, newest)
     names = [row["stem"], row["model_name"], os.path.splitext(row["file_name"] or "")[0]]
 
     # the unbiased sample: adoption, reception, nsfw, unasked explicit
@@ -361,6 +414,8 @@ def collect_one(collector: Collector, connection: sqlite3.Connection, local: Loc
          round(len(unasked) / len(hot), 3) if hot else None, len(weights), _pct(weights, 0.25), _pct(weights, 0.5),
          _pct(weights, 0.75), round((up + 1) / (up + down + 2), 4), round(up / (downloads / 1000), 2) if downloads else None,
          round(int(vstats.get("downloadCount") or 0) / days, 2) if days else None, newer, "ok"))
+    connection.execute("update community_stats set other_bases = ? where version_id = ?",
+                       (_other_bases(model, version_id, set(local.by_version)), version_id))
     per_day, exact = image_rate(newest, published)
     connection.execute("""update community_stats set images_per_day = ?, images_exact = ?, top_reactions_median = ?,
                           top_reactions_total = ?, top_sampled = ?, stats_version = ? where version_id = ?""",
@@ -380,11 +435,13 @@ def collect_one(collector: Collector, connection: sqlite3.Connection, local: Loc
             if len(prompt) < 12 or kept >= keep:
                 continue
             cleaned = clean_prompt(prompt)
+            level_num = item.get("browsingLevel") if isinstance(item.get("browsingLevel"), int) else None
             connection.execute("""insert or replace into community_prompts (image_id, version_id, source, prompt, cleaned,
-                negative, weight, base_model, prompt_style, nsfw_level, reactions, picked) values (?,?,?,?,?,?,?,?,?,?,?,0)""",
+                negative, weight, base_model, prompt_style, nsfw_level, reactions, picked, nsfw_num)
+                values (?,?,?,?,?,?,?,?,?,?,?,0,?)""",
                 (int(item["id"]), version_id, source, prompt[:4000], cleaned, str(meta.get("negativePrompt") or "")[:1500],
                  _weight_for(item, version_id, names, local), item.get("baseModel") or "", prompt_style(prompt),
-                 str(item.get("nsfwLevel") or "None"), _reactions(item.get("stats") or {})))
+                 str(item.get("nsfwLevel") or "None"), _reactions(item.get("stats") or {}), level_num))
             kept += 1
     _add_creator_prompts(connection, row, version_id)
     pick_test_prompts(connection, version_id)
@@ -402,9 +459,10 @@ def _add_creator_prompts(connection: sqlite3.Connection, row: sqlite3.Row, versi
             continue
         level = {1: "None", 2: "Soft", 4: "Mature", 8: "X", 16: "X", 32: "X"}.get(example["nsfw_level"] or 1, "None")
         connection.execute("""insert or replace into community_prompts (image_id, version_id, source, prompt, cleaned,
-            negative, weight, base_model, prompt_style, nsfw_level, reactions, picked) values (?,?,?,?,?,?,?,?,?,?,?,0)""",
+            negative, weight, base_model, prompt_style, nsfw_level, reactions, picked, nsfw_num)
+            values (?,?,?,?,?,?,?,?,?,?,?,0,?)""",
             (-(n + 1), version_id, "creator", prompt[:4000], clean_prompt(prompt), str(example["negative"] or "")[:1500],
-             example["weight"], row["base_model"] or "", prompt_style(prompt), level, None))
+             example["weight"], row["base_model"] or "", prompt_style(prompt), level, None, example["nsfw_level"]))
 
 
 def pick_test_prompts(connection: sqlite3.Connection, version_id: int) -> int:
@@ -430,6 +488,7 @@ def collect(settings: Settings, only: str = "", limit: int = 0, force: bool = Fa
     connection = sqlite3.connect(settings.catalog_path, timeout=120)
     connection.row_factory = sqlite3.Row
     ensure(connection)
+    harvest_ensure(connection)                          # harvest_images / harvest_seeds: filled here too (2026-10-13)
     local = LocalIndex(connection)
     where, params = "civitai_version_id is not null", []
     if only:

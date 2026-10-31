@@ -68,6 +68,8 @@ class LoraCard:
     slider: Optional[Dict] = None                            # slider card (axis, positive_toward, useful ...), 2026-10-08
     community: Optional[float] = None                        # Civitai community score 0-100 (run.py community), 2026-10-10
     community_group: str = ""                                # what it was ranked among, e.g. "Krea 2 style"
+    observed: Optional[Dict] = None                          # your sweep ratings (lora_observed), 2026-10-17:
+                                                             # {quality, n, by_checkpoint, flaws}
 
     def has(self, facet: str, term: str) -> bool:
         return term in (self.facets.get(facet) or [])
@@ -125,6 +127,16 @@ def load_cards(catalog: str, shelves: List[str], base_models: List[str], known_s
                     "select l.path, s.score, s.score_group from loras l join community_stats s "
                     "on s.version_id = l.civitai_version_id where s.score is not null"):
                 community[path] = (float(score), group or "")
+        observed: Dict[str, Dict] = {}     # path -> your sweep ratings with prompt / checkpoint taken out (markmodel.py)
+        if "lora_observed" in tables and "loras" in tables:
+            for path, quality, n, by_ck, flaws in connection.execute(
+                    "select l.path, o.quality, o.n, o.by_checkpoint, o.flaws from loras l join lora_observed o "
+                    "on o.key = lower(l.sha256) where o.quality is not null"):
+                try:
+                    observed[path] = {"quality": float(quality), "n": float(n or 0),
+                                      "by_checkpoint": json.loads(by_ck or "{}"), "flaws": json.loads(flaws or "{}")}
+                except (TypeError, ValueError):
+                    continue
     finally:
         connection.close()
     shelf_set = {s.casefold() for s in shelves}
@@ -166,6 +178,7 @@ def load_cards(catalog: str, shelves: List[str], base_models: List[str], known_s
             slider=slider if role == "slider" else None,
             community=community.get(row["path"], (None, ""))[0],
             community_group=community.get(row["path"], (None, ""))[1],
+            observed=observed.get(row["path"]),
         )
         listed = [str(r) for r in (card.facets.get("role") or []) if str(r) in ROLES]
         card.roles = [role] + [r for r in listed if r != role] if role not in ("utility", "slider") or row["source"] == "edit" else [role]
@@ -181,3 +194,49 @@ def load_cards(catalog: str, shelves: List[str], base_models: List[str], known_s
         note = f"{missing} newer card(s) are not in card_facets yet - run `run.py facets` in the LoRA Catalog tool"
     _cache[key] = (stamp, cards, note)
     return cards, note
+
+
+# Style vectors (LoRA Catalog style.py, CSD from preview images), 2026-10-12. Read-only, no torch: 768 float16 values.
+STYLE_MODEL = "csd-vit-l"
+STYLE_DIM = 768
+
+
+def load_style_vectors(catalog: str, paths: List[str]) -> Dict[str, List[float]]:
+    """{path: unit style vector} for the given LoRA paths that have one; {} when the catalog has no style vectors."""
+    import struct
+    wanted = set(paths)
+    try:
+        connection = sqlite3.connect(f"file:{catalog}?mode=ro", uri=True, timeout=10)
+    except sqlite3.Error:
+        return {}
+    try:
+        if not connection.execute("select 1 from sqlite_master where name = 'style_vectors'").fetchone():
+            return {}
+        rows = connection.execute(
+            "select l.path, s.vec from style_vectors s join loras l on coalesce(lower(l.sha256), l.path) = s.key "
+            "where s.model = ?", (STYLE_MODEL,)).fetchall()
+    finally:
+        connection.close()
+    return {path: list(struct.unpack(f"<{STYLE_DIM}e", blob)) for path, blob in rows if path in wanted and blob}
+
+
+def load_render_verdicts(catalog: str, paths: List[str]) -> Dict[str, str]:
+    """{path: render verdict} (LoRA Catalog  run.py style --renders: shows / needs_words / weak / unclear) for the given
+    paths that have one; {} when the catalog has none yet."""
+    wanted = set(paths)
+    try:
+        connection = sqlite3.connect(f"file:{catalog}?mode=ro", uri=True, timeout=10)
+    except sqlite3.Error:
+        return {}
+    try:
+        columns = {row[1] for row in connection.execute("pragma table_info(style_vectors)")}
+        if "render_verdict" not in columns:
+            return {}
+        rows = connection.execute(
+            "select l.path, s.render_verdict from style_vectors s join loras l on coalesce(lower(l.sha256), l.path) = s.key "
+            "where s.render_verdict is not null").fetchall()
+    except sqlite3.Error:
+        return {}
+    finally:
+        connection.close()
+    return {path: verdict for path, verdict in rows if path in wanted}

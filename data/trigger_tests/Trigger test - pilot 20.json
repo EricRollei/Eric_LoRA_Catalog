@@ -1,0 +1,1062 @@
+{
+ "name": "Trigger test - pilot 20",
+ "subject": "A woman in her thirties sits on a wooden chair beside a window, seen from the knees up. She wears a plain knit sweater and dark trousers, hands resting in her lap, looking toward the viewer. A bare wall behind her and a small potted plant on the windowsill.",
+ "megapixels": 1.0,
+ "loras": [
+  {
+   "path": "L:\\Models\\loras\\Krea2\\Comic\\1225254-Sparrow__Artist_Style___Krea2__Illustrious_\\3135397-Krea2\\3135397_sparrow_artist_style-krea2-dim32.safetensors",
+   "name": "Sparrow (Artist Style) [Krea2, Illustrious]",
+   "weight": 1.0,
+   "variants": [
+    {
+     "name": "none",
+     "text": "",
+     "covers": []
+    },
+    {
+     "name": "trigger",
+     "text": "sparrow artist style",
+     "covers": [
+      "official"
+     ]
+    },
+    {
+     "name": "trigger+phrase",
+     "text": "sparrow artist style, vibrant, exaggeratedly colorful, fun comic-style illustration",
+     "covers": [
+      "full"
+     ]
+    }
+   ],
+   "words_only": "sparrow artist style, vibrant, exaggeratedly colorful, fun comic-style illustration"
+  },
+  {
+   "path": "L:\\Models\\loras\\Krea2\\Comic\\1678087-Waldemar-Kazak__artist__style\\3370132-Krea_2\\3370132_waldemar-kazak__artist__style__bf16.safetensors",
+   "name": "Waldemar-Kazak (artist) style",
+   "weight": 1.3,
+   "variants": [
+    {
+     "name": "none",
+     "text": "",
+     "covers": []
+    },
+    {
+     "name": "trigger",
+     "text": "waldemar",
+     "covers": []
+    },
+    {
+     "name": "official",
+     "text": "retro traditional art style, soft blended lighting, smooth shading, gentle colors",
+     "covers": []
+    },
+    {
+     "name": "trigger+phrase",
+     "text": "waldemar, retro traditional art style with soft blended lighting, smooth shading, and gentle colors, painterly, illustrative look reminiscent of vintage pulp art or comic book covers",
+     "covers": []
+    },
+    {
+     "name": "full",
+     "text": "retro traditional art style, soft blended lighting, smooth shading, gentle colors, waldemar, retro traditional art style with soft blended lighting, and gentle colors, painterly, illustrative look reminiscent of vintage pulp art or comic book covers",
+     "covers": []
+    }
+   ],
+   "words_only": "retro traditional art style, soft blended lighting, smooth shading, gentle colors, waldemar, retro traditional art style with soft blended lighting, and gentle colors, painterly, illustrative look reminiscent of vintage pulp art or comic book covers"
+  },
+  {
+   "path": "L:\\Models\\loras\\Krea2\\Comic\\2470371-mikkoani_Style\\3065807-Krea_2_v1_0\\3065807_krea2-mikkoani.safetensors",
+   "name": "mikkoani Style",
+   "weight": 1.0,
+   "variants": [
+    {
+     "name": "none",
+     "text": "",
+     "covers": []
+    },
+    {
+     "name": "official",
+     "text": "@mikkoani",
+     "covers": []
+    },
+    {
+     "name": "trigger+phrase",
+     "text": "anime illustration with muted colors and complex gritty linework, can also be vibrant and saturated, fashion sketch",
+     "covers": []
+    },
+    {
+     "name": "full",
+     "text": "@mikkoani, anime illustration with muted colors and complex gritty linework, can also be vibrant and saturated, fashion sketch",
+     "covers": []
+    }
+   ],
+   "words_only": "@mikkoani, anime illustration with muted colors and complex gritty linework, can also be vibrant and saturated, fashion sketch"
+  },
+  {
+   "path": "L:\\Models\\loras\\Krea2\\Comic\\2597963-KreaComics\\3081942-V2T2\\3081942_comic_book_v2t2.safetensors",
+   "name": "KreaComics",
+   "weight": 0.76,
+   "variants": [
+    {
+     "name": "none",
+     "text": "",
+     "covers": []
+    },
+    {
+     "name": "trigger+phrase",
+     "text": "bold, dynamic comic book style with thick black outlines, saturated colors, and dramatic lighting",
+     "covers": [
+      "full"
+     ]
+    }
+   ],
+   "words_only": "bold, dynamic comic book style with thick black outlines, saturated colors, and dramatic lighting"
+  },
+  {
+   "path": "L:\\Models\\loras\\Krea2\\Comic\\2748438-homutan_-_Artist_Style\\3134619-Krea2Turbo\\3134619__homutan.safetensors",
+   "name": "homutan - Artist Style",
+   "weight": 1.0,
+   "variants": [
+    {
+     "name": "none",
+     "text": "",
+     "covers": []
+    },
+    {
+     "name": "trigger",
+     "text": "@homutan",
+     "covers": [
+      "official"
+     ]
+    },
+    {
+     "name": "trigger+phrase",
+     "text": "@homutan, atmospheric dark anime style, delicate textured lineart, muted desaturated color palette, cinematic painterly shading, and a gritty matte finish",
+     "covers": []
+    },
+    {
+     "name": "full",
+     "text": "@homutan, atmospheric dark anime style, delicate textured lineart, muted desaturated color palette, cinematic painterly shading, and a gritty matte finish, cinematic lighting",
+     "covers": []
+    }
+   ],
+   "words_only": "@homutan, atmospheric dark anime style, delicate textured lineart, muted desaturated color palette, cinematic painterly shading, and a gritty matte finish, cinematic lighting"
+  },
+  {
+   "path": "L:\\Models\\loras\\Krea2\\Comic\\2752021-Max58art_-_Artist_Style\\3276067-Krea2Turbo_-_Dark\\3276067_max58art-krea-v1__1_.safetensors",
+   "name": "Max58art - Artist Style",
+   "weight": 0.8,
+   "variants": [
+    {
+     "name": "none",
+     "text": "",
+     "covers": []
+    },
+    {
+     "name": "trigger",
+     "text": "@max58art",
+     "covers": []
+    },
+    {
+     "name": "official",
+     "text": "@max58art, digital fantasy artwork, moody, dark fantasy, gothic art",
+     "covers": []
+    },
+    {
+     "name": "trigger+phrase",
+     "text": "@max58art, moody dark fantasy digital painting with dramatic chiaroscuro lighting, deep shadows, and visible brushstrokes",
+     "covers": []
+    },
+    {
+     "name": "full",
+     "text": "@max58art, digital fantasy artwork, moody, dark fantasy, gothic art, moody dark fantasy digital painting with dramatic chiaroscuro lighting, deep shadows, and visible brushstrokes",
+     "covers": []
+    }
+   ],
+   "words_only": "@max58art, digital fantasy artwork, moody, dark fantasy, gothic art, moody dark fantasy digital painting with dramatic chiaroscuro lighting, deep shadows, and visible brushstrokes"
+  },
+  {
+   "path": "L:\\Models\\loras\\Krea2\\Comic\\2752021-Max58art_-_Artist_Style\\3289313-Krea2Turbo_-_V2\\3289313_max58art-krea-v3.safetensors",
+   "name": "Max58art - Artist Style",
+   "weight": 0.9,
+   "variants": [
+    {
+     "name": "none",
+     "text": "",
+     "covers": []
+    },
+    {
+     "name": "trigger",
+     "text": "@max58art",
+     "covers": [
+      "official",
+      "trigger+phrase",
+      "full"
+     ]
+    }
+   ],
+   "words_only": "@max58art"
+  },
+  {
+   "path": "L:\\Models\\loras\\Krea2\\Comic\\2757395-Cartoon_Ladies\\3102816-V1\\3102816_39w6q5eskr18v065rq2x3ezhe0.safetensors",
+   "name": "Cartoon Ladies",
+   "weight": 1.2,
+   "variants": [
+    {
+     "name": "none",
+     "text": "",
+     "covers": []
+    },
+    {
+     "name": "trigger",
+     "text": "cartoonladies style",
+     "covers": [
+      "official"
+     ]
+    },
+    {
+     "name": "trigger+phrase",
+     "text": "cartoonladies style, cartoon character illustration with bold, clean outlines, stylized anatomy and expressive features, soft, painterly backgrounds",
+     "covers": [
+      "full"
+     ]
+    }
+   ],
+   "words_only": "cartoonladies style, cartoon character illustration with bold, clean outlines, stylized anatomy and expressive features, soft, painterly backgrounds"
+  },
+  {
+   "path": "L:\\Models\\loras\\Krea2\\Comic\\2757395-Cartoon_Ladies\\3120895-V2\\3120895_cartoon_ladies_2.safetensors",
+   "name": "Cartoon Ladies",
+   "weight": 0.8,
+   "variants": [
+    {
+     "name": "none",
+     "text": "",
+     "covers": []
+    },
+    {
+     "name": "trigger",
+     "text": "cartoonladies",
+     "covers": []
+    },
+    {
+     "name": "official",
+     "text": "cartoonladies style",
+     "covers": []
+    },
+    {
+     "name": "trigger+phrase",
+     "text": "cartoonladies, cel-shaded cartoon illustration with fine black outlines and flat vibrant colors, reminiscent of classic western animation",
+     "covers": []
+    },
+    {
+     "name": "full",
+     "text": "cartoonladies style, cel-shaded cartoon illustration with fine black outlines and flat vibrant colors, reminiscent of classic western animation, semi-realistic cinematic portrait, highly detailed digital illustration",
+     "covers": []
+    }
+   ],
+   "words_only": "cartoonladies style, cel-shaded cartoon illustration with fine black outlines and flat vibrant colors, reminiscent of classic western animation, semi-realistic cinematic portrait, highly detailed digital illustration"
+  },
+  {
+   "path": "L:\\Models\\loras\\Krea2\\Comic\\2762978-_BSS__-_Styles_for_Krea2\\3109676-GLSHS3D\\3109676_3dglshs_krea2_epoch_4.safetensors",
+   "name": "[BSS] - Styles for Krea2",
+   "weight": 1.0,
+   "variants": [
+    {
+     "name": "none",
+     "text": "",
+     "covers": []
+    },
+    {
+     "name": "trigger",
+     "text": "glshs3d style",
+     "covers": []
+    },
+    {
+     "name": "official",
+     "text": "in glshs3d style",
+     "covers": []
+    },
+    {
+     "name": "trigger+phrase",
+     "text": "glshs3d style, digital fantasy artwork with bold, clean lines, high contrast, saturated colors, dramatic lighting, stylized anatomy",
+     "covers": []
+    },
+    {
+     "name": "full",
+     "text": "in glshs3d style, digital fantasy artwork with bold, clean lines, high contrast, saturated colors, dramatic lighting, stylized anatomy",
+     "covers": []
+    }
+   ],
+   "words_only": "in glshs3d style, digital fantasy artwork with bold, clean lines, high contrast, saturated colors, dramatic lighting, stylized anatomy"
+  },
+  {
+   "path": "L:\\Models\\loras\\Krea2\\Comic\\2762978-_BSS__-_Styles_for_Krea2\\3118942-INCASE\\3118942_incase-krea2_epoch_4.safetensors",
+   "name": "[BSS] - Styles for Krea2",
+   "weight": 1.0,
+   "variants": [
+    {
+     "name": "none",
+     "text": "",
+     "covers": []
+    },
+    {
+     "name": "trigger",
+     "text": "incase style",
+     "covers": [
+      "official"
+     ]
+    },
+    {
+     "name": "trigger+phrase",
+     "text": "incase style, dark fantasy digital painting, ukiyo-like, with brush stroke, highly detailed cinematic concept art, moody low-key lighting, atmospheric mist, rain droplets, dramatic chiaroscuro",
+     "covers": [
+      "full"
+     ]
+    }
+   ],
+   "words_only": "incase style, dark fantasy digital painting, ukiyo-like, with brush stroke, highly detailed cinematic concept art, moody low-key lighting, atmospheric mist, rain droplets, dramatic chiaroscuro"
+  },
+  {
+   "path": "L:\\Models\\loras\\Krea2\\Comic\\2775087-We_All_Starve_-_A_Survival_Horror_Illustration_Style__KREA2_\\3124817-v1_0\\3124817_we_all_starve.safetensors",
+   "name": "We All Starve - A Survival Horror Illustration Style [KREA2]",
+   "weight": 1.0,
+   "variants": [
+    {
+     "name": "none",
+     "text": "",
+     "covers": []
+    },
+    {
+     "name": "trigger",
+     "text": "weallstarve",
+     "covers": [
+      "official"
+     ]
+    },
+    {
+     "name": "trigger+phrase",
+     "text": "weallstarve, crosshatched pen-and-ink sketchbook horror in sepia and bone, gaunt figures, spindly trees, eyes watching from the dark",
+     "covers": [
+      "full"
+     ]
+    }
+   ],
+   "words_only": "weallstarve, crosshatched pen-and-ink sketchbook horror in sepia and bone, gaunt figures, spindly trees, eyes watching from the dark"
+  },
+  {
+   "path": "L:\\Models\\loras\\Krea2\\Comic\\2787071-SpTASIL__Wutu__-_Artist_Style\\3140346-Krea2Turbo\\3140346_1639c177-3216-4564-9cda-f97923e89f68_ta_trained.safetensors",
+   "name": "SpTASIL (Wutu) - Artist Style",
+   "weight": 0.95,
+   "variants": [
+    {
+     "name": "none",
+     "text": "",
+     "covers": []
+    },
+    {
+     "name": "trigger",
+     "text": "@wutu",
+     "covers": [
+      "official",
+      "trigger+phrase",
+      "full"
+     ]
+    }
+   ],
+   "words_only": "@wutu"
+  },
+  {
+   "path": "L:\\Models\\loras\\Krea2\\Comic\\2788336-Rosy_Lofi_Illustration\\3141921-Krea2\\3141921_rosy-lofi-illustration.safetensors",
+   "name": "Rosy Lofi Illustration",
+   "weight": 1.0,
+   "variants": [
+    {
+     "name": "none",
+     "text": "",
+     "covers": []
+    },
+    {
+     "name": "trigger+phrase",
+     "text": "soft, hand-drawn, storybook-style illustration with a dominant pink or rosy color palette, warm lighting, and simplified, gentle forms, painterly soft edges",
+     "covers": []
+    },
+    {
+     "name": "full",
+     "text": "soft, hand-drawn, storybook-style illustration with a dominant pink or rosy color palette, warm lighting, and simplified, gentle forms, painterly soft edges, lofi illustration",
+     "covers": []
+    }
+   ],
+   "words_only": "soft, hand-drawn, storybook-style illustration with a dominant pink or rosy color palette, warm lighting, and simplified, gentle forms, painterly soft edges, lofi illustration"
+  },
+  {
+   "path": "L:\\Models\\loras\\Krea2\\Comic\\2788873-Frank_Cho_Comic_Book_Style\\3142592-v1_0\\3142592_frank-cho-style-v1.safetensors",
+   "name": "Frank Cho Comic Book Style",
+   "weight": 1.0,
+   "variants": [
+    {
+     "name": "none",
+     "text": "",
+     "covers": []
+    },
+    {
+     "name": "trigger+phrase",
+     "text": "comic book illustration, clean inked line art, vivid colors, detailed environment, expressive face",
+     "covers": [
+      "full"
+     ]
+    }
+   ],
+   "words_only": "comic book illustration, clean inked line art, vivid colors, detailed environment, expressive face"
+  },
+  {
+   "path": "L:\\Models\\loras\\Krea2\\Comic\\2802345-KreaComBook\\3159339-V1\\3159339_kreacombook_e10.safetensors",
+   "name": "KreaComBook",
+   "weight": 1.0,
+   "variants": [
+    {
+     "name": "none",
+     "text": "",
+     "covers": []
+    },
+    {
+     "name": "trigger",
+     "text": "bradhamel art style",
+     "covers": [
+      "official"
+     ]
+    },
+    {
+     "name": "trigger+phrase",
+     "text": "bradhamel art style, impressionistic painterly comic book style with bold clean lines, limited warm palette, thick impasto brushstrokes, dramatic lighting, slightly surreal illustrative quality",
+     "covers": [
+      "full"
+     ]
+    }
+   ],
+   "words_only": "bradhamel art style, impressionistic painterly comic book style with bold clean lines, limited warm palette, thick impasto brushstrokes, dramatic lighting, slightly surreal illustrative quality"
+  },
+  {
+   "path": "L:\\Models\\loras\\Krea2\\Comic\\2802345-KreaComBook\\3396185-V2\\3396185_kreacombook_v2_bf16.safetensors",
+   "name": "KreaComBook",
+   "weight": 0.85,
+   "variants": [
+    {
+     "name": "none",
+     "text": "",
+     "covers": []
+    },
+    {
+     "name": "trigger",
+     "text": "bradhamel art style",
+     "covers": [
+      "trigger+phrase",
+      "full"
+     ]
+    }
+   ],
+   "words_only": "bradhamel art style"
+  },
+  {
+   "path": "L:\\Models\\loras\\Krea2\\Comic\\2803766-__Grandline_-_Legendary_Stylized_Illustration\\3161188-Krea2v1_0\\3161188_grandlinelsiv1_0krea.safetensors",
+   "name": "🐻 Grandline - Legendary Stylized Illustration",
+   "weight": 0.7,
+   "variants": [
+    {
+     "name": "none",
+     "text": "",
+     "covers": []
+    },
+    {
+     "name": "trigger",
+     "text": "mobe-st4ill",
+     "covers": []
+    },
+    {
+     "name": "official",
+     "text": "in the style of mobe-st4ill, stylized illustration",
+     "covers": []
+    },
+    {
+     "name": "trigger+phrase",
+     "text": "mobe-st4ill, bold clean ink linework, rich saturated colors with deep blacks and punchy warm/cool contrasts, dramatic cinematic lighting with rim glow and shadow, expressive particle accents, stylized textures",
+     "covers": []
+    },
+    {
+     "name": "full",
+     "text": "in the style of mobe-st4ill, stylized illustration, bold clean ink linework, rich saturated colors with deep blacks and punchy warm/cool contrasts, dramatic cinematic lighting with rim glow and shadow, expressive particle accents, stylized textures",
+     "covers": []
+    }
+   ],
+   "words_only": "in the style of mobe-st4ill, stylized illustration, bold clean ink linework, rich saturated colors with deep blacks and punchy warm/cool contrasts, dramatic cinematic lighting with rim glow and shadow, expressive particle accents, stylized textures"
+  },
+  {
+   "path": "L:\\Models\\loras\\Krea2\\Treatment\\2944852-BLACK_AREA_BY_STX\\3334450-V1\\3334450_black_area_by_stx_v1_bf16.safetensors",
+   "name": "BLACK AREA BY STX",
+   "weight": 1.0,
+   "variants": [
+    {
+     "name": "none",
+     "text": "",
+     "covers": []
+    },
+    {
+     "name": "trigger+phrase",
+     "text": "high-contrast black-and-white treatment with deep shadows and stark highlights, dramatic, cinematic, slightly gritty aesthetic reminiscent of noir or high-fashion photography",
+     "covers": [
+      "full"
+     ]
+    }
+   ],
+   "words_only": "high-contrast black-and-white treatment with deep shadows and stark highlights, dramatic, cinematic, slightly gritty aesthetic reminiscent of noir or high-fashion photography"
+  },
+  {
+   "path": "L:\\Models\\loras\\Krea2\\surreal\\2584401-V67_Symbolic_Surrealism\\3224281-V1_KREA-2\\3224281_v67_symbolic_surrealism_epoch_1.safetensors",
+   "name": "V67 Symbolic Surrealism",
+   "weight": 1.0,
+   "variants": [
+    {
+     "name": "none",
+     "text": "",
+     "covers": []
+    },
+    {
+     "name": "trigger",
+     "text": "symbolic surrealism",
+     "covers": []
+    },
+    {
+     "name": "official",
+     "text": "symbolic surrealism, clock, eye, heart, mirror, staircase, key, labyrinth, rose, mask, crow, tree, book, fish, hand, moon, skull, train, poppy, crane, piano, throne, veil, bone, pearl, feather, lantern, vein, hourglass, cloud, shadow",
+     "covers": []
+    },
+    {
+     "name": "trigger+phrase",
+     "text": "symbolic surrealism, soft melting surfaces, precise reflections, atmospheric fogs, uncanny stillness, crisp melting textures, soft atmospheric fogs, precise symbolic objects, eerie quiet of dalí or magritte paintings",
+     "covers": []
+    },
+    {
+     "name": "full",
+     "text": "symbolic surrealism, clock, eye, heart, mirror, staircase, key, labyrinth, rose, mask, crow, tree, book, fish, hand, moon, skull, train, poppy, crane, piano, throne, veil, bone, pearl, feather, lantern, vein, hourglass, cloud, shadow, soft melting surfaces, precise reflections, atmospheric fogs, uncanny stillness, crisp melting textures, soft atmospheric fogs, precise symbolic objects, eerie quiet of dalí or magritte paintings",
+     "covers": []
+    }
+   ],
+   "words_only": "symbolic surrealism, clock, eye, heart, mirror, staircase, key, labyrinth, rose, mask, crow, tree, book, fish, hand, moon, skull, train, poppy, crane, piano, throne, veil, bone, pearl, feather, lantern, vein, hourglass, cloud, shadow, soft melting surfaces, precise reflections, atmospheric fogs, uncanny stillness, crisp melting textures, soft atmospheric fogs, precise symbolic objects, eerie quiet of dalí or magritte paintings"
+  }
+ ],
+ "combos": [
+  {
+   "prompt": "A woman in her thirties sits on a wooden chair beside a window, seen from the knees up. She wears a plain knit sweater and dark trousers, hands resting in her lap, looking toward the viewer. A bare wall behind her and a small potted plant on the windowsill.",
+   "lora_baseline": true,
+   "s1_megapixels": 1.0
+  },
+  {
+   "prompt": "A woman in her thirties sits on a wooden chair beside a window, seen from the knees up. She wears a plain knit sweater and dark trousers, hands resting in her lap, looking toward the viewer. A bare wall behind her and a small potted plant on the windowsill.",
+   "lora_file": "L:\\Models\\loras\\Krea2\\Comic\\1225254-Sparrow__Artist_Style___Krea2__Illustrious_\\3135397-Krea2\\3135397_sparrow_artist_style-krea2-dim32.safetensors",
+   "lora_strength": 1.0,
+   "s1_megapixels": 1.0
+  },
+  {
+   "prompt": "sparrow artist style. A woman in her thirties sits on a wooden chair beside a window, seen from the knees up. She wears a plain knit sweater and dark trousers, hands resting in her lap, looking toward the viewer. A bare wall behind her and a small potted plant on the windowsill.",
+   "lora_file": "L:\\Models\\loras\\Krea2\\Comic\\1225254-Sparrow__Artist_Style___Krea2__Illustrious_\\3135397-Krea2\\3135397_sparrow_artist_style-krea2-dim32.safetensors",
+   "lora_strength": 1.0,
+   "s1_megapixels": 1.0
+  },
+  {
+   "prompt": "sparrow artist style, vibrant, exaggeratedly colorful, fun comic-style illustration. A woman in her thirties sits on a wooden chair beside a window, seen from the knees up. She wears a plain knit sweater and dark trousers, hands resting in her lap, looking toward the viewer. A bare wall behind her and a small potted plant on the windowsill.",
+   "lora_file": "L:\\Models\\loras\\Krea2\\Comic\\1225254-Sparrow__Artist_Style___Krea2__Illustrious_\\3135397-Krea2\\3135397_sparrow_artist_style-krea2-dim32.safetensors",
+   "lora_strength": 1.0,
+   "s1_megapixels": 1.0
+  },
+  {
+   "prompt": "sparrow artist style, vibrant, exaggeratedly colorful, fun comic-style illustration. A woman in her thirties sits on a wooden chair beside a window, seen from the knees up. She wears a plain knit sweater and dark trousers, hands resting in her lap, looking toward the viewer. A bare wall behind her and a small potted plant on the windowsill.",
+   "lora_baseline": true,
+   "s1_megapixels": 1.0
+  },
+  {
+   "prompt": "A woman in her thirties sits on a wooden chair beside a window, seen from the knees up. She wears a plain knit sweater and dark trousers, hands resting in her lap, looking toward the viewer. A bare wall behind her and a small potted plant on the windowsill.",
+   "lora_file": "L:\\Models\\loras\\Krea2\\Comic\\1678087-Waldemar-Kazak__artist__style\\3370132-Krea_2\\3370132_waldemar-kazak__artist__style__bf16.safetensors",
+   "lora_strength": 1.3,
+   "s1_megapixels": 1.0
+  },
+  {
+   "prompt": "waldemar. A woman in her thirties sits on a wooden chair beside a window, seen from the knees up. She wears a plain knit sweater and dark trousers, hands resting in her lap, looking toward the viewer. A bare wall behind her and a small potted plant on the windowsill.",
+   "lora_file": "L:\\Models\\loras\\Krea2\\Comic\\1678087-Waldemar-Kazak__artist__style\\3370132-Krea_2\\3370132_waldemar-kazak__artist__style__bf16.safetensors",
+   "lora_strength": 1.3,
+   "s1_megapixels": 1.0
+  },
+  {
+   "prompt": "retro traditional art style, soft blended lighting, smooth shading, gentle colors. A woman in her thirties sits on a wooden chair beside a window, seen from the knees up. She wears a plain knit sweater and dark trousers, hands resting in her lap, looking toward the viewer. A bare wall behind her and a small potted plant on the windowsill.",
+   "lora_file": "L:\\Models\\loras\\Krea2\\Comic\\1678087-Waldemar-Kazak__artist__style\\3370132-Krea_2\\3370132_waldemar-kazak__artist__style__bf16.safetensors",
+   "lora_strength": 1.3,
+   "s1_megapixels": 1.0
+  },
+  {
+   "prompt": "waldemar, retro traditional art style with soft blended lighting, smooth shading, and gentle colors, painterly, illustrative look reminiscent of vintage pulp art or comic book covers. A woman in her thirties sits on a wooden chair beside a window, seen from the knees up. She wears a plain knit sweater and dark trousers, hands resting in her lap, looking toward the viewer. A bare wall behind her and a small potted plant on the windowsill.",
+   "lora_file": "L:\\Models\\loras\\Krea2\\Comic\\1678087-Waldemar-Kazak__artist__style\\3370132-Krea_2\\3370132_waldemar-kazak__artist__style__bf16.safetensors",
+   "lora_strength": 1.3,
+   "s1_megapixels": 1.0
+  },
+  {
+   "prompt": "retro traditional art style, soft blended lighting, smooth shading, gentle colors, waldemar, retro traditional art style with soft blended lighting, and gentle colors, painterly, illustrative look reminiscent of vintage pulp art or comic book covers. A woman in her thirties sits on a wooden chair beside a window, seen from the knees up. She wears a plain knit sweater and dark trousers, hands resting in her lap, looking toward the viewer. A bare wall behind her and a small potted plant on the windowsill.",
+   "lora_file": "L:\\Models\\loras\\Krea2\\Comic\\1678087-Waldemar-Kazak__artist__style\\3370132-Krea_2\\3370132_waldemar-kazak__artist__style__bf16.safetensors",
+   "lora_strength": 1.3,
+   "s1_megapixels": 1.0
+  },
+  {
+   "prompt": "retro traditional art style, soft blended lighting, smooth shading, gentle colors, waldemar, retro traditional art style with soft blended lighting, and gentle colors, painterly, illustrative look reminiscent of vintage pulp art or comic book covers. A woman in her thirties sits on a wooden chair beside a window, seen from the knees up. She wears a plain knit sweater and dark trousers, hands resting in her lap, looking toward the viewer. A bare wall behind her and a small potted plant on the windowsill.",
+   "lora_baseline": true,
+   "s1_megapixels": 1.0
+  },
+  {
+   "prompt": "A woman in her thirties sits on a wooden chair beside a window, seen from the knees up. She wears a plain knit sweater and dark trousers, hands resting in her lap, looking toward the viewer. A bare wall behind her and a small potted plant on the windowsill.",
+   "lora_file": "L:\\Models\\loras\\Krea2\\Comic\\2470371-mikkoani_Style\\3065807-Krea_2_v1_0\\3065807_krea2-mikkoani.safetensors",
+   "lora_strength": 1.0,
+   "s1_megapixels": 1.0
+  },
+  {
+   "prompt": "@mikkoani. A woman in her thirties sits on a wooden chair beside a window, seen from the knees up. She wears a plain knit sweater and dark trousers, hands resting in her lap, looking toward the viewer. A bare wall behind her and a small potted plant on the windowsill.",
+   "lora_file": "L:\\Models\\loras\\Krea2\\Comic\\2470371-mikkoani_Style\\3065807-Krea_2_v1_0\\3065807_krea2-mikkoani.safetensors",
+   "lora_strength": 1.0,
+   "s1_megapixels": 1.0
+  },
+  {
+   "prompt": "anime illustration with muted colors and complex gritty linework, can also be vibrant and saturated, fashion sketch. A woman in her thirties sits on a wooden chair beside a window, seen from the knees up. She wears a plain knit sweater and dark trousers, hands resting in her lap, looking toward the viewer. A bare wall behind her and a small potted plant on the windowsill.",
+   "lora_file": "L:\\Models\\loras\\Krea2\\Comic\\2470371-mikkoani_Style\\3065807-Krea_2_v1_0\\3065807_krea2-mikkoani.safetensors",
+   "lora_strength": 1.0,
+   "s1_megapixels": 1.0
+  },
+  {
+   "prompt": "@mikkoani, anime illustration with muted colors and complex gritty linework, can also be vibrant and saturated, fashion sketch. A woman in her thirties sits on a wooden chair beside a window, seen from the knees up. She wears a plain knit sweater and dark trousers, hands resting in her lap, looking toward the viewer. A bare wall behind her and a small potted plant on the windowsill.",
+   "lora_file": "L:\\Models\\loras\\Krea2\\Comic\\2470371-mikkoani_Style\\3065807-Krea_2_v1_0\\3065807_krea2-mikkoani.safetensors",
+   "lora_strength": 1.0,
+   "s1_megapixels": 1.0
+  },
+  {
+   "prompt": "@mikkoani, anime illustration with muted colors and complex gritty linework, can also be vibrant and saturated, fashion sketch. A woman in her thirties sits on a wooden chair beside a window, seen from the knees up. She wears a plain knit sweater and dark trousers, hands resting in her lap, looking toward the viewer. A bare wall behind her and a small potted plant on the windowsill.",
+   "lora_baseline": true,
+   "s1_megapixels": 1.0
+  },
+  {
+   "prompt": "A woman in her thirties sits on a wooden chair beside a window, seen from the knees up. She wears a plain knit sweater and dark trousers, hands resting in her lap, looking toward the viewer. A bare wall behind her and a small potted plant on the windowsill.",
+   "lora_file": "L:\\Models\\loras\\Krea2\\Comic\\2597963-KreaComics\\3081942-V2T2\\3081942_comic_book_v2t2.safetensors",
+   "lora_strength": 0.76,
+   "s1_megapixels": 1.0
+  },
+  {
+   "prompt": "bold, dynamic comic book style with thick black outlines, saturated colors, and dramatic lighting. A woman in her thirties sits on a wooden chair beside a window, seen from the knees up. She wears a plain knit sweater and dark trousers, hands resting in her lap, looking toward the viewer. A bare wall behind her and a small potted plant on the windowsill.",
+   "lora_file": "L:\\Models\\loras\\Krea2\\Comic\\2597963-KreaComics\\3081942-V2T2\\3081942_comic_book_v2t2.safetensors",
+   "lora_strength": 0.76,
+   "s1_megapixels": 1.0
+  },
+  {
+   "prompt": "bold, dynamic comic book style with thick black outlines, saturated colors, and dramatic lighting. A woman in her thirties sits on a wooden chair beside a window, seen from the knees up. She wears a plain knit sweater and dark trousers, hands resting in her lap, looking toward the viewer. A bare wall behind her and a small potted plant on the windowsill.",
+   "lora_baseline": true,
+   "s1_megapixels": 1.0
+  },
+  {
+   "prompt": "A woman in her thirties sits on a wooden chair beside a window, seen from the knees up. She wears a plain knit sweater and dark trousers, hands resting in her lap, looking toward the viewer. A bare wall behind her and a small potted plant on the windowsill.",
+   "lora_file": "L:\\Models\\loras\\Krea2\\Comic\\2748438-homutan_-_Artist_Style\\3134619-Krea2Turbo\\3134619__homutan.safetensors",
+   "lora_strength": 1.0,
+   "s1_megapixels": 1.0
+  },
+  {
+   "prompt": "@homutan. A woman in her thirties sits on a wooden chair beside a window, seen from the knees up. She wears a plain knit sweater and dark trousers, hands resting in her lap, looking toward the viewer. A bare wall behind her and a small potted plant on the windowsill.",
+   "lora_file": "L:\\Models\\loras\\Krea2\\Comic\\2748438-homutan_-_Artist_Style\\3134619-Krea2Turbo\\3134619__homutan.safetensors",
+   "lora_strength": 1.0,
+   "s1_megapixels": 1.0
+  },
+  {
+   "prompt": "@homutan, atmospheric dark anime style, delicate textured lineart, muted desaturated color palette, cinematic painterly shading, and a gritty matte finish. A woman in her thirties sits on a wooden chair beside a window, seen from the knees up. She wears a plain knit sweater and dark trousers, hands resting in her lap, looking toward the viewer. A bare wall behind her and a small potted plant on the windowsill.",
+   "lora_file": "L:\\Models\\loras\\Krea2\\Comic\\2748438-homutan_-_Artist_Style\\3134619-Krea2Turbo\\3134619__homutan.safetensors",
+   "lora_strength": 1.0,
+   "s1_megapixels": 1.0
+  },
+  {
+   "prompt": "@homutan, atmospheric dark anime style, delicate textured lineart, muted desaturated color palette, cinematic painterly shading, and a gritty matte finish, cinematic lighting. A woman in her thirties sits on a wooden chair beside a window, seen from the knees up. She wears a plain knit sweater and dark trousers, hands resting in her lap, looking toward the viewer. A bare wall behind her and a small potted plant on the windowsill.",
+   "lora_file": "L:\\Models\\loras\\Krea2\\Comic\\2748438-homutan_-_Artist_Style\\3134619-Krea2Turbo\\3134619__homutan.safetensors",
+   "lora_strength": 1.0,
+   "s1_megapixels": 1.0
+  },
+  {
+   "prompt": "@homutan, atmospheric dark anime style, delicate textured lineart, muted desaturated color palette, cinematic painterly shading, and a gritty matte finish, cinematic lighting. A woman in her thirties sits on a wooden chair beside a window, seen from the knees up. She wears a plain knit sweater and dark trousers, hands resting in her lap, looking toward the viewer. A bare wall behind her and a small potted plant on the windowsill.",
+   "lora_baseline": true,
+   "s1_megapixels": 1.0
+  },
+  {
+   "prompt": "A woman in her thirties sits on a wooden chair beside a window, seen from the knees up. She wears a plain knit sweater and dark trousers, hands resting in her lap, looking toward the viewer. A bare wall behind her and a small potted plant on the windowsill.",
+   "lora_file": "L:\\Models\\loras\\Krea2\\Comic\\2752021-Max58art_-_Artist_Style\\3276067-Krea2Turbo_-_Dark\\3276067_max58art-krea-v1__1_.safetensors",
+   "lora_strength": 0.8,
+   "s1_megapixels": 1.0
+  },
+  {
+   "prompt": "@max58art. A woman in her thirties sits on a wooden chair beside a window, seen from the knees up. She wears a plain knit sweater and dark trousers, hands resting in her lap, looking toward the viewer. A bare wall behind her and a small potted plant on the windowsill.",
+   "lora_file": "L:\\Models\\loras\\Krea2\\Comic\\2752021-Max58art_-_Artist_Style\\3276067-Krea2Turbo_-_Dark\\3276067_max58art-krea-v1__1_.safetensors",
+   "lora_strength": 0.8,
+   "s1_megapixels": 1.0
+  },
+  {
+   "prompt": "@max58art, digital fantasy artwork, moody, dark fantasy, gothic art. A woman in her thirties sits on a wooden chair beside a window, seen from the knees up. She wears a plain knit sweater and dark trousers, hands resting in her lap, looking toward the viewer. A bare wall behind her and a small potted plant on the windowsill.",
+   "lora_file": "L:\\Models\\loras\\Krea2\\Comic\\2752021-Max58art_-_Artist_Style\\3276067-Krea2Turbo_-_Dark\\3276067_max58art-krea-v1__1_.safetensors",
+   "lora_strength": 0.8,
+   "s1_megapixels": 1.0
+  },
+  {
+   "prompt": "@max58art, moody dark fantasy digital painting with dramatic chiaroscuro lighting, deep shadows, and visible brushstrokes. A woman in her thirties sits on a wooden chair beside a window, seen from the knees up. She wears a plain knit sweater and dark trousers, hands resting in her lap, looking toward the viewer. A bare wall behind her and a small potted plant on the windowsill.",
+   "lora_file": "L:\\Models\\loras\\Krea2\\Comic\\2752021-Max58art_-_Artist_Style\\3276067-Krea2Turbo_-_Dark\\3276067_max58art-krea-v1__1_.safetensors",
+   "lora_strength": 0.8,
+   "s1_megapixels": 1.0
+  },
+  {
+   "prompt": "@max58art, digital fantasy artwork, moody, dark fantasy, gothic art, moody dark fantasy digital painting with dramatic chiaroscuro lighting, deep shadows, and visible brushstrokes. A woman in her thirties sits on a wooden chair beside a window, seen from the knees up. She wears a plain knit sweater and dark trousers, hands resting in her lap, looking toward the viewer. A bare wall behind her and a small potted plant on the windowsill.",
+   "lora_file": "L:\\Models\\loras\\Krea2\\Comic\\2752021-Max58art_-_Artist_Style\\3276067-Krea2Turbo_-_Dark\\3276067_max58art-krea-v1__1_.safetensors",
+   "lora_strength": 0.8,
+   "s1_megapixels": 1.0
+  },
+  {
+   "prompt": "@max58art, digital fantasy artwork, moody, dark fantasy, gothic art, moody dark fantasy digital painting with dramatic chiaroscuro lighting, deep shadows, and visible brushstrokes. A woman in her thirties sits on a wooden chair beside a window, seen from the knees up. She wears a plain knit sweater and dark trousers, hands resting in her lap, looking toward the viewer. A bare wall behind her and a small potted plant on the windowsill.",
+   "lora_baseline": true,
+   "s1_megapixels": 1.0
+  },
+  {
+   "prompt": "A woman in her thirties sits on a wooden chair beside a window, seen from the knees up. She wears a plain knit sweater and dark trousers, hands resting in her lap, looking toward the viewer. A bare wall behind her and a small potted plant on the windowsill.",
+   "lora_file": "L:\\Models\\loras\\Krea2\\Comic\\2752021-Max58art_-_Artist_Style\\3289313-Krea2Turbo_-_V2\\3289313_max58art-krea-v3.safetensors",
+   "lora_strength": 0.9,
+   "s1_megapixels": 1.0
+  },
+  {
+   "prompt": "@max58art. A woman in her thirties sits on a wooden chair beside a window, seen from the knees up. She wears a plain knit sweater and dark trousers, hands resting in her lap, looking toward the viewer. A bare wall behind her and a small potted plant on the windowsill.",
+   "lora_file": "L:\\Models\\loras\\Krea2\\Comic\\2752021-Max58art_-_Artist_Style\\3289313-Krea2Turbo_-_V2\\3289313_max58art-krea-v3.safetensors",
+   "lora_strength": 0.9,
+   "s1_megapixels": 1.0
+  },
+  {
+   "prompt": "@max58art. A woman in her thirties sits on a wooden chair beside a window, seen from the knees up. She wears a plain knit sweater and dark trousers, hands resting in her lap, looking toward the viewer. A bare wall behind her and a small potted plant on the windowsill.",
+   "lora_baseline": true,
+   "s1_megapixels": 1.0
+  },
+  {
+   "prompt": "A woman in her thirties sits on a wooden chair beside a window, seen from the knees up. She wears a plain knit sweater and dark trousers, hands resting in her lap, looking toward the viewer. A bare wall behind her and a small potted plant on the windowsill.",
+   "lora_file": "L:\\Models\\loras\\Krea2\\Comic\\2757395-Cartoon_Ladies\\3102816-V1\\3102816_39w6q5eskr18v065rq2x3ezhe0.safetensors",
+   "lora_strength": 1.2,
+   "s1_megapixels": 1.0
+  },
+  {
+   "prompt": "cartoonladies style. A woman in her thirties sits on a wooden chair beside a window, seen from the knees up. She wears a plain knit sweater and dark trousers, hands resting in her lap, looking toward the viewer. A bare wall behind her and a small potted plant on the windowsill.",
+   "lora_file": "L:\\Models\\loras\\Krea2\\Comic\\2757395-Cartoon_Ladies\\3102816-V1\\3102816_39w6q5eskr18v065rq2x3ezhe0.safetensors",
+   "lora_strength": 1.2,
+   "s1_megapixels": 1.0
+  },
+  {
+   "prompt": "cartoonladies style, cartoon character illustration with bold, clean outlines, stylized anatomy and expressive features, soft, painterly backgrounds. A woman in her thirties sits on a wooden chair beside a window, seen from the knees up. She wears a plain knit sweater and dark trousers, hands resting in her lap, looking toward the viewer. A bare wall behind her and a small potted plant on the windowsill.",
+   "lora_file": "L:\\Models\\loras\\Krea2\\Comic\\2757395-Cartoon_Ladies\\3102816-V1\\3102816_39w6q5eskr18v065rq2x3ezhe0.safetensors",
+   "lora_strength": 1.2,
+   "s1_megapixels": 1.0
+  },
+  {
+   "prompt": "cartoonladies style, cartoon character illustration with bold, clean outlines, stylized anatomy and expressive features, soft, painterly backgrounds. A woman in her thirties sits on a wooden chair beside a window, seen from the knees up. She wears a plain knit sweater and dark trousers, hands resting in her lap, looking toward the viewer. A bare wall behind her and a small potted plant on the windowsill.",
+   "lora_baseline": true,
+   "s1_megapixels": 1.0
+  },
+  {
+   "prompt": "A woman in her thirties sits on a wooden chair beside a window, seen from the knees up. She wears a plain knit sweater and dark trousers, hands resting in her lap, looking toward the viewer. A bare wall behind her and a small potted plant on the windowsill.",
+   "lora_file": "L:\\Models\\loras\\Krea2\\Comic\\2757395-Cartoon_Ladies\\3120895-V2\\3120895_cartoon_ladies_2.safetensors",
+   "lora_strength": 0.8,
+   "s1_megapixels": 1.0
+  },
+  {
+   "prompt": "cartoonladies. A woman in her thirties sits on a wooden chair beside a window, seen from the knees up. She wears a plain knit sweater and dark trousers, hands resting in her lap, looking toward the viewer. A bare wall behind her and a small potted plant on the windowsill.",
+   "lora_file": "L:\\Models\\loras\\Krea2\\Comic\\2757395-Cartoon_Ladies\\3120895-V2\\3120895_cartoon_ladies_2.safetensors",
+   "lora_strength": 0.8,
+   "s1_megapixels": 1.0
+  },
+  {
+   "prompt": "cartoonladies style. A woman in her thirties sits on a wooden chair beside a window, seen from the knees up. She wears a plain knit sweater and dark trousers, hands resting in her lap, looking toward the viewer. A bare wall behind her and a small potted plant on the windowsill.",
+   "lora_file": "L:\\Models\\loras\\Krea2\\Comic\\2757395-Cartoon_Ladies\\3120895-V2\\3120895_cartoon_ladies_2.safetensors",
+   "lora_strength": 0.8,
+   "s1_megapixels": 1.0
+  },
+  {
+   "prompt": "cartoonladies, cel-shaded cartoon illustration with fine black outlines and flat vibrant colors, reminiscent of classic western animation. A woman in her thirties sits on a wooden chair beside a window, seen from the knees up. She wears a plain knit sweater and dark trousers, hands resting in her lap, looking toward the viewer. A bare wall behind her and a small potted plant on the windowsill.",
+   "lora_file": "L:\\Models\\loras\\Krea2\\Comic\\2757395-Cartoon_Ladies\\3120895-V2\\3120895_cartoon_ladies_2.safetensors",
+   "lora_strength": 0.8,
+   "s1_megapixels": 1.0
+  },
+  {
+   "prompt": "cartoonladies style, cel-shaded cartoon illustration with fine black outlines and flat vibrant colors, reminiscent of classic western animation, semi-realistic cinematic portrait, highly detailed digital illustration. A woman in her thirties sits on a wooden chair beside a window, seen from the knees up. She wears a plain knit sweater and dark trousers, hands resting in her lap, looking toward the viewer. A bare wall behind her and a small potted plant on the windowsill.",
+   "lora_file": "L:\\Models\\loras\\Krea2\\Comic\\2757395-Cartoon_Ladies\\3120895-V2\\3120895_cartoon_ladies_2.safetensors",
+   "lora_strength": 0.8,
+   "s1_megapixels": 1.0
+  },
+  {
+   "prompt": "cartoonladies style, cel-shaded cartoon illustration with fine black outlines and flat vibrant colors, reminiscent of classic western animation, semi-realistic cinematic portrait, highly detailed digital illustration. A woman in her thirties sits on a wooden chair beside a window, seen from the knees up. She wears a plain knit sweater and dark trousers, hands resting in her lap, looking toward the viewer. A bare wall behind her and a small potted plant on the windowsill.",
+   "lora_baseline": true,
+   "s1_megapixels": 1.0
+  },
+  {
+   "prompt": "A woman in her thirties sits on a wooden chair beside a window, seen from the knees up. She wears a plain knit sweater and dark trousers, hands resting in her lap, looking toward the viewer. A bare wall behind her and a small potted plant on the windowsill.",
+   "lora_file": "L:\\Models\\loras\\Krea2\\Comic\\2762978-_BSS__-_Styles_for_Krea2\\3109676-GLSHS3D\\3109676_3dglshs_krea2_epoch_4.safetensors",
+   "lora_strength": 1.0,
+   "s1_megapixels": 1.0
+  },
+  {
+   "prompt": "glshs3d style. A woman in her thirties sits on a wooden chair beside a window, seen from the knees up. She wears a plain knit sweater and dark trousers, hands resting in her lap, looking toward the viewer. A bare wall behind her and a small potted plant on the windowsill.",
+   "lora_file": "L:\\Models\\loras\\Krea2\\Comic\\2762978-_BSS__-_Styles_for_Krea2\\3109676-GLSHS3D\\3109676_3dglshs_krea2_epoch_4.safetensors",
+   "lora_strength": 1.0,
+   "s1_megapixels": 1.0
+  },
+  {
+   "prompt": "in glshs3d style. A woman in her thirties sits on a wooden chair beside a window, seen from the knees up. She wears a plain knit sweater and dark trousers, hands resting in her lap, looking toward the viewer. A bare wall behind her and a small potted plant on the windowsill.",
+   "lora_file": "L:\\Models\\loras\\Krea2\\Comic\\2762978-_BSS__-_Styles_for_Krea2\\3109676-GLSHS3D\\3109676_3dglshs_krea2_epoch_4.safetensors",
+   "lora_strength": 1.0,
+   "s1_megapixels": 1.0
+  },
+  {
+   "prompt": "glshs3d style, digital fantasy artwork with bold, clean lines, high contrast, saturated colors, dramatic lighting, stylized anatomy. A woman in her thirties sits on a wooden chair beside a window, seen from the knees up. She wears a plain knit sweater and dark trousers, hands resting in her lap, looking toward the viewer. A bare wall behind her and a small potted plant on the windowsill.",
+   "lora_file": "L:\\Models\\loras\\Krea2\\Comic\\2762978-_BSS__-_Styles_for_Krea2\\3109676-GLSHS3D\\3109676_3dglshs_krea2_epoch_4.safetensors",
+   "lora_strength": 1.0,
+   "s1_megapixels": 1.0
+  },
+  {
+   "prompt": "in glshs3d style, digital fantasy artwork with bold, clean lines, high contrast, saturated colors, dramatic lighting, stylized anatomy. A woman in her thirties sits on a wooden chair beside a window, seen from the knees up. She wears a plain knit sweater and dark trousers, hands resting in her lap, looking toward the viewer. A bare wall behind her and a small potted plant on the windowsill.",
+   "lora_file": "L:\\Models\\loras\\Krea2\\Comic\\2762978-_BSS__-_Styles_for_Krea2\\3109676-GLSHS3D\\3109676_3dglshs_krea2_epoch_4.safetensors",
+   "lora_strength": 1.0,
+   "s1_megapixels": 1.0
+  },
+  {
+   "prompt": "in glshs3d style, digital fantasy artwork with bold, clean lines, high contrast, saturated colors, dramatic lighting, stylized anatomy. A woman in her thirties sits on a wooden chair beside a window, seen from the knees up. She wears a plain knit sweater and dark trousers, hands resting in her lap, looking toward the viewer. A bare wall behind her and a small potted plant on the windowsill.",
+   "lora_baseline": true,
+   "s1_megapixels": 1.0
+  },
+  {
+   "prompt": "A woman in her thirties sits on a wooden chair beside a window, seen from the knees up. She wears a plain knit sweater and dark trousers, hands resting in her lap, looking toward the viewer. A bare wall behind her and a small potted plant on the windowsill.",
+   "lora_file": "L:\\Models\\loras\\Krea2\\Comic\\2762978-_BSS__-_Styles_for_Krea2\\3118942-INCASE\\3118942_incase-krea2_epoch_4.safetensors",
+   "lora_strength": 1.0,
+   "s1_megapixels": 1.0
+  },
+  {
+   "prompt": "incase style. A woman in her thirties sits on a wooden chair beside a window, seen from the knees up. She wears a plain knit sweater and dark trousers, hands resting in her lap, looking toward the viewer. A bare wall behind her and a small potted plant on the windowsill.",
+   "lora_file": "L:\\Models\\loras\\Krea2\\Comic\\2762978-_BSS__-_Styles_for_Krea2\\3118942-INCASE\\3118942_incase-krea2_epoch_4.safetensors",
+   "lora_strength": 1.0,
+   "s1_megapixels": 1.0
+  },
+  {
+   "prompt": "incase style, dark fantasy digital painting, ukiyo-like, with brush stroke, highly detailed cinematic concept art, moody low-key lighting, atmospheric mist, rain droplets, dramatic chiaroscuro. A woman in her thirties sits on a wooden chair beside a window, seen from the knees up. She wears a plain knit sweater and dark trousers, hands resting in her lap, looking toward the viewer. A bare wall behind her and a small potted plant on the windowsill.",
+   "lora_file": "L:\\Models\\loras\\Krea2\\Comic\\2762978-_BSS__-_Styles_for_Krea2\\3118942-INCASE\\3118942_incase-krea2_epoch_4.safetensors",
+   "lora_strength": 1.0,
+   "s1_megapixels": 1.0
+  },
+  {
+   "prompt": "incase style, dark fantasy digital painting, ukiyo-like, with brush stroke, highly detailed cinematic concept art, moody low-key lighting, atmospheric mist, rain droplets, dramatic chiaroscuro. A woman in her thirties sits on a wooden chair beside a window, seen from the knees up. She wears a plain knit sweater and dark trousers, hands resting in her lap, looking toward the viewer. A bare wall behind her and a small potted plant on the windowsill.",
+   "lora_baseline": true,
+   "s1_megapixels": 1.0
+  },
+  {
+   "prompt": "A woman in her thirties sits on a wooden chair beside a window, seen from the knees up. She wears a plain knit sweater and dark trousers, hands resting in her lap, looking toward the viewer. A bare wall behind her and a small potted plant on the windowsill.",
+   "lora_file": "L:\\Models\\loras\\Krea2\\Comic\\2775087-We_All_Starve_-_A_Survival_Horror_Illustration_Style__KREA2_\\3124817-v1_0\\3124817_we_all_starve.safetensors",
+   "lora_strength": 1.0,
+   "s1_megapixels": 1.0
+  },
+  {
+   "prompt": "weallstarve. A woman in her thirties sits on a wooden chair beside a window, seen from the knees up. She wears a plain knit sweater and dark trousers, hands resting in her lap, looking toward the viewer. A bare wall behind her and a small potted plant on the windowsill.",
+   "lora_file": "L:\\Models\\loras\\Krea2\\Comic\\2775087-We_All_Starve_-_A_Survival_Horror_Illustration_Style__KREA2_\\3124817-v1_0\\3124817_we_all_starve.safetensors",
+   "lora_strength": 1.0,
+   "s1_megapixels": 1.0
+  },
+  {
+   "prompt": "weallstarve, crosshatched pen-and-ink sketchbook horror in sepia and bone, gaunt figures, spindly trees, eyes watching from the dark. A woman in her thirties sits on a wooden chair beside a window, seen from the knees up. She wears a plain knit sweater and dark trousers, hands resting in her lap, looking toward the viewer. A bare wall behind her and a small potted plant on the windowsill.",
+   "lora_file": "L:\\Models\\loras\\Krea2\\Comic\\2775087-We_All_Starve_-_A_Survival_Horror_Illustration_Style__KREA2_\\3124817-v1_0\\3124817_we_all_starve.safetensors",
+   "lora_strength": 1.0,
+   "s1_megapixels": 1.0
+  },
+  {
+   "prompt": "weallstarve, crosshatched pen-and-ink sketchbook horror in sepia and bone, gaunt figures, spindly trees, eyes watching from the dark. A woman in her thirties sits on a wooden chair beside a window, seen from the knees up. She wears a plain knit sweater and dark trousers, hands resting in her lap, looking toward the viewer. A bare wall behind her and a small potted plant on the windowsill.",
+   "lora_baseline": true,
+   "s1_megapixels": 1.0
+  },
+  {
+   "prompt": "A woman in her thirties sits on a wooden chair beside a window, seen from the knees up. She wears a plain knit sweater and dark trousers, hands resting in her lap, looking toward the viewer. A bare wall behind her and a small potted plant on the windowsill.",
+   "lora_file": "L:\\Models\\loras\\Krea2\\Comic\\2787071-SpTASIL__Wutu__-_Artist_Style\\3140346-Krea2Turbo\\3140346_1639c177-3216-4564-9cda-f97923e89f68_ta_trained.safetensors",
+   "lora_strength": 0.95,
+   "s1_megapixels": 1.0
+  },
+  {
+   "prompt": "@wutu. A woman in her thirties sits on a wooden chair beside a window, seen from the knees up. She wears a plain knit sweater and dark trousers, hands resting in her lap, looking toward the viewer. A bare wall behind her and a small potted plant on the windowsill.",
+   "lora_file": "L:\\Models\\loras\\Krea2\\Comic\\2787071-SpTASIL__Wutu__-_Artist_Style\\3140346-Krea2Turbo\\3140346_1639c177-3216-4564-9cda-f97923e89f68_ta_trained.safetensors",
+   "lora_strength": 0.95,
+   "s1_megapixels": 1.0
+  },
+  {
+   "prompt": "@wutu. A woman in her thirties sits on a wooden chair beside a window, seen from the knees up. She wears a plain knit sweater and dark trousers, hands resting in her lap, looking toward the viewer. A bare wall behind her and a small potted plant on the windowsill.",
+   "lora_baseline": true,
+   "s1_megapixels": 1.0
+  },
+  {
+   "prompt": "A woman in her thirties sits on a wooden chair beside a window, seen from the knees up. She wears a plain knit sweater and dark trousers, hands resting in her lap, looking toward the viewer. A bare wall behind her and a small potted plant on the windowsill.",
+   "lora_file": "L:\\Models\\loras\\Krea2\\Comic\\2788336-Rosy_Lofi_Illustration\\3141921-Krea2\\3141921_rosy-lofi-illustration.safetensors",
+   "lora_strength": 1.0,
+   "s1_megapixels": 1.0
+  },
+  {
+   "prompt": "soft, hand-drawn, storybook-style illustration with a dominant pink or rosy color palette, warm lighting, and simplified, gentle forms, painterly soft edges. A woman in her thirties sits on a wooden chair beside a window, seen from the knees up. She wears a plain knit sweater and dark trousers, hands resting in her lap, looking toward the viewer. A bare wall behind her and a small potted plant on the windowsill.",
+   "lora_file": "L:\\Models\\loras\\Krea2\\Comic\\2788336-Rosy_Lofi_Illustration\\3141921-Krea2\\3141921_rosy-lofi-illustration.safetensors",
+   "lora_strength": 1.0,
+   "s1_megapixels": 1.0
+  },
+  {
+   "prompt": "soft, hand-drawn, storybook-style illustration with a dominant pink or rosy color palette, warm lighting, and simplified, gentle forms, painterly soft edges, lofi illustration. A woman in her thirties sits on a wooden chair beside a window, seen from the knees up. She wears a plain knit sweater and dark trousers, hands resting in her lap, looking toward the viewer. A bare wall behind her and a small potted plant on the windowsill.",
+   "lora_file": "L:\\Models\\loras\\Krea2\\Comic\\2788336-Rosy_Lofi_Illustration\\3141921-Krea2\\3141921_rosy-lofi-illustration.safetensors",
+   "lora_strength": 1.0,
+   "s1_megapixels": 1.0
+  },
+  {
+   "prompt": "soft, hand-drawn, storybook-style illustration with a dominant pink or rosy color palette, warm lighting, and simplified, gentle forms, painterly soft edges, lofi illustration. A woman in her thirties sits on a wooden chair beside a window, seen from the knees up. She wears a plain knit sweater and dark trousers, hands resting in her lap, looking toward the viewer. A bare wall behind her and a small potted plant on the windowsill.",
+   "lora_baseline": true,
+   "s1_megapixels": 1.0
+  },
+  {
+   "prompt": "A woman in her thirties sits on a wooden chair beside a window, seen from the knees up. She wears a plain knit sweater and dark trousers, hands resting in her lap, looking toward the viewer. A bare wall behind her and a small potted plant on the windowsill.",
+   "lora_file": "L:\\Models\\loras\\Krea2\\Comic\\2788873-Frank_Cho_Comic_Book_Style\\3142592-v1_0\\3142592_frank-cho-style-v1.safetensors",
+   "lora_strength": 1.0,
+   "s1_megapixels": 1.0
+  },
+  {
+   "prompt": "comic book illustration, clean inked line art, vivid colors, detailed environment, expressive face. A woman in her thirties sits on a wooden chair beside a window, seen from the knees up. She wears a plain knit sweater and dark trousers, hands resting in her lap, looking toward the viewer. A bare wall behind her and a small potted plant on the windowsill.",
+   "lora_file": "L:\\Models\\loras\\Krea2\\Comic\\2788873-Frank_Cho_Comic_Book_Style\\3142592-v1_0\\3142592_frank-cho-style-v1.safetensors",
+   "lora_strength": 1.0,
+   "s1_megapixels": 1.0
+  },
+  {
+   "prompt": "comic book illustration, clean inked line art, vivid colors, detailed environment, expressive face. A woman in her thirties sits on a wooden chair beside a window, seen from the knees up. She wears a plain knit sweater and dark trousers, hands resting in her lap, looking toward the viewer. A bare wall behind her and a small potted plant on the windowsill.",
+   "lora_baseline": true,
+   "s1_megapixels": 1.0
+  },
+  {
+   "prompt": "A woman in her thirties sits on a wooden chair beside a window, seen from the knees up. She wears a plain knit sweater and dark trousers, hands resting in her lap, looking toward the viewer. A bare wall behind her and a small potted plant on the windowsill.",
+   "lora_file": "L:\\Models\\loras\\Krea2\\Comic\\2802345-KreaComBook\\3159339-V1\\3159339_kreacombook_e10.safetensors",
+   "lora_strength": 1.0,
+   "s1_megapixels": 1.0
+  },
+  {
+   "prompt": "bradhamel art style. A woman in her thirties sits on a wooden chair beside a window, seen from the knees up. She wears a plain knit sweater and dark trousers, hands resting in her lap, looking toward the viewer. A bare wall behind her and a small potted plant on the windowsill.",
+   "lora_file": "L:\\Models\\loras\\Krea2\\Comic\\2802345-KreaComBook\\3159339-V1\\3159339_kreacombook_e10.safetensors",
+   "lora_strength": 1.0,
+   "s1_megapixels": 1.0
+  },
+  {
+   "prompt": "bradhamel art style, impressionistic painterly comic book style with bold clean lines, limited warm palette, thick impasto brushstrokes, dramatic lighting, slightly surreal illustrative quality. A woman in her thirties sits on a wooden chair beside a window, seen from the knees up. She wears a plain knit sweater and dark trousers, hands resting in her lap, looking toward the viewer. A bare wall behind her and a small potted plant on the windowsill.",
+   "lora_file": "L:\\Models\\loras\\Krea2\\Comic\\2802345-KreaComBook\\3159339-V1\\3159339_kreacombook_e10.safetensors",
+   "lora_strength": 1.0,
+   "s1_megapixels": 1.0
+  },
+  {
+   "prompt": "bradhamel art style, impressionistic painterly comic book style with bold clean lines, limited warm palette, thick impasto brushstrokes, dramatic lighting, slightly surreal illustrative quality. A woman in her thirties sits on a wooden chair beside a window, seen from the knees up. She wears a plain knit sweater and dark trousers, hands resting in her lap, looking toward the viewer. A bare wall behind her and a small potted plant on the windowsill.",
+   "lora_baseline": true,
+   "s1_megapixels": 1.0
+  },
+  {
+   "prompt": "A woman in her thirties sits on a wooden chair beside a window, seen from the knees up. She wears a plain knit sweater and dark trousers, hands resting in her lap, looking toward the viewer. A bare wall behind her and a small potted plant on the windowsill.",
+   "lora_file": "L:\\Models\\loras\\Krea2\\Comic\\2802345-KreaComBook\\3396185-V2\\3396185_kreacombook_v2_bf16.safetensors",
+   "lora_strength": 0.85,
+   "s1_megapixels": 1.0
+  },
+  {
+   "prompt": "bradhamel art style. A woman in her thirties sits on a wooden chair beside a window, seen from the knees up. She wears a plain knit sweater and dark trousers, hands resting in her lap, looking toward the viewer. A bare wall behind her and a small potted plant on the windowsill.",
+   "lora_file": "L:\\Models\\loras\\Krea2\\Comic\\2802345-KreaComBook\\3396185-V2\\3396185_kreacombook_v2_bf16.safetensors",
+   "lora_strength": 0.85,
+   "s1_megapixels": 1.0
+  },
+  {
+   "prompt": "bradhamel art style. A woman in her thirties sits on a wooden chair beside a window, seen from the knees up. She wears a plain knit sweater and dark trousers, hands resting in her lap, looking toward the viewer. A bare wall behind her and a small potted plant on the windowsill.",
+   "lora_baseline": true,
+   "s1_megapixels": 1.0
+  },
+  {
+   "prompt": "A woman in her thirties sits on a wooden chair beside a window, seen from the knees up. She wears a plain knit sweater and dark trousers, hands resting in her lap, looking toward the viewer. A bare wall behind her and a small potted plant on the windowsill.",
+   "lora_file": "L:\\Models\\loras\\Krea2\\Comic\\2803766-__Grandline_-_Legendary_Stylized_Illustration\\3161188-Krea2v1_0\\3161188_grandlinelsiv1_0krea.safetensors",
+   "lora_strength": 0.7,
+   "s1_megapixels": 1.0
+  },
+  {
+   "prompt": "mobe-st4ill. A woman in her thirties sits on a wooden chair beside a window, seen from the knees up. She wears a plain knit sweater and dark trousers, hands resting in her lap, looking toward the viewer. A bare wall behind her and a small potted plant on the windowsill.",
+   "lora_file": "L:\\Models\\loras\\Krea2\\Comic\\2803766-__Grandline_-_Legendary_Stylized_Illustration\\3161188-Krea2v1_0\\3161188_grandlinelsiv1_0krea.safetensors",
+   "lora_strength": 0.7,
+   "s1_megapixels": 1.0
+  },
+  {
+   "prompt": "in the style of mobe-st4ill, stylized illustration. A woman in her thirties sits on a wooden chair beside a window, seen from the knees up. She wears a plain knit sweater and dark trousers, hands resting in her lap, looking toward the viewer. A bare wall behind her and a small potted plant on the windowsill.",
+   "lora_file": "L:\\Models\\loras\\Krea2\\Comic\\2803766-__Grandline_-_Legendary_Stylized_Illustration\\3161188-Krea2v1_0\\3161188_grandlinelsiv1_0krea.safetensors",
+   "lora_strength": 0.7,
+   "s1_megapixels": 1.0
+  },
+  {
+   "prompt": "mobe-st4ill, bold clean ink linework, rich saturated colors with deep blacks and punchy warm/cool contrasts, dramatic cinematic lighting with rim glow and shadow, expressive particle accents, stylized textures. A woman in her thirties sits on a wooden chair beside a window, seen from the knees up. She wears a plain knit sweater and dark trousers, hands resting in her lap, looking toward the viewer. A bare wall behind her and a small potted plant on the windowsill.",
+   "lora_file": "L:\\Models\\loras\\Krea2\\Comic\\2803766-__Grandline_-_Legendary_Stylized_Illustration\\3161188-Krea2v1_0\\3161188_grandlinelsiv1_0krea.safetensors",
+   "lora_strength": 0.7,
+   "s1_megapixels": 1.0
+  },
+  {
+   "prompt": "in the style of mobe-st4ill, stylized illustration, bold clean ink linework, rich saturated colors with deep blacks and punchy warm/cool contrasts, dramatic cinematic lighting with rim glow and shadow, expressive particle accents, stylized textures. A woman in her thirties sits on a wooden chair beside a window, seen from the knees up. She wears a plain knit sweater and dark trousers, hands resting in her lap, looking toward the viewer. A bare wall behind her and a small potted plant on the windowsill.",
+   "lora_file": "L:\\Models\\loras\\Krea2\\Comic\\2803766-__Grandline_-_Legendary_Stylized_Illustration\\3161188-Krea2v1_0\\3161188_grandlinelsiv1_0krea.safetensors",
+   "lora_strength": 0.7,
+   "s1_megapixels": 1.0
+  },
+  {
+   "prompt": "in the style of mobe-st4ill, stylized illustration, bold clean ink linework, rich saturated colors with deep blacks and punchy warm/cool contrasts, dramatic cinematic lighting with rim glow and shadow, expressive particle accents, stylized textures. A woman in her thirties sits on a wooden chair beside a window, seen from the knees up. She wears a plain knit sweater and dark trousers, hands resting in her lap, looking toward the viewer. A bare wall behind her and a small potted plant on the windowsill.",
+   "lora_baseline": true,
+   "s1_megapixels": 1.0
+  },
+  {
+   "prompt": "A woman in her thirties sits on a wooden chair beside a window, seen from the knees up. She wears a plain knit sweater and dark trousers, hands resting in her lap, looking toward the viewer. A bare wall behind her and a small potted plant on the windowsill.",
+   "lora_file": "L:\\Models\\loras\\Krea2\\Treatment\\2944852-BLACK_AREA_BY_STX\\3334450-V1\\3334450_black_area_by_stx_v1_bf16.safetensors",
+   "lora_strength": 1.0,
+   "s1_megapixels": 1.0
+  },
+  {
+   "prompt": "high-contrast black-and-white treatment with deep shadows and stark highlights, dramatic, cinematic, slightly gritty aesthetic reminiscent of noir or high-fashion photography. A woman in her thirties sits on a wooden chair beside a window, seen from the knees up. She wears a plain knit sweater and dark trousers, hands resting in her lap, looking toward the viewer. A bare wall behind her and a small potted plant on the windowsill.",
+   "lora_file": "L:\\Models\\loras\\Krea2\\Treatment\\2944852-BLACK_AREA_BY_STX\\3334450-V1\\3334450_black_area_by_stx_v1_bf16.safetensors",
+   "lora_strength": 1.0,
+   "s1_megapixels": 1.0
+  },
+  {
+   "prompt": "high-contrast black-and-white treatment with deep shadows and stark highlights, dramatic, cinematic, slightly gritty aesthetic reminiscent of noir or high-fashion photography. A woman in her thirties sits on a wooden chair beside a window, seen from the knees up. She wears a plain knit sweater and dark trousers, hands resting in her lap, looking toward the viewer. A bare wall behind her and a small potted plant on the windowsill.",
+   "lora_baseline": true,
+   "s1_megapixels": 1.0
+  },
+  {
+   "prompt": "A woman in her thirties sits on a wooden chair beside a window, seen from the knees up. She wears a plain knit sweater and dark trousers, hands resting in her lap, looking toward the viewer. A bare wall behind her and a small potted plant on the windowsill.",
+   "lora_file": "L:\\Models\\loras\\Krea2\\surreal\\2584401-V67_Symbolic_Surrealism\\3224281-V1_KREA-2\\3224281_v67_symbolic_surrealism_epoch_1.safetensors",
+   "lora_strength": 1.0,
+   "s1_megapixels": 1.0
+  },
+  {
+   "prompt": "symbolic surrealism. A woman in her thirties sits on a wooden chair beside a window, seen from the knees up. She wears a plain knit sweater and dark trousers, hands resting in her lap, looking toward the viewer. A bare wall behind her and a small potted plant on the windowsill.",
+   "lora_file": "L:\\Models\\loras\\Krea2\\surreal\\2584401-V67_Symbolic_Surrealism\\3224281-V1_KREA-2\\3224281_v67_symbolic_surrealism_epoch_1.safetensors",
+   "lora_strength": 1.0,
+   "s1_megapixels": 1.0
+  },
+  {
+   "prompt": "symbolic surrealism, clock, eye, heart, mirror, staircase, key, labyrinth, rose, mask, crow, tree, book, fish, hand, moon, skull, train, poppy, crane, piano, throne, veil, bone, pearl, feather, lantern, vein, hourglass, cloud, shadow. A woman in her thirties sits on a wooden chair beside a window, seen from the knees up. She wears a plain knit sweater and dark trousers, hands resting in her lap, looking toward the viewer. A bare wall behind her and a small potted plant on the windowsill.",
+   "lora_file": "L:\\Models\\loras\\Krea2\\surreal\\2584401-V67_Symbolic_Surrealism\\3224281-V1_KREA-2\\3224281_v67_symbolic_surrealism_epoch_1.safetensors",
+   "lora_strength": 1.0,
+   "s1_megapixels": 1.0
+  },
+  {
+   "prompt": "symbolic surrealism, soft melting surfaces, precise reflections, atmospheric fogs, uncanny stillness, crisp melting textures, soft atmospheric fogs, precise symbolic objects, eerie quiet of dalí or magritte paintings. A woman in her thirties sits on a wooden chair beside a window, seen from the knees up. She wears a plain knit sweater and dark trousers, hands resting in her lap, looking toward the viewer. A bare wall behind her and a small potted plant on the windowsill.",
+   "lora_file": "L:\\Models\\loras\\Krea2\\surreal\\2584401-V67_Symbolic_Surrealism\\3224281-V1_KREA-2\\3224281_v67_symbolic_surrealism_epoch_1.safetensors",
+   "lora_strength": 1.0,
+   "s1_megapixels": 1.0
+  },
+  {
+   "prompt": "symbolic surrealism, clock, eye, heart, mirror, staircase, key, labyrinth, rose, mask, crow, tree, book, fish, hand, moon, skull, train, poppy, crane, piano, throne, veil, bone, pearl, feather, lantern, vein, hourglass, cloud, shadow, soft melting surfaces, precise reflections, atmospheric fogs, uncanny stillness, crisp melting textures, soft atmospheric fogs, precise symbolic objects, eerie quiet of dalí or magritte paintings. A woman in her thirties sits on a wooden chair beside a window, seen from the knees up. She wears a plain knit sweater and dark trousers, hands resting in her lap, looking toward the viewer. A bare wall behind her and a small potted plant on the windowsill.",
+   "lora_file": "L:\\Models\\loras\\Krea2\\surreal\\2584401-V67_Symbolic_Surrealism\\3224281-V1_KREA-2\\3224281_v67_symbolic_surrealism_epoch_1.safetensors",
+   "lora_strength": 1.0,
+   "s1_megapixels": 1.0
+  },
+  {
+   "prompt": "symbolic surrealism, clock, eye, heart, mirror, staircase, key, labyrinth, rose, mask, crow, tree, book, fish, hand, moon, skull, train, poppy, crane, piano, throne, veil, bone, pearl, feather, lantern, vein, hourglass, cloud, shadow, soft melting surfaces, precise reflections, atmospheric fogs, uncanny stillness, crisp melting textures, soft atmospheric fogs, precise symbolic objects, eerie quiet of dalí or magritte paintings. A woman in her thirties sits on a wooden chair beside a window, seen from the knees up. She wears a plain knit sweater and dark trousers, hands resting in her lap, looking toward the viewer. A bare wall behind her and a small potted plant on the windowsill.",
+   "lora_baseline": true,
+   "s1_megapixels": 1.0
+  }
+ ],
+ "backup": "A:\\Comfy25\\ComfyUI_windows_portable\\ComfyUI\\custom_nodes\\Eric_Krea2\\docs\\backup\\sweep_presets_2026-10-14_133235.json"
+}

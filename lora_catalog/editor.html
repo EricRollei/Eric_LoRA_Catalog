@@ -93,6 +93,7 @@ main { overflow:auto; padding:14px 18px 90px; }
 .stars span.on { color:var(--star); }
 .stars span:hover { color:var(--star); opacity:.7; }
 .stars small { font-size:11px; color:var(--muted); margin-left:6px; letter-spacing:0; }
+.stars small.sweepavg { color:var(--star); opacity:.8; cursor:help; }
 .badges { display:flex; gap:6px; flex-wrap:wrap; margin:6px 0 6px; }
 .badge { font-size:11px; border:1px solid var(--line); border-radius:10px; padding:1px 8px; color:var(--muted); }
 .badge.warn { color:var(--warn); border-color:var(--warn); } .badge.good { color:var(--good); border-color:var(--good); }
@@ -135,6 +136,15 @@ section.facet h3 .pick { font-weight:normal; color:var(--muted); font-size:11px;
 .chip.trig.normal { background:var(--accent); color:var(--accent-fg); border-color:var(--accent); }
 .chip.trig.priority { background:var(--good); color:var(--accent-fg); border-color:var(--good); font-weight:600; }
 .chip.trig.off { text-decoration:line-through; opacity:.55; }
+/* prompt words (2026-10-15) */
+.pwnow { font-size:13px; margin:2px 0; } .pwnow.small { font-size:12px; color:var(--muted); }
+.pwscope { margin:6px 0; font-size:13px; } .pwscope select { background:var(--soft); border:1px solid var(--line); border-radius:6px; padding:1px 6px; }
+table.pw { width:100%; border-collapse:collapse; font-size:12.5px; margin-top:4px; }
+table.pw td { border-top:1px solid var(--line); padding:4px 4px; vertical-align:top; }
+table.pw td.sc { white-space:nowrap; color:var(--good); }
+table.pw tr.on td { background:var(--soft); }
+table.pw button, #pw_custom_go, #pw_clear { background:var(--soft); border:1px solid var(--line); border-radius:6px; padding:1px 8px; cursor:pointer; }
+table.pw tr.on button { background:var(--good); color:var(--accent-fg); border-color:var(--good); }
 input.trigedit { border:1px solid var(--accent); border-radius:14px; padding:1px 10px; background:var(--bg); font-size:13px; min-width:120px; }
 .addbox { margin-top:6px; display:flex; gap:6px; }
 .addbox input { flex:1; min-width:0; background:var(--bg); border:1px solid var(--line); border-radius:6px; padding:3px 8px; font-size:13px; }
@@ -207,17 +217,72 @@ footer button.primary { background:var(--accent); color:var(--accent-fg); border
 footer button.unsure { color:var(--warn); border-color:var(--warn); }
 footer .msg { color:var(--muted); margin-left:auto; font-size:13px; }
 footer .msg.err { color:var(--warn); }
+/* Discover (2026-10-29) */
+body.discover footer #prev, body.discover footer #save, body.discover footer #unsure, body.discover footer #skip { display:none; }
+aside .item small.ov { color:var(--warn); }
+.disc { padding:18px 22px; max-width:1100px; }
+.disc h2 { margin:0 0 8px; } .disc h2 small { color:var(--muted); font-weight:400; font-size:14px; }
+.disc .badges { display:flex; gap:6px; flex-wrap:wrap; margin-bottom:12px; }
+.disc .badge.warn { color:var(--warn); border-color:var(--warn); }
+.disc .why { margin:14px 0 6px; }
+.disctbl { border-collapse:collapse; font-size:13px; }
+.disctbl td, .disctbl th { padding:4px 10px; border-bottom:1px solid var(--soft); text-align:left; }
+.disctbl th { color:var(--muted); font-weight:500; } .disctbl td.n { text-align:right; white-space:nowrap; }
+.disc .discbtns { display:flex; gap:8px; margin:18px 0 8px; }
+.disc .discbtns a.btn, .disc .discbtns button { border:1px solid var(--line); background:var(--soft); border-radius:6px; padding:6px 13px; cursor:pointer; color:inherit; text-decoration:none; font-size:14px; }
+.disc .discbtns a.btn.primary { background:var(--accent); color:var(--accent-fg); border-color:var(--accent); }
+.disc .small { font-size:12px; }
+footer .dotkey { display:flex; gap:14px; align-items:center; font-size:12px; color:var(--muted); white-space:nowrap; }
+footer .dotkey .k { display:inline-flex; align-items:center; gap:5px; cursor:help; }   /* 2026-10-28 dot colour key */
 .overlay { position:fixed; inset:0; background:rgba(0,0,0,.85); display:none; align-items:center; justify-content:center; z-index:20; cursor:zoom-out; }
 .overlay img { max-width:94vw; max-height:94vh; border-radius:6px; }
 .overlay .count { position:fixed; bottom:14px; left:0; right:0; text-align:center; color:#ddd; font-size:13px; }
 .overlay.on { display:flex; }
+/* style search (style.py) */
+#similar { background:var(--panel); border:1px solid var(--line); border-radius:8px; padding:8px 11px 10px; margin:8px 0 4px; }
+#similar:empty { display:none; }
+#similar .shead { display:flex; gap:8px; align-items:center; flex-wrap:wrap; font-size:12px; color:var(--muted); margin-bottom:6px; }
+#similar .shead b { font-size:12px; text-transform:uppercase; letter-spacing:.5px; }
+#similar .shead .sp { margin-left:auto; display:flex; gap:5px; flex-wrap:wrap; }
+#similar .tog { font-size:11px; background:var(--soft); border:1px solid var(--line); border-radius:10px; padding:0 8px; cursor:pointer; color:var(--muted); }
+#similar .tog.on { border-color:var(--accent); color:var(--accent); }
+#similar .strip { display:grid; grid-template-columns:repeat(auto-fill, minmax(92px, 1fr)); gap:7px; }
+#similar .tile { cursor:pointer; font-size:11px; line-height:1.25; min-width:0; }
+#similar .tile img { width:100%; aspect-ratio:1; object-fit:cover; border-radius:5px; display:block; background:var(--soft); }
+#similar .tile:hover img { outline:2px solid var(--accent); }
+#similar .tile .nm { overflow:hidden; text-overflow:ellipsis; white-space:nowrap; margin-top:2px; }
+#similar .tile .sc { color:var(--muted); }
+#similar .note { font-size:12px; color:var(--warn); margin:2px 0 6px; }
+#similar .note.plain { color:var(--muted); }
+header .search.drop input { outline:2px dashed var(--accent); }
+.imgchip img { height:26px; border-radius:3px; vertical-align:middle; margin:0 3px; }
+.found.madewith a { margin-right:8px; white-space:nowrap; cursor:pointer; }
+.found.madewith .notyours { color:var(--muted); }
+.recgrid { display:grid; grid-template-columns:repeat(auto-fill, minmax(230px, 1fr)); gap:8px 14px; margin:6px 0; }
+.rectbl table { border-collapse:collapse; width:100%; font-size:12px; }
+#recbox .warnline { color:var(--warn); }
+#recbox .conf { border:1px solid var(--line); border-radius:8px; padding:0 6px; font-size:11px; }
+#recbox .conf-solid { color:var(--good); border-color:var(--good); } #recbox .conf-early, #recbox .conf-none { color:var(--warn); border-color:var(--warn); }
+#recbox > .small { margin:3px 0; }
+#recbox .gtxt { color:var(--good); } #recbox .btxt { color:var(--bad); }
+.rectbl td { padding:1px 4px; border-bottom:1px solid var(--line); }
+.rectbl td.n { text-align:right; white-space:nowrap; font-variant-numeric:tabular-nums; }
+.rectbl .gtxt { color:var(--good); } .rectbl .btxt { color:var(--bad); }
+.offer { margin:4px 0; padding:4px 8px; border-left:3px solid var(--accent); background:var(--soft); font-size:12.5px; }
+details.recipe { margin:6px 0 10px; }
+details.recipe summary { cursor:pointer; font-weight:600; }
+.rcp { margin:6px 0; }
+.rcp label { display:block; font-size:12px; color:var(--muted); }
+.rcp textarea { width:100%; box-sizing:border-box; font:12px/1.35 Consolas, monospace; }
 </style>
 </head>
 <body>
 <header>
   <h1>LoRA Card Editor</h1>
   <span class="search"><input id="q" type="search" placeholder="Search  ( / )" autocomplete="off" spellcheck="false"
-    title="Find LoRAs by name, trigger, artist, tag or any words on the card.&#10;fashion photo - every word, each a prefix (photo finds photography)&#10;&quot;film noir&quot; - exact phrase&#10;-anime - leave out&#10;name:arcane  tag:poster  artist:mucha  creator:xyz  folder:graphic  notes:  card:  trigger:  description:&#10;The shelf, status and rating pickers still filter the results."></span>
+    title="Find LoRAs by name, trigger, artist, tag or any words on the card.&#10;fashion photo - every word, each a prefix (photo finds photography)&#10;&quot;film noir&quot; - exact phrase&#10;-anime - leave out&#10;name:arcane  tag:poster  artist:mucha  creator:xyz  folder:graphic  notes:  card:  trigger:  description:&#10;The shelf, status and rating pickers still filter the results.&#10;Style search (when on):&#10;like:mignola - LoRAs that look like it, closest first (same base model; likeall: every base)&#10;Drop or paste an image here - LoRAs closest to its look"></span>
+  <button class="fold" id="imgbtn" style="display:none" title="Find LoRAs by look: pick an image (or drop / paste one onto the search box). The list shows the LoRAs whose preview images are closest to its style.">By image</button>
+  <input type="file" id="imgfile" accept="image/*" hidden>
   <select id="shelf" title="Shelf / category folder"></select>
   <select id="status" title="Which cards to list">
     <option value="todo">not reviewed</option><option value="unsure">unsure</option>
@@ -231,10 +296,12 @@ footer .msg.err { color:var(--warn); }
     <option value="priority">most useful first</option><option value="name">by name</option><option value="folder">by folder</option>
     <option value="rating">by rating</option>
   </select>
-  <a href="/sweeps" title="Mark Eric_Krea2 sweep cells good / bad / unsure - which LoRA combinations work" style="color:var(--accent);font-size:13px">Sweeps</a>
+  <a href="/sweeps" title="Rate Eric_Krea2 sweep cells 1-5 stars with flaw / praise tags - which LoRAs and combinations work, on which checkpoint and prompt" style="color:var(--accent);font-size:13px">Sweeps</a>
   <button class="fold" id="dupbtn" title="List every LoRA that exists more than once (the same file in two places), copies side by side. Tick the copies to remove, then Delete… in the folder panel.">Duplicates</button>
+  <button class="fold" id="looksbtn" style="display:none" title="Pairs of style LoRAs whose preview images look alike (same base model as the shelf), side by side - for culling near-copies of one look">Look-alikes</button>
+  <button class="fold" id="discbtn" title="Discover: LoRAs you don't own that Civitai users stack with the LoRAs you rate highly, for the base model of the selected shelf">Discover</button>
   <button class="fold" id="foldbtn" title="Show the library folders: pick LoRAs with the checkboxes, then move them, or make / rename folders. Every change shows a plan first and can be undone.">Folders</button>
-  <span class="keys">/ search · Enter save · U unsure · J/K next/prev · 1-4 image (←/→ in zoom) · Shift+1-5 rate, Shift+0 clear</span>
+  <span class="keys">/ search · Enter save · U unsure · J/K next/prev · 1-4 image (←/→ in zoom) · Shift+1-5 rate, Shift+0 clear &middot; Esc close / leave the field</span>
   <span class="progress" id="progress"></span>
 </header>
 <div class="layout">
@@ -248,6 +315,7 @@ footer .msg.err { color:var(--warn); }
   <button id="unsure" class="unsure" title="U">Unsure</button>
   <button id="skip" title="J">Skip →</button>
   <span class="msg" id="msg"></span>
+  <span class="dotkey"><span class="k" title="Not reviewed yet"><span class="dot"></span>not reviewed</span><span class="k" title="You saved the card with nothing changed from what the model wrote"><span class="dot confirmed"></span>confirmed</span><span class="k" title="You changed the card and saved it"><span class="dot edited"></span>edited</span><span class="k" title="You pressed Unsure (U)"><span class="dot unsure"></span>unsure</span></span>
 </footer>
 <div class="modal-back" id="modalback"><div class="modal" id="modal"></div></div>
 <div class="overlay" id="overlay"><img id="big" alt=""><div class="count" id="bigcount"></div></div>
@@ -259,8 +327,9 @@ let VOCAB = null, QUEUE = [], POS = -1, CARD = null, STATE = null, START = null;
 let IMGPAGE = 0, ZOOM = -1, WARNED = null;
 const PER_PAGE = 4;
 
-async function api(url, body) {
-  const r = await fetch(url, body ? {method:"POST", headers:{"Content-Type":"application/json"}, body:JSON.stringify(body)} : {});
+async function api(url, body, signal) {
+  const r = await fetch(url, body ? {method:"POST", headers:{"Content-Type":"application/json"}, body:JSON.stringify(body), signal}
+                                  : {signal});
   const data = await r.json().catch(() => ({error:"bad response"}));
   if (!r.ok || data.error) throw new Error(data.error || r.statusText);
   return data;
@@ -270,27 +339,59 @@ const remember = (k, v) => { try { localStorage.setItem("lce_" + k, v); } catch 
 const recall = k => { try { return localStorage.getItem("lce_" + k); } catch (e) { return null; } };
 
 // ---------- queue ------------------------------------------------------------------------------------------
+// The view the editor opens on comes from settings.json (editor_start_shelf / editor_start_status, default Krea2 +
+// all), read once per page load; after that the pickers stay where you put them (2026-10-16).
+let START_VIEW = null;
 async function loadShelves() {
   const shelves = await api("/api/shelves");
   const sel = $("#shelf"), keep = sel.value;
-  sel.innerHTML = `<option value="">all shelves</option>` + shelves.map(s =>
-    `<option value="${esc(s.shelf)}">${esc(s.shelf)}  (${s.reviewed}/${s.total})</option>`).join("");
-  const last = keep || recall("shelf");
-  sel.value = last !== null && shelves.some(s => s.shelf === last) ? last : (shelves.find(s => /graphic/i.test(s.shelf))?.shelf ?? "");
+  // each base-model folder as one entry (Krea2 = every folder under it), its shelves indented below it
+  const arch = {};
+  for (const s of shelves) {
+    const a = s.shelf.split("/")[0]; if (!a) continue;
+    arch[a] = arch[a] || {reviewed: 0, total: 0}; arch[a].reviewed += s.reviewed; arch[a].total += s.total;
+  }
+  let html = `<option value="">all shelves</option>`;
+  for (const a of Object.keys(arch).sort((x, y) => x.toLowerCase().localeCompare(y.toLowerCase()))) {
+    html += `<option value="${esc(a)}">${esc(a)} - all folders  (${arch[a].reviewed}/${arch[a].total})</option>`;
+    html += shelves.filter(s => s.shelf.includes("/") && s.shelf.split("/")[0] === a).map(s =>
+      `<option value="${esc(s.shelf)}">&nbsp;&nbsp;&nbsp;${esc(s.shelf)}  (${s.reviewed}/${s.total})</option>`).join("");
+  }
+  sel.innerHTML = html;
+  const has = v => [...sel.options].some(o => o.value === v);
+  let want = keep;
+  if (START_VIEW === null) {
+    try { START_VIEW = await api("/api/start"); } catch (e) { START_VIEW = {shelf: "Krea2", status: "all"}; }
+    want = START_VIEW.shelf;
+    $("#status").value = START_VIEW.status;
+  }
+  sel.value = want && has(want) ? want : "";
   const total = shelves.reduce((a, s) => a + s.total, 0), done = shelves.reduce((a, s) => a + s.reviewed, 0);
   $("#progress").textContent = `${done} / ${total} reviewed`;
   syncShelfSelect();
 }
 let FOUND = null;          // search summary {matched, hidden, mode} or null when not searching
+let QUEUE_CTL = null;     // the list request in flight: a newer view cancels it instead of waiting behind it
 async function loadQueue(keepPath) {
+  if (DISC_ON) {                                     // Discover (2026-10-29): a search or image search leaves it
+    if ($("#q").value.trim() || IMGQ) discoverOff(true); else return loadDiscover();
+  }
+  if (QUEUE_CTL) QUEUE_CTL.abort();
+  const ctl = QUEUE_CTL = new AbortController();
   const q = $("#q").value.trim();
   const shelf = $("#shelf").value === "__folder__" ? "" : $("#shelf").value;
   const p = new URLSearchParams({shelf, status:$("#status").value, order:$("#order").value,
                                  rating:$("#rating").value, q, folder: FOLDER ? FOLDER.rel : ""});
   if (DUPES) p.set("dupes", "1");
-  const data = await api("/api/queue?" + p);
+  if (LOOKS) p.set("looks", "1");
+  let data;
+  try {
+    data = IMGQ && !DUPES && !LOOKS ? await apiImage("/api/style_search?" + p, IMGQ.file) : await api("/api/queue?" + p, null, ctl.signal);
+  } catch (e) { if (ctl.signal.aborted) return; throw e; }
+  if (ctl !== QUEUE_CTL) return;          // a newer view was asked for meanwhile
+  if (data.reason && (data.mode === "style-off" || data.looks)) msg("style search: " + data.reason, true);
   if (Array.isArray(data)) { QUEUE = data; FOUND = null; }
-  else if (data.dupes) { QUEUE = data.items; FOUND = null; }
+  else if (data.dupes || data.looks) { QUEUE = data.items; FOUND = null; }
   else { QUEUE = data.items; FOUND = data; }
   drawQueue();
   let i = keepPath ? QUEUE.findIndex(q => q.path === keepPath) : 0;
@@ -299,7 +400,23 @@ async function loadQueue(keepPath) {
     (FOUND.matched ? `${FOUND.matched} LoRAs match, but the shelf / status / rating pickers hide them all.` : "Nothing matches that search.")
     : "Nothing here. Try another shelf, status or rating."}</div>`; }
 }
+// The LoRAs a searched image's own metadata names (ComfyUI workflow, A1111 / Civitai parameters): yours open a search
+// for that LoRA, the others link to Civitai. 2026-10-13.
+function madeWithLine() {
+  const list = FOUND && FOUND.made_with;
+  if (!IMGQ || !list) return "";
+  if (!list.length) return `<div class="found madewith" title="The file names no LoRAs: a pasted screenshot has no metadata; a downloaded or saved file usually does">made with: nothing named in the image's metadata</div>`;
+  const w = m => m.weight != null ? ` @${(+m.weight).toFixed(2).replace(/\.?0+$/, "")}` : "";
+  return `<div class="found madewith">made with (from the image's metadata): ${list.map(m => m.owned
+    ? `<a class="mw" data-name="${esc(m.name)}" title="yours (${esc(m.arch || "?")}), matched by ${esc(m.how)} - click to open it">${esc(m.name)}${w(m)}</a>`
+    : `<a class="notyours" ${m.url ? `href="${esc(m.url)}" target="_blank" rel="noopener"` : ""} title="not in your library${m.url ? " - opens its Civitai page" : ""}">${esc(m.name)}${w(m)} (not yours)</a>`).join("")}</div>`;
+}
 function foundLine() {
+  if (LOOKS) {
+    const pairs = new Set(QUEUE.map(q => q.group)).size;
+    return `<div class="found">${pairs ? `<b>${pairs}</b> pair${pairs === 1 ? "" : "s"} of style LoRAs whose previews look alike (CSD &ge; 0.85), side by side` :
+      "No look-alike style LoRAs on this shelf."} &middot; <a id="looksoff">done</a></div>`;
+  }
   if (DUPES) {
     const groups = new Set(QUEUE.map(q => q.group)).size;
     if (!groups) return `<div class="found">No duplicates: every LoRA exists once. · <a id="dupoff">done</a></div>`;
@@ -310,13 +427,22 @@ function foundLine() {
   if (!FOUND) return inFolder;
   const any = FOUND.mode === "any" ? " (no LoRA has every word: showing any word)" : "";
   const hid = FOUND.hidden > 0 ? ` · ${FOUND.hidden} hidden by the pickers · <a id="showall">show all</a>` : "";
-  return inFolder + `<div class="found">${FOUND.matched} match${FOUND.matched === 1 ? "" : "es"}${any}${hid} · <a id="clearq">clear</a>${
+  if (FOUND.mode === "style-off") return inFolder + `<div class="found">style search: ${esc(FOUND.reason || "off")} &middot; <a id="clearq">clear</a></div>` + madeWithLine();
+  if (FOUND.mode === "image" || FOUND.mode === "like") {
+    const what = FOUND.mode === "image" ? `<span class="imgchip"><img src="${IMGQ ? IMGQ.url : ""}" alt="">${esc(IMGQ ? IMGQ.name : "image")}</span>`
+                                        : `<b>${esc(FOUND.anchor || "(no LoRA by that name has a style vector)")}</b>`;
+    return inFolder + `<div class="found">closest look to ${what} &middot; ${FOUND.matched - (FOUND.hidden || 0)} of the ${FOUND.matched} closest${hid} &middot; <a id="clearq">clear</a></div>`
+      + (FOUND.mode === "image" ? madeWithLine() : "");
+  }
+  const ext = FOUND.extra ? ` · +${FOUND.extra} similar look` : "";
+  return inFolder + `<div class="found">${FOUND.matched} match${FOUND.matched === 1 ? "" : "es"}${any}${ext}${hid} · <a id="clearq">clear</a>${
     !FOLDER && $("body").classList.contains("folders-on") ? ` · <a id="selall">select all</a>` : ""}</div>`;
 }
 function drawQueue() {
-  const searching = !!FOUND || DUPES;
-  $("#queue").innerHTML = foundLine() + (QUEUE.map((q, i) => `<div class="item${i === POS ? " on" : ""}${SEL.has(q.path) ? " sel" : ""}${
-      DUPES && i && QUEUE[i - 1].group !== q.group ? " grp" : ""}" data-i="${i}">
+  const searching = !!FOUND || DUPES || LOOKS;
+  $("#queue").innerHTML = foundLine() + (QUEUE.map((q, i) => (q.extra && !(QUEUE[i - 1] || {}).extra ?
+      `<div class="found" title="Their preview images are close in style to the top matches (style search), but their cards do not mention what you typed">Similar look, not in the card text</div>` : "") + `<div class="item${i === POS ? " on" : ""}${SEL.has(q.path) ? " sel" : ""}${
+      (DUPES || LOOKS) && i && QUEUE[i - 1].group !== q.group ? " grp" : ""}" data-i="${i}">
       <input type="checkbox" class="ck" data-i="${i}" ${SEL.has(q.path) ? "checked" : ""} title="Select for moving (Shift-click: a range)">
       <span class="dot ${q.status}"></span><span class="n" title="${esc(q.folder)}">${esc(q.name)}</span>
       ${q.rating ? `<span class="st">${"★".repeat(q.rating)}</span>` : ""}
@@ -332,7 +458,10 @@ function drawQueue() {
   const selall = $("#selall"); if (selall) selall.onclick = () => { QUEUE.forEach(q => SEL.add(q.path)); selChanged(); };
   const showall = $("#showall"); if (showall) showall.onclick = () => {
     $("#shelf").value = ""; $("#status").value = "all"; $("#rating").value = "any"; loadQueue(); };
-  const clearq = $("#clearq"); if (clearq) clearq.onclick = () => { $("#q").value = ""; loadQueue(); };
+  const clearq = $("#clearq"); if (clearq) clearq.onclick = () => { $("#q").value = ""; dropImage(); loadQueue(); };
+  const looksoff = $("#looksoff"); if (looksoff) looksoff.onclick = () => toggleLooks(false);
+  $("#queue").querySelectorAll("a.mw").forEach(a => a.onclick = () => guarded(async () => {
+    dropImage(); $("#q").value = `"${a.dataset.name}"`; LAST_Q = $("#q").value; $("#status").value = "all"; await loadQueue(); }));
   const on = $("#queue .item.on"); if (on) on.scrollIntoView({block:"nearest"});
 }
 
@@ -342,6 +471,8 @@ async function open(i) {
   POS = i; drawQueue(); msg("");
   try { CARD = await api("/api/card?path=" + encodeURIComponent(QUEUE[i].path)); }
   catch (e) { msg(e.message, true); return; }
+  WORDS = null; loadWords(CARD.path);           // prompt words panel fills in when this arrives
+  RECORD = null; loadRecord(CARD.path);         // sweep record panel too (2026-10-16)
   const e = CARD.edit, k = CARD.card;
   STATE = {
     facets: JSON.parse(JSON.stringify(e ? Object.assign(Object.fromEntries(NEWER_FACETS.filter(n => !(n in (e.facets || {})))
@@ -401,11 +532,14 @@ function draw() {
       ${c.civitai_url ? `<span class="badge"><a href="${esc(c.civitai_url)}" target="_blank" rel="noopener">Civitai ↗</a></span>` : ""}
       ${c.community && c.community.score != null ? `<span class="badge${c.community.score >= 75 ? " score" : ""}" title="Community score: percentile among ${esc(c.community.score_group)} (approval, likes per download, downloads per day, people posting with it, reactions). A popularity prior - your stars win.">Civitai ${topText(c.community.score)}</span>` : ""}
       ${c.community && c.community.newer_version ? `<span class="badge warn" title="A newer version of this model, same base model, is on Civitai">newer: ${esc(c.community.newer_version)}</span>` : ""}
+      ${c.community && c.community.other_bases ? `<span class="badge" title="The same Civitai model also has versions for these base models, and you have none of them:&#10;${esc(c.community.other_bases.split("; ").join("\n"))}">also for: ${esc(c.community.other_bases.split("; ").map(s => s.split(": ")[0]).join(", "))}</span>` : ""}
      </div>
      <div class="file" title="click to copy the path" id="file">${esc(c.folder)}\\${esc(c.file)}</div>
-     <div><button id="copytag" class="badge" style="cursor:copy;background:none" title="copy &lt;lora:name:weight&gt; and the trigger words, for Forge / AUTOMATIC1111 prompts (uses the weight and triggers as they are on this card now)">copy as prompt tag</button></div>
+     <div><button id="copyname" class="badge" style="cursor:copy;background:none" title="copy the file name without its extension - paste it into the LoRA Stack's slot search, the stack's paste button, or a sweep's lora_files">copy name</button>
+          <button id="copytag" class="badge" style="cursor:copy;background:none" title="copy &lt;lora:name:weight&gt; and the trigger words, for Forge / AUTOMATIC1111 prompts (uses the weight and triggers as they are on this card now)">copy as prompt tag</button></div>
     </div>
     <div id="images"></div>
+    <div id="similar"></div>
     <div id="audience">${audienceHtml()}</div>
     ${evidenceHtml()}
    </div>
@@ -413,7 +547,10 @@ function draw() {
   </div>`;
   $("#file").onclick = () => navigator.clipboard?.writeText(c.path).then(() => msg("path copied"));
   $("#copytag").onclick = () => navigator.clipboard?.writeText(promptTag(c)).then(() => msg("prompt tag copied"));
+  $("#copyname").onclick = () => navigator.clipboard?.writeText(String(c.file || "").replace(/\.[^.]+$/, ""))
+    .then(() => msg("name copied"));
   drawImages();
+  drawSimilar();
   drawStars();
   drawFacets();
   wireAudience();
@@ -454,8 +591,12 @@ function drawStars() {
   const el = $("#stars"); if (!el) return;
   const r = STATE.rating || 0;
   el.innerHTML = [1, 2, 3, 4, 5].map(n => `<span data-star="${n}" class="${n <= r ? "on" : ""}">★</span>`).join("") +
-    `<small>${r ? "" : "unrated"}</small>`;
+    `<small>${r ? "" : "unrated"}</small>` + sweepBadge();
   el.querySelectorAll("[data-star]").forEach(s => s.onclick = () => setRating(+s.dataset.star, false));
+}
+function sweepBadge() {          // 2026-10-26: your sweep marks' mean stars beside the card's own rating
+  if (typeof RECORD === "undefined" || !RECORD || RECORD.stars_mean == null) return "";
+  return `<small class="sweepavg" title="Mean stars of your ${RECORD.n_stars} starred sweep mark(s) of this LoRA (Sweeps page and imported review workbooks), all checkpoints and prompts. The stars to the left are your own card rating, set separately. Per checkpoint / prompt: Sweep record below.">sweeps ${RECORD.stars_mean.toFixed(1)}&#9733; &middot; ${RECORD.n_stars}</small>`;
 }
 function setRating(n, exact) {
   if (!STATE) return;
@@ -584,7 +725,7 @@ function drawFacets() {
   let a = lookSummary() + groupsHtml(GROUPS_A);
   a += `<h2 class="group">About this LoRA</h2>`;
   a += textSection("artists", "Artists", "Whose work it imitates. Type to search the artist list; suggestions come from the LoRA's name.");
-  a += creatorSection() + triggerSection() + weightSection();
+  a += creatorSection() + triggerSection() + wordsSection() + weightSection() + recordSection();
   a += `<section class="facet"><h3>Notes</h3>
     <textarea id="notes" placeholder="Anything else: what it is great for, what it ruins, pairings that work...">${esc(STATE.notes)}</textarea></section>`;
   let b = `<div class="legend"><span class="chip sel">chosen</span> <span class="chip model">model picked, you removed</span>
@@ -593,6 +734,8 @@ function drawFacets() {
   $("#colA").innerHTML = a;
   $("#colB").innerHTML = b;
   wireFacets();
+  wireWords();
+  wireRecord();
   updateSaveButton();
 }
 
@@ -699,7 +842,272 @@ function editTrigger(el, i) {
   input.onblur = () => done(true);
 }
 
+// prompt words (2026-10-15, trigger_picks.py): which recipe variant a prompt gets, per card and per checkpoint.
+// Saved straight away (not part of the card's Save), since it is its own table.
+let WORDS = null, WORDS_CK = "";
+const PW_STATUS = {picked: "your pick", tested: "picked by a trigger test", recipe: "recipe default (untested)",
+                   trigger: "first trigger (no recipe)", option: "your default word option", "": "no words"};
+async function loadWords(path) {
+  try {
+    const w = await api("/api/prompt_words?path=" + encodeURIComponent(path));
+    if (CARD && CARD.path === path) { WORDS = w; redrawWords(); }
+  } catch (e) { if (CARD && CARD.path === path) { WORDS = {error: e.message}; redrawWords(); } }
+}
+function redrawWords() { const b = $("#pwbox"); if (b) { b.innerHTML = wordsInner(); wireWords(); } }
+function wordsSection() {
+  return `<section class="facet"><h3>Prompt words <span class="help">The words the Krea2 LoRA nodes and sweeps add
+    for this LoRA. <b>full</b> uses the recipe's Full line; <b>saved pick</b> uses your pick ("Use"), else a trigger
+    test's, else trigger + style phrase. Correct the recipe itself under Recipe. Both save at once, no Save needed.
+    A pick for one checkpoint wins over "all checkpoints".</span></h3><div id="pwbox">${wordsInner()}</div></section>`;
+}
+function wordsInner() {
+  if (!WORDS) return `<small class="muted">loading...</small>`;
+  if (WORDS.error) return `<small class="muted">${esc(WORDS.error)}</small>`;
+  const cur = WORDS.current || {};
+  const show = t => t ? esc(t) : `<i>(no words)</i>`;
+  let h = `<div class="pwnow">Now: <b>${cur.status ? show(cur.text) : "<i>not worked out yet (run.py facets)</i>"}</b>
+    <span class="badge">${esc(PW_STATUS[cur.status || ""] || cur.status)}</span></div>`;
+  for (const [ck, v] of Object.entries(cur.by_checkpoint || {}))
+    h += `<div class="pwnow small">on ${esc(ck)}: ${show(v.text)} <span class="badge">${
+      v.source === "you" ? "your pick" : "trigger test"}</span></div>`;
+  const cks = WORDS.checkpoints || [];
+  h += `<div class="pwscope">Pick for <select id="pw_ck"><option value="">all checkpoints</option>${
+    cks.map(c => `<option value="${esc(c)}"${c === WORDS_CK ? " selected" : ""}>${esc(c)}</option>`).join("")}</select></div>`;
+  const mine = (WORDS.picks || []).find(p => p.source === "you" && (p.checkpoint || "") === WORDS_CK);
+  const tests = (WORDS.tests || []).filter(t => !WORDS_CK || t.checkpoint === WORDS_CK);
+  h += recipeInner();
+  h += optionsInner();
+  const vs = WORDS.variants || [];
+  if (!vs.length) h += `<small class="muted">No trigger recipe for this LoRA yet (run.py triggers). You can still write your own words.</small>`;
+  h += `<table class="pw">` + vs.map((v, i) => {
+    const t = tests.filter(x => x.variant === v.name);
+    const score = t.map(x => `${x.suggested ? "&#9733; " : ""}${x.gain == null ? "" : (x.gain >= 0 ? "+" : "") + Number(x.gain).toFixed(3)}${
+      WORDS_CK ? "" : " <small>" + esc(x.checkpoint) + "</small>"}`).join("<br>");
+    const on = mine && mine.variant === v.name;
+    return `<tr class="${on ? "on" : ""}"><td><b>${esc(v.name)}</b>${(v.covers || []).length ? `<br><small>= ${esc(v.covers.join(", "))}</small>` : ""}</td>
+      <td>${show(v.text)}</td><td class="sc" title="trigger test: style gain over the plain render (&#9733; = the test's pick)">${score}</td>
+      <td><button data-pw-use="${i}">${on ? "in use" : "Use"}</button></td></tr>`;
+  }).join("") + `</table>`;
+  h += `<div class="addbox"><input id="pw_custom" placeholder="or your own words..." value="${
+    mine && mine.variant === "custom" ? esc(mine.text) : ""}"><button id="pw_custom_go">Use</button>${
+    mine ? ` <button id="pw_clear" title="remove your pick for this scope">Clear my pick</button>` : ""}</div>`;
+  return h;
+}
+// the recipe's own fields, correctable (2026-10-16, recipe_edits.py): your text replaces the model's in every variant
+// built from it, in every mode (full, saved pick's default), and survives re-running run.py triggers.
+const RECIPE_FIELDS = [["trigger", "Trigger", 1, "the recipe's trigger token"],
+                       ["style_phrase", "Style phrase", 2, "the look in words; trigger+phrase and full are built from it"],
+                       ["official", "Official words", 1, "the trained words from the LoRA page, comma separated"],
+                       ["full", "Full", 3, "used as written; leave it to have it built from the fields above"]];
+function recipeShown(f) {
+  const r = WORDS.recipe || {}; const ed = r.edits || {};
+  return f in ed ? ed[f] : ((r.model || {})[f] || "");
+}
+function recipeInner() {
+  const r = WORDS.recipe; if (!r) return "";
+  const ed = r.edits || {};
+  let h = `<details class="recipe"${Object.keys(ed).length ? " open" : ""}><summary>Recipe${
+    Object.keys(ed).length ? ` <span class="badge good">${Object.keys(ed).length} field(s) yours</span>` : ""}${
+    r.has_recipe ? "" : ` <small class="muted">(no model recipe yet - your fields make one)</small>`}</summary>`;
+  for (const [f, label, rows, help] of RECIPE_FIELDS) {
+    const mine = f in ed;
+    const model = (r.model || {})[f] || "";
+    h += `<div class="rcp"><label title="${esc(help)}">${label}${mine ? ' <span class="badge good">yours</span>' : ""}</label>
+      <textarea id="rcp_${f}" rows="${rows}" placeholder="${esc(model || "(empty)")}">${esc(recipeShown(f))}</textarea>
+      ${mine ? `<small class="muted">model: ${esc(model || "(empty)")}</small> <button data-rcp-reset="${f}">back to the model's</button>` : ""}</div>`;
+  }
+  h += `<button id="rcp_save">Save recipe changes</button> <small class="muted">saved at once, no card Save needed</small></details>`;
+  return h;
+}
+// word options (2026-10-20, word_options.py): named sets of words to pick per slot (Multi-LoRA Stack: Pick words)
+// or per sweep cell ("name #option", "name #each"). One per line: name = words; a leading * makes it the default
+// (the LoRA's words everywhere unless you picked others). Without "=" the line is both name and words.
+const WO_SOURCE = {you: "yours", civitai: "from the Civitai trained words", cleared: "you cleared them", "": "none"};
+function optionsText(opts) {
+  return (opts || []).map(o => `${o.default ? "*" : ""}${o.name === o.text ? o.name : o.name + " = " + o.text}`).join("\n");
+}
+function optionsInner() {
+  const w = WORDS.word_options; if (!w) return "";
+  const opts = w.options || [];
+  let h = `<details class="recipe"${opts.length ? " open" : ""}><summary>Word options ${
+    opts.length ? `<span class="badge${w.source === "you" ? " good" : ""}">${opts.length} - ${esc(WO_SOURCE[w.source] || w.source)}</span>`
+                : `<small class="muted">(${esc(WO_SOURCE[w.source] || "none")})</small>`}</summary>
+    <small class="muted">For LoRAs trained on alternatives (one keyword per grade, per style...). One per line:
+    <b>name = words</b>; a leading <b>*</b> makes it the default. Pick one per slot in the Multi-LoRA Stack
+    (Pick words) or per sweep line: <code>name #option</code>, <code>name #each</code>.</small>
+    <textarea id="wo_text" style="width:100%;box-sizing:border-box;margin:4px 0" rows="${Math.min(12, Math.max(3, opts.length + 1))}" placeholder="teal orange = tealorange grade&#10;*bleach = bleach bypass look">${esc(optionsText(opts))}</textarea>
+    <button id="wo_save">Save options</button>${
+    w.source === "you" || w.source === "cleared" ? ` <button id="wo_reset" title="forget yours${(w.auto || []).length ? "; the " + w.auto.length + " from Civitai come back" : ""}">Back to automatic</button>` : ""}
+    <small class="muted">saved at once; an empty box saves "no options"</small></details>`;
+  return h;
+}
+function parseOptions(text) {
+  return text.split(/\r?\n/).map(l => l.trim()).filter(Boolean).map(l => {
+    const def = l.startsWith("*"); if (def) l = l.slice(1).trim();
+    const i = l.indexOf("=");
+    const name = (i > 0 ? l.slice(0, i) : l).trim(), words = (i > 0 ? l.slice(i + 1) : l).trim();
+    return {name, text: words, default: def};
+  }).filter(o => o.name);
+}
+async function saveOptions(body) {
+  try {
+    const r = await api("/api/word_options", {path: CARD.path, ...body});
+    if (r.ok === false) throw new Error(r.error);
+    WORDS = r; redrawWords(); msg(body.reset ? "word options back to automatic" : "word options saved");
+  } catch (e) { msg(e.message, true); }
+}
+async function saveRecipe(fields) {
+  try {
+    let r = null;
+    for (const [field, value] of fields) {
+      r = await api("/api/recipe_edit", {path: CARD.path, field, value});
+      if (r.ok === false) throw new Error(r.error);
+    }
+    if (r) { WORDS = r; redrawWords(); msg("recipe saved"); } else msg("no recipe changes");
+  } catch (e) { msg(e.message, true); }
+}
+function wireWords() {
+  const rs = $("#rcp_save");
+  if (rs) rs.onclick = () => saveRecipe(RECIPE_FIELDS.map(([f]) => [f, $("#rcp_" + f).value.trim()])
+                                                       .filter(([f, v]) => v !== recipeShown(f).trim()));
+  document.querySelectorAll("[data-rcp-reset]").forEach(b => b.onclick = () => saveRecipe([[b.dataset.rcpReset, null]]));
+  document.querySelectorAll(".rcp textarea, #wo_text").forEach(t => t.onkeydown = ev => ev.stopPropagation());
+  const ws = $("#wo_save"); if (ws) ws.onclick = () => saveOptions({options: parseOptions($("#wo_text").value)});
+  const wr = $("#wo_reset"); if (wr) wr.onclick = () => saveOptions({reset: true});
+  const sel = $("#pw_ck"); if (!sel) return;
+  sel.onchange = () => { WORDS_CK = sel.value; redrawWords(); };
+  document.querySelectorAll("[data-pw-use]").forEach(b => b.onclick = () => {
+    const v = WORDS.variants[+b.dataset.pwUse]; pickWords(v.name, v.text || ""); });
+  const go = $("#pw_custom_go");
+  if (go) go.onclick = () => { const t = $("#pw_custom").value.trim(); if (t) pickWords("custom", t); };
+  const cl = $("#pw_clear"); if (cl) cl.onclick = () => pickWords("", "", true);
+}
+async function pickWords(variant, text, clear) {
+  try {
+    const r = await api("/api/prompt_words", {path: CARD.path, checkpoint: WORDS_CK, variant, text, clear: !!clear});
+    if (r.ok === false) throw new Error(r.error);
+    WORDS = r; redrawWords();
+    msg(clear ? "pick removed" : `prompt words set for ${WORDS_CK || "all checkpoints"}`);
+  } catch (e) { msg(e.message, true); }
+}
+
 // weights: typical and the range you trust, -10..+10, with the model's range drawn behind yours
+// Sweep record (2026-10-16, stacks.lora_record): every mark you gave this LoRA on the Sweeps page, summed up by
+// checkpoint, subject, weight, words and partners. Each mark stays its own observation; nothing here overwrites the
+// card - the offers below only fill a field (weight: then Save) or set a pick when you click them.
+let RECORD = null;
+async function loadRecord(path) {
+  try { const r = await api("/api/sweep_record?path=" + encodeURIComponent(path)); if (CARD && CARD.path === path) { RECORD = r; redrawRecord(); } }
+  catch (e) { if (CARD && CARD.path === path) { RECORD = {error: e.message}; redrawRecord(); } }
+}
+function redrawRecord() { const b = $("#recbox"); if (b) { b.innerHTML = recordInner(); wireRecord(); } drawStars(); }
+function recordSection() {
+  return `<section class="facet"><h3>Sweep record <span class="help">your ratings of this LoRA in sweeps (Sweeps page:
+    1-5 stars, flaw / praise tags, stronger / weaker). Score = stars; old G / B / U marks count 4 / 3 / 2.</span></h3><div id="recbox">${recordInner()}</div></section>`;
+}
+// 2026-10-17: checkpoint names without their Civitai numbers, for the tables
+const ckShort = s => String(s || "").replace(/^\d+_/, "").replace(/_\d{5,}$/, "");
+function recordInsights() {
+  const R = RECORD, out = [];
+  const conf = R.confidence || {};
+  out.push(`<div class="small"><b>How sure:</b> <span class="conf conf-${esc(conf.label || "none")}">${esc(conf.label || "")}</span> <span class="muted">${esc(conf.text || "")}</span></div>`);
+  const m = R.model || {};
+  if ((m.text || []).length) out.push(`<div class="small"><b>With prompt and checkpoint taken out:</b> ${m.text.map(esc).join("; ")} <span class="muted">(weight ${m.n} marks)</span></div>`);
+  const w = R.wheelhouse || {};
+  if (w.text) out.push(`<div class="small${w.disagree ? " warnline" : ""}"><b>${w.disagree ? "Card vs your marks:" : "Range:"}</b> ${esc(w.text)}${
+    w.in_vs_out ? ` <span class="muted">&middot; prompts like its own ${w.in_vs_out.inside}&#9733; (${w.in_vs_out.n_in}) vs outside its range ${w.in_vs_out.outside}&#9733; (${w.in_vs_out.n_out})</span>` : ""}</div>`);
+  // 2026-10-18: prompt by prompt, against the other LoRAs on the same prompt and checkpoint
+  const gf = R.good_for || {};
+  for (const [k, cls] of [["good", "gtxt"], ["weak", "btxt"]]) if (gf[k]) out.push(`<div class="small"><b class="${cls}">${k === "good" ? "Good for" : "Weak for"}:</b> ${esc(gf[k].text)}
+      <span class="muted">(${gf[k].n} of ${gf[k].of} prompts, ${gf[k].rel > 0 ? "+" : ""}${gf[k].rel.toFixed(1)}&#9733; vs the other LoRAs on them)</span></div>`);
+  if (gf.note) out.push(`<div class="offer">Add this to the card's notes? <small class="muted">${esc(gf.note)}</small> <button data-gf-note="${esc(gf.note)}">add to notes</button></div>`);
+  else if ((R.by_prompt || []).length) out.push(`<div class="small muted">Good for / weak for appears once 2+ prompts are clearly above or below the other LoRAs (${gf.judged || 0} prompt(s) with 2+ other LoRAs rated so far).</div>`);
+  if ((R.by_prompt || []).length) {
+    const rel = r => r.rel == null ? `<span class="muted">no others yet</span>` :
+      `<span class="${r.rel >= 0.75 ? "gtxt" : r.rel <= -0.75 ? "btxt" : ""}">${r.rel > 0 ? "+" : ""}${r.rel.toFixed(1)}</span>`;
+    out.push(`<div class="rectbl"><b>By prompt</b> <span class="muted small">its score &middot; the other LoRAs on the same prompt (n) &middot; difference &middot; baseline &middot; prompt fit</span><table>${
+      R.by_prompt.slice(0, 14).map(r => `<tr title="${esc(r.prompt + (r.notes.length ? "\n\nnotes: " + r.notes.join(" | ") : "") + (r.tags.length ? "\ntags: " + r.tags.join(", ") : ""))}">
+        <td>${esc(r.prompt.slice(0, 70))}${r.prompt.length > 70 ? "&hellip;" : ""}${r.notes.length ? " &#9998;" : ""} <span class="muted">${esc(ckShort(r.checkpoint))}</span></td>
+        <td class="n">${r.stars != null ? r.stars + "&#9733;" : r.score.toFixed(1)}</td>
+        <td class="n muted">${r.others != null ? r.others.toFixed(1) + " (" + r.n_others + ")" : ""}</td>
+        <td class="n">${rel(r)}</td>
+        <td class="n muted">${r.baseline != null ? "base " + r.baseline + "&#9733;" : ""}</td>
+        <td class="n muted">${r.fit != null ? "fit " + r.fit : ""}</td></tr>`).join("")}</table></div>`);
+  }
+  const tagRow = (t, flaw) => `<span class="${t.flagged ? (flaw ? "btxt" : "gtxt") : ""}" title="${esc(Object.entries(t.by_checkpoint || {}).map(([ck, v]) => ckShort(ck) + " " + v).join(", "))}">${t.flagged ? "<b>" : ""}${esc(t.tag)}${t.flagged ? "</b>" : ""} ${t.k}/${t.n}${
+    t.library ? ` <span class="muted">(library ${Math.round(t.library * 100)}%)</span>` : ""}${flaw && t.cause ? ` <span class="muted">[${t.cause === "training" ? "how it was made" : t.cause === "fit" ? "prompt range" : "weight"}]</span>` : ""}</span>`;
+  if ((R.flaws || []).length) out.push(`<div class="small"><b>Flaws:</b> ${R.flaws.map(t => tagRow(t, true)).join(" &middot; ")}</div>`);
+  if ((R.praise || []).length) out.push(`<div class="small"><b>Praise:</b> ${R.praise.map(t => tagRow(t, false)).join(" &middot; ")}</div>`);
+  for (const s of R.strength || []) if (s.text) out.push(`<div class="small"><b>Strength:</b> ${esc(s.text.replace(s.checkpoint, ckShort(s.checkpoint)))}</div>`);
+  if ((R.matrix || []).length > 1) {
+    const cks = [...new Set(R.matrix.map(x => x.checkpoint))], types = [...new Set(R.matrix.map(x => x.ptype))];
+    const at = (ck, t) => R.matrix.find(x => x.checkpoint === ck && x.ptype === t);
+    out.push(`<div class="rectbl"><b>Where it works</b> <span class="muted small">score (n) by checkpoint &times; prompt type</span><table><tr><td></td>${types.map(t => `<td class="n"><b>${esc(t)}</b></td>`).join("")}</tr>${
+      cks.map(ck => `<tr><td>${esc(ckShort(ck))}</td>${types.map(t => { const x = at(ck, t);
+        return `<td class="n">${x ? `${x.score.toFixed(1)} <span class="muted">(${x.n})</span>` : ""}</td>`; }).join("")}</tr>`).join("")}</table></div>`);
+  }
+  return out.join("");
+}
+function partnersHtml() {        // 2026-10-27: your stack synergy + Civitai co-use
+  const syn = RECORD.synergy || [], co = RECORD.co_use || [];
+  if (!syn.length && !co.length) return "";
+  const row = s => `<tr><td>${esc(s.name)}</td><td class="n">${s.synergy > 0 ? "+" : ""}${s.synergy.toFixed(2)}&#9733;</td>
+     <td class="n muted">${s.stars.toFixed(1)} vs ${s.expected.toFixed(1)}</td><td class="n muted">${s.n}</td></tr>`;
+  let h = "";
+  if (syn.length) {
+    const good = syn.filter(s => s.synergy >= 0.05).slice(0, 6);
+    const bad = syn.filter(s => s.synergy <= -0.05).slice(-4).reverse();
+    h += `<div class="rectbl"><b title="How much better your stacks with this partner scored than the two LoRAs' own ratings predict (prompt and checkpoint taken out). Columns: synergy, stack stars vs expected, marks. Pulled toward 0 until several stacks back it; most reliable when both LoRAs were also rated alone.">Pairs well with (your stacks)</b><table>${
+      good.map(row).join("") || `<tr><td class="muted">no partner above expectation yet</td></tr>`}</table></div>`;
+    if (bad.length) h += `<div class="rectbl"><b title="Your stacks with these partners scored below what the two LoRAs predict.">Worse together</b><table>${bad.map(row).join("")}</table></div>`;
+  }
+  if (co.length) h += `<div class="rectbl"><b title="Other Civitai users' stacks (run.py harvest): how many different users put the two together, beyond chance. Popularity, not your taste.">Others stack it with (Civitai)</b><table>${
+    co.slice(0, 6).map(c => `<tr><td>${esc(c.name)}</td><td class="n muted">${c.users} users</td><td class="n">${c.owned ? "" : "not owned"}</td></tr>`).join("")}</table></div>`;
+  return `<div class="recgrid">${h}</div>`;
+}
+function recordInner() {
+  if (!RECORD) return `<small class="muted">loading...</small>`;
+  if (RECORD.error) return `<small class="muted">${esc(RECORD.error)}</small>`;
+  if (!RECORD.n) return `<small class="muted">No sweep ratings yet. Rate its cells on the <a href="/sweeps">Sweeps page</a>.</small>` + partnersHtml();
+  const tbl = (title, rows, short) => rows && rows.length ? `<div class="rectbl"><b>${title}</b><table>${rows.slice(0, 8).map(g =>
+    `<tr><td>${esc(short ? ckShort(g.key) : g.key)}</td><td class="n">${g.score.toFixed(1)}</td><td class="n">${g.stars != null ? g.stars + "&#9733;" : ""}</td>
+     <td class="n"><span class="gtxt">${g.good || 0}</span>/<span class="btxt">${g.bad || 0}</span>/${g.unsure || 0}</td><td class="n muted">${g.n}</td></tr>`).join("")}</table></div>` : "";
+  let h = `<div class="muted small">${RECORD.n} rated image(s) &middot; tables: score &middot; mean stars &middot; 4-5 / 1-2 / 3 &middot; n</div>` + recordInsights();
+  for (const o of RECORD.offers || []) {
+    h += o.kind === "weight"
+      ? `<div class="offer">Use <b>${o.value}</b> as the card weight? <small class="muted">${esc(o.why)}</small> <button data-offer-w="${o.value}">fill in</button></div>`
+      : `<div class="offer">Make the <b>${esc(o.mode)}</b> words the pick for <b>${esc(o.checkpoint)}</b>? <small class="muted">${esc(o.why)}</small>
+         <button data-offer-ck="${esc(o.checkpoint)}" data-offer-mode="${esc(o.mode)}" data-offer-text="${esc(o.text)}">use these words</button></div>`;
+  }
+  h += `<div class="recgrid">${tbl("Checkpoint", RECORD.by_checkpoint, true)}${tbl("Prompt type", RECORD.by_type)}${tbl("Subject", RECORD.by_subject)}${
+    tbl("Weight (S1)", RECORD.by_weight)}${tbl("Words (alone)", RECORD.by_mode)}${tbl("Alone / in a stack", RECORD.alone_vs_stack)}${
+    tbl("With", RECORD.by_partner)}</div>`;
+  h += partnersHtml();
+  if ((RECORD.notes || []).length) h += `<div class="small muted">${RECORD.notes.map(n => "&#9998; " + esc(n.note)).join("<br>")}</div>`;
+  return h;
+}
+function wireRecord() {
+  document.querySelectorAll("[data-gf-note]").forEach(b => b.onclick = () => {     // 2026-10-18: into your notes; Save keeps it
+    const box = $("#notes"); if (!box) return;
+    box.value = (box.value.trim() ? box.value.trim() + "\n" : "") + b.dataset.gfNote;
+    box.dispatchEvent(new Event("input", {bubbles: true}));
+    msg("added to the card's notes - Save to keep it");
+  });
+  document.querySelectorAll("[data-offer-w]").forEach(b => b.onclick = () => {
+    const box = $("#weight"); if (!box) return;
+    box.value = b.dataset.offerW; box.dispatchEvent(new Event("input", {bubbles: true}));
+    box.dispatchEvent(new Event("change", {bubbles: true}));
+    msg("weight filled in from your sweep marks - Save to keep it");
+  });
+  document.querySelectorAll("[data-offer-ck]").forEach(b => b.onclick = async () => {
+    try {
+      const r = await api("/api/prompt_words", {path: CARD.path, checkpoint: b.dataset.offerCk,
+                                                variant: "sweep " + b.dataset.offerMode, text: b.dataset.offerText});
+      if (r.ok === false) throw new Error(r.error);
+      WORDS = r; redrawWords(); msg(`words picked for ${b.dataset.offerCk}`);
+    } catch (e) { msg(e.message, true); }
+  });
+}
 function weightSection() {
   const k = CARD.card, v = x => x == null ? "" : x;
   const box = (id, label, value, model) => `<label>${label}<input type="number" step="0.05" min="-10" max="10" id="${id}"
@@ -875,7 +1283,7 @@ function guarded(go) {        // leaving a card with unsaved changes: warn once,
   if (CARD && dirty() && WARNED !== CARD.path) {
     WARNED = CARD.path; msg("unsaved changes: Enter saves · press again to leave without saving", true); return;
   }
-  go();
+  return go();          // returned so callers can await it (image search)
 }
 function advance(saved) {
   const filter = $("#status").value, rf = $("#rating").value, item = QUEUE[POS];
@@ -899,7 +1307,7 @@ $("#prev").onclick = () => guarded(() => open(POS - 1));
 let SEARCH_TIMER = null, LAST_Q = "";
 function runSearch(now) {
   clearTimeout(SEARCH_TIMER);
-  const go = () => { const q = $("#q").value.trim(); if (q === LAST_Q) return; LAST_Q = q; guarded(() => loadQueue()); };
+  const go = () => { const q = $("#q").value.trim(); if (q === LAST_Q) return; LAST_Q = q; if (q) dropImage(); guarded(() => loadQueue()); };
   if (now) go(); else SEARCH_TIMER = setTimeout(go, 350);
 }
 $("#q").oninput = () => runSearch(false);
@@ -914,6 +1322,13 @@ document.addEventListener("keydown", ev => {
   }
   const typing = /INPUT|TEXTAREA|SELECT/.test(document.activeElement?.tagName || "");
   const zoomed = $("#overlay").classList.contains("on");
+  if (DISC_ON) {                                     // Discover (2026-10-29): its own keys
+    if (ev.key === "Escape") { if (typing) document.activeElement.blur(); else discoverOff(false); return; }
+    if (typing || ev.ctrlKey || ev.metaKey || ev.altKey) return;
+    if (/^(j|J|ArrowRight|ArrowDown)$/.test(ev.key)) { ev.preventDefault(); discOpen(DISC_POS + 1); }
+    else if (/^(k|K|ArrowLeft|ArrowUp)$/.test(ev.key)) { ev.preventDefault(); discOpen(DISC_POS - 1); }
+    return;
+  }
   if (ev.key === "Escape") { unzoom(); if (typing) document.activeElement.blur(); return; }
   if (zoomed && (ev.key === "ArrowRight" || ev.key === "ArrowLeft")) {
     ev.preventDefault(); const n = CARD.image_count;
@@ -1002,6 +1417,15 @@ function folderFromShelf() {
   if (v === "__folder__") return;
   FOLDER = v ? (FOLDERS.find(f => f.rel.toLowerCase() === v.toLowerCase()) || null) : null;
   drawFolders();
+  requestAnimationFrame(scrollFolderToTop);
+}
+// 2026-10-29: a shelf picked in the dropdown (or the start shelf) scrolls the folder column so that folder sits at
+// the top, just under the tool buttons. Clicking a folder in the column itself does not scroll (you are there).
+function scrollFolderToTop() {
+  const box = $("#folders"), el = box && box.querySelector(".f.on");
+  if (!el || !FOLDERS_OPEN) return;
+  const tools = box.querySelector(".tools");
+  box.scrollTop += el.getBoundingClientRect().top - box.getBoundingClientRect().top - (tools ? tools.offsetHeight : 0);
 }
 function syncShelfSelect() {
   const sel = $("#shelf");
@@ -1056,6 +1480,8 @@ async function planMove(target) {
 }
 let DUPES = false;
 function toggleDupes(on) {
+  if (on && DISC_ON) discoverOff(true);
+  if (on && LOOKS) { LOOKS = false; $("#looksbtn").classList.remove("on"); }
   DUPES = on; $("#dupbtn").classList.toggle("on", on); $("body").classList.toggle("dupes", on);
   if (on && !FOLDERS_OPEN) toggleFolders(true);           // the checkboxes and Delete… live with the folder panel
   SEL.clear(); loadQueue().catch(e => msg(e.message, true));
@@ -1157,8 +1583,193 @@ async function afterChange(newPath, followFolder) {
   } catch (e) { msg(e.message, true); }
 }
 
+// ---------- style search (style.py: CSD style vectors from preview images; optional) ----------------------------
+let STYLE = {enabled:false, image_search:false};
+let IMGQ = null;                 // {file, url, name} while the list is an image search
+let LOOKS = false;               // the Look-alikes list
+const SIM = {all: recall("sim_all") === "1", kinds: recall("sim_kinds") === "1", nsfw: recall("sim_nsfw") === "1"};
+async function loadStyleStatus() {
+  try { STYLE = await api("/api/style_status"); } catch (e) { STYLE = {enabled:false, image_search:false}; }
+  $("#looksbtn").style.display = STYLE.enabled ? "" : "none";
+  $("#imgbtn").style.display = STYLE.image_search ? "" : "none";
+}
+async function apiImage(url, file) {
+  const r = await fetch(url, {method:"POST", headers:{"Content-Type": file.type || "application/octet-stream"}, body:file});
+  const data = await r.json().catch(() => ({error:"bad response"}));
+  if (!r.ok || data.error) throw new Error(data.error || r.statusText);
+  return data;
+}
+function dropImage() { if (IMGQ) { URL.revokeObjectURL(IMGQ.url); IMGQ = null; } }
+async function searchImage(file) {
+  if (!file || !/^image\//.test(file.type || "")) { msg("that is not an image file", true); return; }
+  if (!STYLE.image_search) { msg("style search: " + (STYLE.reason || "off"), true); return; }
+  dropImage();
+  IMGQ = {file, url: URL.createObjectURL(file), name: file.name || "pasted image"};
+  $("#q").value = ""; LAST_Q = "";
+  if (DUPES) { DUPES = false; $("#dupbtn").classList.remove("on"); }
+  if (LOOKS) { LOOKS = false; $("#looksbtn").classList.remove("on"); }
+  $("body").classList.remove("dupes");
+  msg("finding LoRAs with that look... (the first image search loads the style model, about 15 s)");
+  try { await guarded(() => loadQueue()); msg(""); }
+  catch (e) { dropImage(); msg(e.message, true); }
+}
+function toggleLooks(on) {
+  if (on && DISC_ON) discoverOff(true);
+  if (on && DUPES) { DUPES = false; $("#dupbtn").classList.remove("on"); }
+  LOOKS = on; $("#looksbtn").classList.toggle("on", on); $("body").classList.toggle("dupes", on);
+  if (on) dropImage();
+  SEL.clear(); loadQueue().catch(e => msg(e.message, true));
+}
+$("#looksbtn").onclick = () => guarded(() => toggleLooks(!LOOKS));
+
+// ---------- Discover (2026-10-29, docs/design/DISCOVER_STAGE1.md): LoRAs you don't own ------------------------------
+// Ranked by how often Civitai users put them in the same image as YOUR LoRAs, weighted by how you rate yours, times
+// Civitai's community score; for the base model of the selected shelf. var, not let: loadQueue may run first.
+var DISC_ON = false, DISC = null, DISC_POS = 0;
+function discShelf() {
+  const v = $("#shelf").value;
+  if (v === "__folder__") return FOLDER && FOLDER.rel ? FOLDER.rel.split(/[\\/]/)[0] : "";
+  return v;
+}
+function discoverOff(silent) {
+  DISC_ON = false; DISC = null; $("#discbtn").classList.remove("on"); $("body").classList.remove("discover");
+  if (!silent) guarded(() => loadQueue(CARD ? CARD.path : undefined));
+}
+async function toggleDiscover(on) {
+  if (!on) { discoverOff(false); return; }
+  if (DUPES) { DUPES = false; $("#dupbtn").classList.remove("on"); }
+  if (LOOKS) { LOOKS = false; $("#looksbtn").classList.remove("on"); }
+  $("body").classList.remove("dupes");
+  DISC_ON = true; $("#discbtn").classList.add("on"); $("body").classList.add("discover");
+  await loadDiscover();
+}
+async function loadDiscover() {
+  const shelf = discShelf();
+  $("#queue").innerHTML = `<div class="found">Discover: finding LoRAs you don't own${shelf ? " for " + esc(shelf) : ""}... (the first time can take a few seconds - Civitai numbers)</div>`;
+  $("#main").innerHTML = "";
+  DISC = await api("/api/discover?" + new URLSearchParams({shelf, top: "100"}));
+  DISC_POS = 0; drawDiscover(); discOpen(0);
+}
+function drawDiscover() {
+  const d = DISC || {items: []};
+  const h = d.harvested || {};
+  const head = d.note ? `<div class="found">${esc(d.note)} &middot; <a id="discoff">done</a></div>`
+    : `<div class="found" title="Ranked by how often Civitai users put each LoRA in the same image as yours (distinct people), weighted by your ratings of yours, times Civitai's community score. Harvest: ${h.loras || 0} of your LoRAs, last ${esc(h.last || "?")} - refresh with python run.py harvest --only <folder>, then python run.py pairs.">Discover: <b>${d.items.length}</b> LoRAs you don't own${d.bases && d.bases.length ? " (" + esc(d.bases.join(", ")) + ")" : ""}${d.dismissed ? ` &middot; ${d.dismissed} hidden` : ""} &middot; <a id="discoff">done</a></div>`;
+  $("#queue").innerHTML = head + (d.items.map((it, i) => `<div class="item${i === DISC_POS ? " on" : ""}" data-di="${i}">
+      <span class="n" title="${esc(it.name)}">${esc(it.name)}</span>${it.other_version ? `<small class="ov" title="you have another version of this model">have v.</small>` : ""}
+      <small title="Discover rank">${Math.round(it.rank)}</small></div>`).join("") || "");
+  $("#queue").querySelectorAll(".item").forEach(el => el.onclick = () => discOpen(+el.dataset.di));
+  const off = $("#discoff"); if (off) off.onclick = () => discoverOff(false);
+}
+function discOpen(i) {
+  if (!DISC || !DISC.items.length) {
+    $("#main").innerHTML = `<div class="empty">${esc((DISC && DISC.note) || "Nothing to suggest yet for this shelf.")}</div>`;
+    return;
+  }
+  DISC_POS = Math.max(0, Math.min(DISC.items.length - 1, i));
+  $("#queue").querySelectorAll(".item").forEach(el => el.classList.toggle("on", +el.dataset.di === DISC_POS));
+  const sel = $("#queue").querySelector(".item.on"); if (sel) sel.scrollIntoView({block: "nearest"});
+  const it = DISC.items[DISC_POS], c = it.civitai || {};
+  const yours = p => p.rating ? "&#9733;".repeat(p.rating)
+    : p.quality != null ? `${p.quality >= 0 ? "+" : ""}${p.quality.toFixed(1)} vs your average` : `<span class="muted">not rated</span>`;
+  const rows = it.partners.map(p => `<tr><td>${esc(p.name)}</td><td>${yours(p)}</td><td class="n">${p.users} people</td>
+      <td class="n muted" title="how much more often the two meet than chance">lift ${(+p.lift).toFixed(1)}</td>
+      <td class="n muted" title="how much this one adds to the rank: pair score x your taste (${p.taste})">${p.contribution.toFixed(1)}</td></tr>`).join("");
+  const w = it.weights ? `<b>${it.weights.median}</b> <span class="muted">(people used ${it.weights.low} to ${it.weights.high}, ${it.weights.n} times)</span>` : "unknown";
+  $("#main").innerHTML = `<div class="disc">
+    <h2>${esc(it.name)} <small>${esc(it.version || "")}</small></h2>
+    <div class="badges"><span class="badge">${esc(it.base_model || "?")}</span>${it.nsfw ? `<span class="badge warn">NSFW</span>` : ""}
+      ${c.score != null ? `<span class="badge" title="Civitai community score 0-100: approval, likes per download, downloads per day - each a percentile among your LoRAs of the same base">Civitai ${Math.round(c.score)}</span>` : ""}
+      ${c.downloads != null ? `<span class="badge">${(+c.downloads).toLocaleString()} downloads</span>` : ""}
+      ${c.up != null ? `<span class="badge">${c.up} up / ${c.down || 0} down</span>` : ""}
+      ${it.other_version ? `<span class="badge warn" title="${esc(it.other_version)}">you have another version</span>` : ""}</div>
+    <p class="why">Used together with <b>${it.n_partners}</b> of your LoRAs in Civitai images${it.n_partners > it.partners.length ? ` (the ${it.partners.length} that count most)` : ""}:</p>
+    <table class="disctbl"><tr><th>your LoRA</th><th>your rating</th><th>used together by</th><th></th><th>adds</th></tr>${rows}</table>
+    <p class="why">Weight people give it: ${w}</p>
+    ${it.examples.length ? `<p class="why">Example images on Civitai: ${it.examples.map((u, k) => `<a href="${esc(u)}" target="_blank" rel="noopener">${k + 1}</a>`).join(" &middot; ")}</p>` : ""}
+    <div class="discbtns">
+      ${it.url ? `<a class="btn primary" href="${esc(it.url)}" target="_blank" rel="noopener">Open on Civitai</a>` : ""}
+      ${it.version_id ? `<button id="disccopy" title="for the Civitai downloader">Copy version id ${it.version_id}</button>` : ""}
+      <button id="discno" title="Hide it from Discover and from run.py pairs --wishlist (undo appears below)">Not interested</button>
+    </div>
+    <p class="muted small">J / K or arrows: next / previous &middot; Esc: back to your cards</p></div>`;
+  const cp = $("#disccopy");
+  if (cp) cp.onclick = () => { navigator.clipboard.writeText(String(it.version_id)).then(() => msg("version id copied"), () => msg("copy failed", true)); };
+  $("#discno").onclick = () => discDismiss(it).catch(e => msg(e.message, true));
+}
+async function discDismiss(it) {
+  await api("/api/discover/dismiss", {key: it.key, name: it.name});
+  const i = DISC.items.indexOf(it);
+  DISC.items.splice(i, 1); DISC.dismissed = (DISC.dismissed || 0) + 1;
+  drawDiscover(); discOpen(i);
+  $("#msg").className = "msg";
+  $("#msg").innerHTML = `hid ${esc(it.name)} &middot; <a id="discundo" style="cursor:pointer;color:var(--accent)">undo</a>`;
+  $("#discundo").onclick = async () => {
+    await api("/api/discover/dismiss", {key: it.key, undo: true});
+    DISC.items.splice(i, 0, it); DISC.dismissed = Math.max(0, DISC.dismissed - 1);
+    drawDiscover(); discOpen(i); msg("restored " + it.name);
+  };
+}
+$("#discbtn").onclick = () => guarded(() => toggleDiscover(!DISC_ON));
+$("#imgbtn").onclick = () => $("#imgfile").click();
+$("#imgfile").onchange = () => { const f = $("#imgfile").files[0]; $("#imgfile").value = ""; searchImage(f); };
+(() => {
+  const box = $("#q").parentElement;
+  const hasFile = ev => [...(ev.dataTransfer?.items || [])].some(i => i.kind === "file");
+  box.addEventListener("dragover", ev => { if (hasFile(ev)) { ev.preventDefault(); box.classList.add("drop"); } });
+  box.addEventListener("dragleave", () => box.classList.remove("drop"));
+  box.addEventListener("drop", ev => { if (!hasFile(ev)) return; ev.preventDefault(); box.classList.remove("drop"); searchImage(ev.dataTransfer.files[0]); });
+  $("#q").addEventListener("paste", ev => {
+    const f = [...(ev.clipboardData?.files || [])].find(x => /^image\//.test(x.type));
+    if (f) { ev.preventDefault(); searchImage(f); } });
+})();
+// "Similar look" under the example images: the LoRAs whose previews are closest in style to this one's
+async function drawSimilar() {
+  const box = $("#similar"); if (!box || !CARD) return;
+  if (!STYLE.enabled) { box.innerHTML = ""; return; }
+  const path = CARD.path;
+  const p = new URLSearchParams({path, n:"8", scope: SIM.all ? "all" : "base", kinds: SIM.kinds ? "all" : "look", nsfw: SIM.nsfw ? "1" : "0"});
+  let d;
+  try { d = await api("/api/similar?" + p); } catch (e) { box.innerHTML = ""; return; }
+  if (!CARD || CARD.path !== path) return;
+  if (d.off) { box.innerHTML = ""; return; }
+  if (!d.info) { box.innerHTML = `<div class="shead"><b>Similar look</b><span>${esc(d.note || "")}</span></div>`; return; }
+  const a = d.info.agreement;
+  const agree = a == null ? "one preview only" : `previews agree: ${a >= 0.55 ? "high" : a >= 0.35 ? "mixed" : "low"}`;
+  const tog = (key, label, title) => `<button class="tog${SIM[key] ? " on" : ""}" data-k="${key}" title="${esc(title)}">${label}</button>`;
+  const notes = [];
+  if (!d.info.look) notes.push(`<div class="note">This is not a style LoRA (card kind ${esc(CARD.card.kind || "?")}): its previews mostly show a plain photo look, so these neighbours share that look more than anything this LoRA adds.</div>`);
+  if (d.info.same_previews && d.info.same_previews.length) notes.push(`<div class="note plain">Same preview images as: ${d.info.same_previews.map(esc).join(", ")} - previews cannot tell these apart.</div>`);
+  const likeWord = SIM.all ? "likeall" : "like";
+  // render check (run.py style --renders): does this LoRA show its preview look in our own sweep renders?
+  const RV = {shows: ["good", "shows its look"], needs_words: ["warn", "needs its style words"],
+              weak: ["warn", "look weak in renders"], unclear: ["", "render check: unclear"]};
+  const rv = RV[d.info.render_verdict];
+  const verdict = rv ? ` <span class="badge ${rv[0]}" title="${esc((d.info.render_label || "") + (d.info.render_note ? "\n" + d.info.render_note : ""))}">${rv[1]}</span>` : "";
+  box.innerHTML = `<div class="shead"><b>Similar look</b>${verdict}
+      <span title="How alike this LoRA's own preview images are in style (CSD cosine ${a == null ? "-" : a.toFixed(2)}; pilot: one LoRA ~0.50, different LoRAs ~0.12). Low: a subject or concept LoRA shown in many looks, or previews made with other LoRAs.">${agree} &middot; ${d.info.n_images} preview${d.info.n_images === 1 ? "" : "s"}</span>
+      <span class="sp">${tog("all", "all bases", "Off: the same base model only (Krea2 with Krea2). On: every base model, with its base shown")}${
+        tog("kinds", "all kinds", "Off: style, photo-look and lighting LoRAs only. On: every kind of LoRA")}${
+        tog("nsfw", "NSFW", "Off: hide LoRAs whose card is rated nudity or explicit. On: show them")}
+      <button class="tog" id="simlist" title="Put the whole list on the left, closest look first (${likeWord}:)">list all</button></span></div>
+    ${notes.join("")}
+    ${d.items.length ? `<div class="strip">${d.items.map(s => `<div class="tile" data-path="${esc(s.path)}" title="${esc(s.name)}&#10;${esc(s.kind || "no card")}${s.nsfw >= 2 ? " (nsfw)" : ""}${SIM.all ? " - " + esc(s.arch) : ""}&#10;look similarity ${s.score.toFixed(2)}">
+        <img loading="lazy" src="/img?path=${encodeURIComponent(s.path)}&i=0" alt="">
+        <div class="nm">${esc(s.name)}</div><div class="sc">${s.score.toFixed(2)}${SIM.all ? " &middot; " + esc(s.arch) : ""}</div></div>`).join("")}</div>`
+      : `<div class="note plain">Nothing close with these filters.</div>`}`;
+  box.querySelectorAll(".tog[data-k]").forEach(b => b.onclick = () => {
+    const k = b.dataset.k; SIM[k] = !SIM[k]; remember("sim_" + k, SIM[k] ? "1" : "0"); drawSimilar(); });
+  const listAll = () => { $("#q").value = `${likeWord}:"${CARD.name}"`; LAST_Q = $("#q").value; dropImage();
+    if (DUPES) toggleDupes(false); if (LOOKS) { LOOKS = false; $("#looksbtn").classList.remove("on"); $("body").classList.remove("dupes"); } };
+  $("#simlist").onclick = () => guarded(async () => { listAll(); await loadQueue(CARD.path); });
+  box.querySelectorAll(".tile").forEach(t => t.onclick = () => guarded(async () => {
+    const i = QUEUE.findIndex(q => q.path === t.dataset.path);
+    if (i >= 0) { open(i); return; }
+    listAll(); $("#status").value = "all"; await loadQueue(t.dataset.path); }));
+}
+
 (async () => {
-  try { VOCAB = await api("/api/vocab"); await loadShelves(); await loadQueue(); if (FOLDERS_OPEN) toggleFolders(true); }
+  try { VOCAB = await api("/api/vocab"); await loadStyleStatus(); await loadShelves(); await loadQueue(); if (FOLDERS_OPEN) toggleFolders(true); }
   catch (e) { $("#main").innerHTML = `<div class="empty">Could not load: ${esc(e.message)}</div>`; }
 })();
 </script>

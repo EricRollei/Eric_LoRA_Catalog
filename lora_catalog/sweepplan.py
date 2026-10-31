@@ -18,6 +18,8 @@ on the Sweeps page are left out (--retest to include them).
 Weights: each LoRA at its card's typical weight (your edited weight wins); the second LoRA of a pair is scaled by
 --blend (0.6 = the Suggester's same-family blend), so the sweep tests what the Suggester would actually make.
 Names in the lines are file names (the sweep finds them in any subfolder), so presets keep working while you sort.
+Triggers: lora_triggers 'catalog' - one trigger from each LoRA's card, prepended (Krea2 works better with the trigger
+first; 2026-10-13, was 'append').
 
 Output: a preset in Eric_Krea2's sweep_presets.json (backup first) - pick it in the SweepPlan node's sweep_preset list.
 Every grid axis is stored blank so the panel's sampler/scheduler lists cannot multiply the cells.
@@ -104,7 +106,7 @@ class Candidate:
 def _candidates(connection: sqlite3.Connection, folder: str, roles: List[str], nsfw: bool,
                 stem_counts: Dict[str, int]) -> List[Candidate]:
     rows = connection.execute("""
-        select f.path, f.name, f.key, f.rel_dir, f.rating, f.weight_typical, f.nsfw, f.facets, f.role,
+        select f.path, f.name, f.key, f.rel_dir, f.rating, f.weight_typical, f.nsfw, f.facets, f.role, f.exclude,
                l.stem, l.file_name, l.civitai_version_id, l.civitai_model_id, l.root
         from card_facets f join loras l on l.path = f.path
         where lower(replace(f.rel_dir, '\\', '/')) = lower(?) or lower(replace(f.rel_dir, '\\', '/')) like lower(?)""",
@@ -113,6 +115,8 @@ def _candidates(connection: sqlite3.Connection, folder: str, roles: List[str], n
     for row in rows:
         card_roles = set(_json_dict(row["facets"]).get("role") or []) | {row["role"] or ""}
         if roles and not card_roles & set(roles):
+            continue
+        if row["exclude"]:          # LoRA Manager exclude (2026-10-14): not a LoRA for this shelf
             continue
         if row["rating"] and row["rating"] <= 2:
             continue
@@ -338,7 +342,7 @@ def plan(settings: Settings, folders: List[str], mode: str = "", pairs: int = 9,
     notes = (f"Stack sweep from the LoRA Catalog ({datetime.now():%Y-%m-%d}): {len(chosen)} pairs from "
              f"{', '.join(folders)} ({mode}); no-LoRA + each LoRA alone + each pair; second LoRA x{blend:g}; "
              f"{len(prompts)} prompts x {len(seed_list) or 1} seeds = {cells} cells. Mark the cells on the card "
-             f"editor's Sweeps page (G good / B bad / U unsure).")
+             f"editor's Sweeps page (1-5 stars, flaw / praise tags).")
     if from_loras >= 0:
         notes += (f" Prompts: {from_loras} from the LoRAs' own test prompts" +
                   (f", {len(prompts) - from_loras} generic (no community prompts for the rest yet - run.py community)"
@@ -350,7 +354,7 @@ def plan(settings: Settings, folders: List[str], mode: str = "", pairs: int = 9,
     sweep = {field: "" for field in GRID_FIELDS_BLANK}
     sweep.update({"mode": "grid", "stage_scope": "s1", "lora_mode": "stacks", "lora_files": "\n".join(lines),
                   "lora_strengths": ", ".join(mults), "include_baseline": True, "keep_panel_stack": False,
-                  "lora_triggers": "append", "prompts": "\n".join(prompts),
+                  "lora_triggers": "catalog", "prompts": "\n".join(prompts),
                   "seed_policy": "seeds_axis" if len(seed_list) > 1 else "fixed", "seeds": ", ".join(seed_list),
                   "quick_screen": False, "score_metrics": True, "sort_by": "plan_order", "max_combos": cells,
                   "preset_notes": notes})
@@ -399,7 +403,7 @@ def plan_single(settings: Settings, name: str, seeds: str = "101,102", max_cells
     sweep = {field: "" for field in GRID_FIELDS_BLANK}
     sweep.update({"mode": "grid", "stage_scope": "s1", "lora_mode": "bakeoff", "lora_files": line_name,
                   "lora_strengths": ", ".join(f"{w:g}" for w in weights), "include_baseline": True,
-                  "keep_panel_stack": False, "lora_triggers": "append", "prompts": "\n".join(prompts),
+                  "keep_panel_stack": False, "lora_triggers": "catalog", "prompts": "\n".join(prompts),
                   "seed_policy": "seeds_axis" if len(seed_list) > 1 else "fixed", "seeds": ", ".join(seed_list),
                   "quick_screen": False, "score_metrics": True, "sort_by": "plan_order", "max_combos": cells,
                   "preset_notes": f"Characterization of {row['name']} ({datetime.now():%Y-%m-%d}): {note}, weights "

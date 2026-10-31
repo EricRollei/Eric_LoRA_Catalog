@@ -130,6 +130,15 @@ class Settings:
     card_model: str = "qwen/qwen3-vl-8b"   # vision model that writes the cards
     genre_model: str = ""                  # text model for run.py genre-mood; blank: card_model
     slider_model: str = ""                 # text model for run.py sliders / ladders; blank: genre_model
+    # Prompt library (run.py prompts, prompt_library.py, 2026-10-29): folder for _prompt_library.sqlite and exports
+    # (blank: a "prompts" folder beside the folder holding the catalog, e.g. L:/Models/prompts), the text model for
+    # export --rewrite (blank: genre_model, then card_model), and whether run.py refresh / community rebuild it.
+    prompt_library_dir: str = ""
+    prompt_model: str = ""
+    prompt_library_auto: bool = True
+    # Trigger recipes (run.py triggers, text model = genre_model): the shelves (arch folders) the refresh writes recipes
+    # for. Empty list = every shelf (a first run on a big library takes hours: ~10 s per LoRA).
+    trigger_arches: List[str] = field(default_factory=lambda: ["Krea2"])
     card_images: int = 2                   # preview images shown to the vision model per LoRA
     # Artist names (a JSON list or {"names": [...]}), used to tie a LoRA to the artist it emulates by its name.
     # Optional: without it cards are written without name matches.
@@ -144,6 +153,18 @@ class Settings:
     krea2_sweep_presets: str = ""
     # LoRA Suggester options (see suggest/settings.py).
     suggest: Dict[str, Any] = field(default_factory=dict)
+    # Style search (style.py, optional, off by default): CSD style vectors from preview images. Needs torch and the
+    # weights (python run.py style-setup). style_model blank: DATA_DIR/models/csd_vit_l.safetensors. style_device:
+    # auto | cuda:N (nvidia-smi numbering) | cpu. The card editor unloads the model after style_idle_unload_min idle minutes.
+    style_enabled: bool = False
+    style_model: str = ""
+    style_device: str = "auto"
+    style_idle_unload_min: int = 10
+    # Card editor: what it shows when it opens (2026-10-16). editor_start_shelf: a base-model folder (Krea2 = all its
+    # folders), a shelf such as Krea2/graphic-art, or '' for every shelf. editor_start_status: todo | unsure | edited |
+    # confirmed | all.
+    editor_start_shelf: str = "Krea2"
+    editor_start_status: str = "all"
 
     def finish(self) -> "Settings":
         """Fill the blanks that have a sensible default."""

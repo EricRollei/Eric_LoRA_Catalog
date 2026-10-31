@@ -2,6 +2,7 @@
 Eric LoRA Catalog for ComfyUI
 
     LoRA Suggester node     picks LoRAs for a prompt from your catalog (roles, stage weights, sliders, NSFW gate)
+    LoRA Suggester (Advanced)   the same, plus a style image that steers the look LoRAs (needs style search)
     LoRA Catalog panel      sidebar tab: refresh the catalog, card new LoRAs, open the card editor, settings
 
 The catalog itself (lora_catalog/) also runs without ComfyUI: launch.bat / launch.sh open the card editor,
@@ -19,6 +20,7 @@ if sys.version_info < (3, 12):
     NODE_DISPLAY_NAME_MAPPINGS = {}
 else:
     from .nodes.lora_suggest_node import LoRASuggester
+    from .nodes.lora_suggest_advanced_node import LoRASuggesterAdvanced
 
     try:
         from .comfy.routes import register as _register_routes
@@ -29,9 +31,11 @@ else:
 
     NODE_CLASS_MAPPINGS = {
         "EricLoRASuggester": LoRASuggester,
+        "EricLoRASuggesterAdvanced": LoRASuggesterAdvanced,
     }
     NODE_DISPLAY_NAME_MAPPINGS = {
         "EricLoRASuggester": "LoRA Suggester",
+        "EricLoRASuggesterAdvanced": "LoRA Suggester (Advanced)",
     }
 
 WEB_DIRECTORY = "./web"

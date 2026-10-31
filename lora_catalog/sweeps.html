@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Sweep Verdicts</title>
+<title>Sweep Ratings</title>
 <style>
 :root {
   --bg:#f6f4ef; --panel:#ffffff; --fg:#1f1f1d; --muted:#7a776f; --line:#e2ded4; --soft:#efece4;
@@ -41,8 +41,12 @@ header .count { margin-left:auto; color:var(--muted); font-size:13px; white-spac
 .tile .marks { display:flex; border-top:1px solid var(--line); }
 .tile .marks button { flex:1; border:0; background:none; padding:5px 0; cursor:pointer; color:var(--muted); font-size:12px; }
 .tile .marks button:hover { background:var(--soft); }
-.tile .marks button.g.on { background:var(--good); color:#fff; } .tile .marks button.b.on { background:var(--bad); color:#fff; }
-.tile .marks button.u.on { background:var(--unsure); color:#111; }
+.tile .marks button.s { color:var(--line); font-size:15px; padding:2px 0; }
+.tile .marks button.s.on { color:#d4a017; }
+.tile .marks button.p { flex:0 0 26px; }
+.tile .marks button.p.on { background:var(--accent); color:var(--accent-fg); }
+.tile .flawl { color:var(--bad); font-size:11px; } .tile .praisel { color:var(--good); font-size:11px; }
+.tile .meta .push { color:var(--accent); font-weight:600; }
 .empty { color:var(--muted); padding:40px; text-align:center; }
 .overlay { position:fixed; inset:0; background:rgba(0,0,0,.88); display:none; z-index:20; color:#eee; flex-direction:column; }
 .overlay.on { display:flex; }
@@ -55,6 +59,12 @@ header .count { margin-left:auto; color:var(--muted); font-size:13px; white-spac
 .overlay .bar input { flex:1; min-width:240px; background:#222; border:1px solid #444; border-radius:6px; padding:5px 8px; color:#eee; }
 .overlay .bar button { background:#2a2a2a; border:1px solid #555; color:#eee; border-radius:6px; padding:5px 12px; cursor:pointer; }
 .overlay .bar .v { font-weight:600; }
+.overlay .info { padding:2px 16px 0; font-size:13px; line-height:1.45; color:#ddd; max-height:24vh; overflow:auto; }
+.overlay .info .set { color:#bbb; margin-bottom:3px; } .overlay .info .set > * { margin-right:6px; }
+.overlay .info .stg { color:#8fc3ff; font-weight:700; } .overlay .info .sep { margin-left:8px; }
+.overlay .info b.vary { color:#ffcc33; font-weight:700; }
+.overlay .info .words { color:#f0a060; margin-bottom:2px; } .overlay .info .pr { color:#eee; }
+#ov_infobtn.on { background:#2f4a68; border-color:#8fc3ff; }
 #results { display:none; padding:14px 18px 40px; }
 body.results #results { display:block; } body.results #grid, body.results .info { display:none; }
 #results table { border-collapse:collapse; width:100%; max-width:1100px; font-size:13px; background:var(--panel); }
@@ -62,17 +72,53 @@ body.results #results { display:block; } body.results #grid, body.results .info 
 #results td.n { text-align:right; width:60px; font-variant-numeric:tabular-nums; }
 #results h2 { font-size:15px; margin:18px 0 8px; }
 .gtxt { color:var(--good); } .btxt { color:var(--bad); }
+.marks button.w { margin-left:auto; } .marks button.w.done { background:var(--good); color:#fff; }
+.tile .stars { color:#d4a017; letter-spacing:1px; font-size:13px; }
+.tile .stars .off { color:var(--line); }
+.tile .tagl { color:var(--muted); font-size:11px; }
+.overlay .bar .st button.on { background:#d4a017; color:#111; border-color:#d4a017; }
+.overlay .tags { display:flex; flex-wrap:wrap; gap:6px; padding:0 14px 6px; align-items:center; }
+.overlay .tags .lbl { font-size:11px; color:#999; text-transform:uppercase; letter-spacing:.5px; width:52px; }
+.overlay .tags button.flaw.on { background:#8a2f25; border-color:#ef7a6c; }
+.overlay .tags button.praise.on { background:#2e6b47; border-color:#6cc28f; }
+.overlay .tags button b.hk { font-size:1.3em; font-weight:800; color:#ffcc33; text-decoration:underline; line-height:1; }
+.overlay .tags button u { text-decoration:underline; }
+.overlay .bar .pu button.on { background:#2f5d8a; border-color:#7fa8d6; color:#fff; }
+.overlay .bar .fitinfo { color:#bbb; font-size:12px; }
+.overlay .tags button { background:#222; border:1px solid #555; color:#ccc; border-radius:12px; padding:2px 10px; cursor:pointer; font-size:12px; }
+.overlay .tags button.on { background:#2f5d8a; border-color:#7fa8d6; color:#fff; }
+dialog#follow { background:var(--panel); color:var(--fg); border:1px solid var(--line); border-radius:10px; padding:16px 18px; width:min(900px, calc(100vw - 32px)); }
+dialog#follow::backdrop { background:rgba(0,0,0,.5); }
+dialog#follow h2 { font-size:15px; margin:0 0 4px; }
+dialog#follow p { color:var(--muted); font-size:13px; margin:0 0 10px; }
+dialog#follow textarea { width:100%; height:40vh; font:12px/1.4 ui-monospace, Consolas, monospace; background:var(--soft); color:var(--fg); border:1px solid var(--line); border-radius:6px; padding:8px; white-space:pre; }
+dialog#follow select, dialog#follow button { background:var(--soft); border:1px solid var(--line); border-radius:6px; padding:4px 8px; cursor:pointer; }
+dialog#follow button.go { background:var(--accent); color:var(--accent-fg); border-color:var(--accent); }
+dialog#follow .row { display:flex; gap:8px; align-items:center; flex-wrap:wrap; margin:8px 0; }
+dialog#share { background:var(--panel); color:var(--fg); border:1px solid var(--line); border-radius:10px; padding:16px 18px; width:min(760px, calc(100vw - 32px)); }
+dialog#share::backdrop { background:rgba(0,0,0,.5); }
+dialog#share h2 { font-size:15px; margin:0 0 4px; }
+dialog#share p { color:var(--muted); font-size:13px; margin:0 0 12px; }
+dialog#share .opts { display:grid; grid-template-columns:auto 1fr; gap:8px 12px; align-items:center; margin-bottom:12px; }
+dialog#share select, dialog#share button { background:var(--soft); border:1px solid var(--line); border-radius:6px; padding:4px 8px; cursor:pointer; }
+dialog#share button.go { background:var(--accent); color:var(--accent-fg); border-color:var(--accent); }
+dialog#share .row { display:flex; gap:8px; align-items:center; flex-wrap:wrap; }
+dialog#share .msg { color:var(--muted); font-size:13px; }
+dialog#share .files { display:grid; grid-template-columns:repeat(auto-fill, minmax(150px, 1fr)); gap:8px; margin-top:12px; max-height:50vh; overflow:auto; }
+dialog#share .files a { display:block; font-size:11px; overflow-wrap:anywhere; text-decoration:none; }
+dialog#share .files img { width:100%; aspect-ratio:3 / 2; object-fit:contain; background:var(--soft); border-radius:4px; display:block; }
 @media (max-width:700px) { #grid { grid-template-columns:repeat(auto-fill, minmax(160px, 1fr)); } header select#sweep { max-width:100%; } }
 </style>
 </head>
 <body>
 <header>
-  <h1>Sweep Verdicts</h1>
+  <h1>Sweep Ratings</h1>
   <a href="/" title="Back to the card editor">Card editor</a>
   <select id="sweep" title="A sweep folder (newest first). LoRA sweeps show their lora mode."></select>
   <select id="show" title="Which cells to show">
-    <option value="all">all cells</option><option value="unmarked">not marked</option>
-    <option value="good">good</option><option value="bad">bad</option><option value="unsure">unsure</option>
+    <option value="all">all cells</option><option value="unmarked">not rated</option>
+    <option value="good">4-5 stars</option><option value="unsure">3 stars</option><option value="bad">1-2 stars</option>
+    <option value="flawed">with a flaw tag</option><option value="legacy">old marks (G/B/U, no stars)</option>
   </select>
   <select id="kind" title="stack = several LoRAs together; single = one LoRA alone (its part); baseline = no swept LoRA">
     <option value="all">every kind</option><option value="stack">stacks</option><option value="single">singles</option>
@@ -80,22 +126,56 @@ body.results #results { display:block; } body.results #grid, body.results .info 
   </select>
   <select id="size" title="Tile size"><option value="220">small</option><option value="300" selected>medium</option><option value="420">large</option></select>
   <button id="resultsbtn" title="Everything you have marked, by stack and by LoRA pair">Results</button>
-  <span class="keys">G good · B bad · U unsure · 0 clear · arrows move · Space compare with its parts</span>
+  <button id="followbtn" title="The stacks you marked good, as lines for the Sweep Plan: paste them into lora_files and set stack_parts to build up (A, A+B, A+B+C) or leave one out">Follow-up</button>
+  <button id="sharebtn" title="Labelled strips / single images to post (Civitai, Reddit ...): settings on top, each LoRA's name, weight, creator and Civitai number under its image - optionally your stars and notes">Share sheets</button>
+  <button id="importbtn" style="display:none" title="Bring the ratings typed into this sweep's review workbook (sweep_review.xlsx) in as marks: rating -> stars, notes -> notes">Import workbook ratings</button>
+  <span class="keys" title="Flaws: S signature, T text, R frame, F changes character/face, I ignores prompt, E same face, H faces/hands, A anatomy, X artifacts, O overcooked, W style didn't show, V oversaturated, B soft/blurry, N NSFW. Praise: C colour, D detail, G composition, L lighting, U texture, K keeps subject, P follows prompt, M mood. Rate the baseline cells too: they show how hard the prompt is.">1-5 stars &middot; 0 clear &middot; + / - stronger / weaker &middot; letters = flaw / praise (highlighted on the buttons) &middot; arrows &middot; Space zoom</span>
   <span class="count" id="count"></span>
 </header>
 <div class="info" id="info"></div>
 <div id="grid"><div class="empty">Loading…</div></div>
 <div id="results"></div>
+<dialog id="follow">
+  <h2>Follow-up sweep for the winners</h2>
+  <p>The stacks you marked, one per line with their weights. Paste into the Sweep Plan's <b>lora_files</b> with <b>lora_mode = stacks</b>, <b>include_baseline</b> on and <b>stack_parts = build up</b> (A, A+B, A+B+C: what each layer adds) or <b>leave one out</b> (which LoRA the stack can do without). The LoRA order in each line is the build-up order: change it here if you want another first layer.</p>
+  <div class="row"><label for="fo_min">Take stacks marked</label>
+    <select id="fo_min"><option value="good">good or 4-5 stars</option><option value="5">5 stars only</option><option value="notbad">anything not bad</option></select>
+    <span id="fo_msg" style="color:var(--muted);font-size:13px"></span></div>
+  <textarea id="fo_text" spellcheck="false"></textarea>
+  <div class="row"><button class="go" id="fo_copy">Copy</button><button id="fo_close">Close</button></div>
+</dialog>
+<dialog id="share">
+  <h2>Share sheets</h2>
+  <p>Pictures to post that explain themselves: the prompt and shared settings on top, each image's LoRAs underneath with short name, weight, creator and Civitai model number. Written to this sweep's <b>share</b> folder (JPEG); making them again overwrites files with the same name.</p>
+  <div class="opts">
+    <label for="sh_mode">Make</label>
+    <select id="sh_mode"><option value="strips">strips (one per prompt)</option><option value="singles">singles (each image labelled)</option><option value="strips + singles">strips + singles</option></select>
+    <label for="sh_bg">Background</label>
+    <select id="sh_bg"><option value="black">black</option><option value="white">white</option></select>
+    <label for="sh_ratings">Your ratings</label>
+    <select id="sh_ratings"><option value="none">leave out</option><option value="stars">stars</option><option value="stars + notes">stars + notes</option></select>
+    <label for="sh_group">One strip per</label>
+    <select id="sh_group"><option value="auto">auto (prompt when there are several)</option><option value="prompt">prompt</option><option value="lora">LoRA</option><option value="seed">seed</option><option value="none">everything in one</option></select>
+  </div>
+  <div class="row"><button class="go" id="sh_go">Make</button><button id="sh_close">Close</button><span class="msg" id="sh_msg"></span></div>
+  <div class="files" id="sh_files"></div>
+</dialog>
 <div class="overlay" id="overlay">
   <div class="strip" id="strip"></div>
+  <div class="info" id="ov_info"></div>
   <div class="bar"><span class="v" id="ov_v"></span>
     <input id="ov_notes" placeholder="note on this cell (saved with the mark): what works, what breaks…" spellcheck="false">
-    <button data-v="good">G good</button><button data-v="bad">B bad</button><button data-v="unsure">U unsure</button>
+    <span class="st"><button data-s="1">1</button><button data-s="2">2</button><button data-s="3">3</button><button data-s="4">4</button><button data-s="5">5 ★</button></span>
+    <span class="pu"><button data-p="weaker" title="try it weaker next time (key −)">− weaker</button><button data-p="stronger" title="try it stronger next time (key +)">+ stronger</button></span>
+    <span class="fitinfo" id="ov_fit"></span>
+    <button id="ov_infobtn" title="Show or hide the prompt and settings of this cell (key Q). Yellow = differs between the cells of this sweep.">Q prompt &amp; settings</button>
     <button data-v="">0 clear</button><button id="ov_close">Esc close</button></div>
+  <div class="tags" id="ov_tags"></div>
 </div>
 
 <script>
 const $ = s => document.querySelector(s);
+const starText = n => n ? `<span class="stars" title="${n} star${n > 1 ? "s" : ""}">${"★".repeat(n)}<span class="off">${"★".repeat(5 - n)}</span></span>` : "";
 const esc = s => String(s ?? "").replace(/[&<>"']/g, c => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
 const remember = (k, v) => { try { localStorage.setItem("swv_" + k, v); } catch (e) {} };
 const recall = k => { try { return localStorage.getItem("swv_" + k); } catch (e) { return null; } };
@@ -126,37 +206,54 @@ async function loadSweep() {
   $("#info").innerHTML = `<b>${esc(SWEEP.checkpoint)}</b> · ${esc(SWEEP.created)} · ${SWEEP.cells.length} cells` +
     (lora.mode ? ` · lora mode <b>${esc(lora.mode)}</b>${lora.keep_panel_stack ? " on top of the panel stack" : ""}` :
      " · <span>not a LoRA sweep: marks are kept but count no LoRA pair</span>");
+  $("#importbtn").style.display = SWEEP.workbook ? "" : "none";
   POS = 0; draw();
 }
 function filtered() {
   const show = $("#show").value, kind = $("#kind").value;
-  return SWEEP.cells.filter(c => (show === "all" || (show === "unmarked" ? !c.verdict : c.verdict === show)) &&
-                                 (kind === "all" || c.kind === kind));
+  const flawSet = new Set((SWEEP.flaws || []).map(f => f.tag));
+  const ok = c => show === "all" ? true : show === "unmarked" ? !(c.stars || c.verdict) :
+    show === "flawed" ? (c.tags || []).some(t => flawSet.has(t)) : show === "legacy" ? (!c.stars && !!c.verdict) :
+    c.verdict === show;
+  return SWEEP.cells.filter(c => ok(c) && (kind === "all" || c.kind === kind));
 }
 function caption(c) {
   const stack = c.stack ? `<span title="${esc(c.stack)}">${esc(c.display || c.stack).replace(/ \| /g, " <b>+</b> ")}</span>` : esc(c.label || "(base)");
   const extra = [c.mult != null ? "×" + c.mult : "", c.prompt ? "prompt: " + esc(c.prompt.slice(0, 60)) + (c.prompt.length > 60 ? "…" : "") : "",
                  c.seed != null ? "seed " + c.seed : ""].filter(Boolean).join(" · ");
   const clip = c.clip != null && c.clip > 4 ? ` <span class="warn" title="clipped pixels: over ~4% often means a blown, over-saturated stack">clip ${c.clip.toFixed(1)}%</span>` : "";
-  return `${c.kind ? `<span class="kind ${c.kind}">${c.kind}</span>` : ""}${stack}<div class="meta">${extra}${clip}</div>`;
+  const full = (c.info && c.info.prompt) || c.prompt || "";       // hover: the whole prompt (2026-10-30)
+  return `${c.kind ? `<span class="kind ${c.kind}">${c.kind}</span>` : ""}${stack}<div class="meta"${full ? ` title="${esc(full)}"` : ""}>${extra}${clip}</div>`;
 }
 function draw() {
   document.documentElement.style.setProperty("--tile", $("#size").value + "px");
   VIEW = filtered();
-  const marked = SWEEP.cells.filter(c => c.verdict).length;
-  $("#count").textContent = `${VIEW.length} shown · ${marked}/${SWEEP.cells.length} marked`;
+  const marked = SWEEP.cells.filter(c => c.stars || c.verdict).length;
+  $("#count").textContent = `${VIEW.length} shown · ${marked}/${SWEEP.cells.length} rated`;
+  const flawSet = new Set((SWEEP.flaws || []).map(f => f.tag));
+  const tagLine = c => { const f = (c.tags || []).filter(t => flawSet.has(t)), p = (c.tags || []).filter(t => !flawSet.has(t));
+    return (f.length ? `<div class="flawl">✖ ${f.map(esc).join(" · ")}</div>` : "") + (p.length ? `<div class="praisel">✔ ${p.map(esc).join(" · ")}</div>` : ""); };
+  const extras = c => [c.push ? `<span class="push">${c.push === "stronger" ? "▲ try stronger" : "▼ try weaker"}</span>` : "",
+    c.fit != null ? `<span title="prompt fit: how close this prompt is to the LoRA's own prompts (0-1)">fit ${c.fit}</span>` : "",
+    c.ptype ? esc(c.ptype) : "", (!c.stars && c.verdict) ? `old mark: ${esc(c.verdict)}` : ""].filter(Boolean).join(" · ");
   POS = Math.min(POS, Math.max(0, VIEW.length - 1));
   $("#grid").innerHTML = VIEW.map((c, i) => `<div class="tile ${c.verdict || ""}${i === POS ? " on" : ""}" data-i="${i}">
       ${c.file ? `<img loading="lazy" src="/sweepimg?id=${encodeURIComponent(SWEEP.id)}&file=${encodeURIComponent(c.file)}&side=512" alt="">`
                : `<div class="failed">FAILED: ${esc(c.error || "")}</div>`}
-      <div class="cap">${caption(c)}${c.notes ? `<div class="meta">✎ ${esc(c.notes)}</div>` : ""}</div>
-      ${c.file ? `<div class="marks"><button class="g${c.verdict === "good" ? " on" : ""}" data-v="good">G good</button>
-        <button class="b${c.verdict === "bad" ? " on" : ""}" data-v="bad">B bad</button>
-        <button class="u${c.verdict === "unsure" ? " on" : ""}" data-v="unsure">U unsure</button></div>` : ""}</div>`).join("")
+      <div class="cap">${caption(c)}${tagLine(c)}${extras(c) ? `<div class="meta">${extras(c)}</div>` : ""}${
+        c.notes ? `<div class="meta">✎ ${esc(c.notes)}</div>` : ""}</div>
+      ${c.file ? `<div class="marks"><button class="p${c.push === "weaker" ? " on" : ""}" data-p="weaker" title="try it weaker next time (key −)">▼</button>${
+        [1, 2, 3, 4, 5].map(n => `<button class="s${(c.stars || 0) >= n ? " on" : ""}" data-s="${n}" title="${n} star${n > 1 ? "s" : ""} (key ${n})">★</button>`).join("")
+        }<button class="p${c.push === "stronger" ? " on" : ""}" data-p="stronger" title="try it stronger next time (key +)">▲</button>${
+        c.words_pick ? `<button class="w${c.words_done ? " done" : ""}" data-w="1" title="Use this cell's prompt words for this LoRA on this sweep's checkpoint (shown in the card editor's Prompt words). Shift-click: for every checkpoint.">${c.words_done ? "words used" : "use words"}</button>` : ""}</div>` : ""}</div>`).join("")
     || `<div class="empty">Nothing to show with these filters.</div>`;
   document.querySelectorAll(".tile").forEach(el => el.onclick = ev => {
     const i = +el.dataset.i;
-    if (ev.target.dataset.v !== undefined) { setPos(i); mark(VIEW[i], VIEW[i].verdict === ev.target.dataset.v ? "" : ev.target.dataset.v, false); return; }
+    if (ev.target.dataset.s !== undefined) { setPos(i); const s = +ev.target.dataset.s;
+      mark(VIEW[i], {stars: VIEW[i].stars === s ? 0 : s}, false); return; }
+    if (ev.target.dataset.p !== undefined) { setPos(i); const p = ev.target.dataset.p;
+      mark(VIEW[i], {push: VIEW[i].push === p ? "" : p}, false); return; }
+    if (ev.target.dataset.w !== undefined) { setPos(i); useWords(VIEW[i], ev.shiftKey ? "all" : "checkpoint"); return; }
     setPos(i); if (ev.target.tagName === "IMG") openZoom();
   });
 }
@@ -165,31 +262,159 @@ function setPos(i) {
   document.querySelectorAll(".tile").forEach(el => el.classList.toggle("on", +el.dataset.i === POS));
   const on = document.querySelector(".tile.on"); if (on) on.scrollIntoView({block:"nearest", behavior:"smooth"});
 }
-async function mark(cell, verdict, advance) {
-  // Shown and moved on at once (fast G G B keystrokes each land on their own cell); saved in the background,
+// change: {stars} | {tags} | {push} | {clear: true}. Fields left out keep the cell's value. Since 2026-10-17 the
+// stars are the rating and the verdict follows them (4-5 good, 3 unsure, 1-2 bad); old G / B / U marks keep theirs.
+const STAR_VERDICT = {1: "bad", 2: "bad", 3: "unsure", 4: "good", 5: "good"};
+async function mark(cell, change, advance) {
+  // Shown and moved on at once (fast 4 4 2 keystrokes each land on their own cell); saved in the background,
   // put back if the save fails.
   if (!cell || !cell.file) return;
+  if (typeof change === "string") change = change ? {verdict: change} : {clear: true};
   const notes = ZOOMED ? $("#ov_notes").value : null;
-  const before = {verdict: cell.verdict, notes: cell.notes};
-  cell.verdict = verdict || null;
+  const before = {verdict: cell.verdict, notes: cell.notes, stars: cell.stars, tags: cell.tags, push: cell.push, fit: cell.fit, ptype: cell.ptype};
+  if (change.clear) { cell.verdict = null; cell.stars = null; cell.tags = []; cell.push = ""; }
+  else {
+    if (change.verdict && !cell.stars) cell.verdict = change.verdict;
+    if (change.stars !== undefined) { const had = cell.stars; cell.stars = change.stars || null;
+      cell.verdict = cell.stars ? STAR_VERDICT[cell.stars] : (had ? null : cell.verdict); }
+    if (change.tags) cell.tags = change.tags;
+    if (change.push !== undefined) cell.push = change.push;
+  }
   if (notes !== null) cell.notes = notes;
   const target = advance && $("#show").value === "all" ? POS + 1 : POS;   // a filtered list drops the cell itself
   draw();
   setPos(target);
   if (ZOOMED) { if (advance && VIEW[POS]) openZoom(); else drawZoomBar(); }
-  try { await api("/api/stacks/mark", {id: SWEEP.id, file: cell.file, verdict, notes}); }
-  catch (e) { cell.verdict = before.verdict; cell.notes = before.notes; draw(); alertBar("not saved: " + e.message); }
+  const body = {id: SWEEP.id, file: cell.file, notes, clear: !!change.clear};
+  if (!change.clear) {
+    if (change.verdict) body.verdict = change.verdict;
+    if (change.stars !== undefined) body.stars = change.stars;
+    if (change.tags) body.tags = change.tags;
+    if (change.push !== undefined) body.push = change.push;
+  }
+  try { const r = await api("/api/stacks/mark", body); if (r.ok === false) throw new Error(r.error);
+        if (r.verdict !== undefined) cell.verdict = r.verdict;
+        if (r.fit !== undefined) cell.fit = r.fit; if (r.ptype !== undefined) cell.ptype = r.ptype;
+        if (r.tags) cell.tags = r.tags;
+        if (r.verdict === null && r.stars === null && !(r.tags || []).length && !r.push) cell.fit = null;
+        if (ZOOMED) drawZoomBar(); }
+  catch (e) { Object.assign(cell, before); draw(); alertBar("not saved: " + e.message); }
 }
+// a flaw's shortcut letter underlined in its name when the name holds it, else shown after it
+function keyed(tag, key) {
+  // 2026-10-30: the key letter is big, bold and coloured; a word that STARTS with it is preferred
+  // ("unwanted NSFW" -> the N of NSFW), else its first appearance, else "(X)" after the label.
+  if (!key) return esc(tag);
+  const low = tag.toLowerCase();
+  let at = -1;
+  for (let i = 0; i < low.length; i++) if (low[i] === key && (i === 0 || /[\s,]/.test(low[i - 1]))) { at = i; break; }
+  if (at < 0) at = low.indexOf(key);
+  const hk = ch => `<b class="hk">${esc(ch.toUpperCase())}</b>`;
+  return at >= 0 ? esc(tag.slice(0, at)) + hk(tag[at]) + esc(tag.slice(at + 1)) : `${esc(tag)} (${hk(key)})`;
+}
+function toggleTag(cell, t) {
+  if (!cell || !cell.file) return;
+  const tags = [...(cell.tags || [])]; const at = tags.indexOf(t);
+  if (at >= 0) tags.splice(at, 1); else tags.push(t);
+  mark(cell, {tags}, false);
+  if (ZOOMED) drawTags();
+}
+function drawTags() {
+  const c = VIEW[POS]; if (!c) return;
+  const on = t => (c.tags || []).includes(t) ? " on" : "";
+  $("#ov_tags").innerHTML = `<span class="lbl">flaws</span>` + (SWEEP.flaws || []).map(f =>
+      `<button class="flaw${on(f.tag)}" data-t="${esc(f.tag)}" title="${f.cause === "training" ? "shows whatever the prompt: how the LoRA was made" : f.cause === "fit" ? "depends on the prompt: outside its range?" : "depends on the weight"}">${keyed(f.tag, f.key)}</button>`).join("")
+    + `<div style="flex-basis:100%;height:0"></div><span class="lbl">praise</span>` + (SWEEP.praise || []).map(t =>
+      `<button class="praise${on(t)}" data-t="${esc(t)}">${keyed(t, (SWEEP.praise_keys || {})[t])}</button>`).join("");
+  document.querySelectorAll("#ov_tags button").forEach(b => b.onclick = () => toggleTag(VIEW[POS], b.dataset.t));
+  document.querySelectorAll(".overlay .st button").forEach(b => b.classList.toggle("on", +b.dataset.s === (c.stars || 0)));
+  document.querySelectorAll(".overlay .pu button").forEach(b => b.classList.toggle("on", b.dataset.p === (c.push || "")));
+}
+async function importWorkbook() {
+  try {
+    const r = await api("/api/stacks/import", {id: SWEEP.id});
+    if (r.ok === false) throw new Error(r.error);
+    await loadSweep();
+    $("#count").textContent = `imported ${r.rated} rating(s) from ${r.workbook}` + (r.skipped ? ` (${r.skipped} notes-only rows skipped: mark them here first)` : "");
+  } catch (e) { alertBar("import failed: " + e.message); }
+}
+$("#importbtn").onclick = importWorkbook;
+// Share sheets (2026-10-16): Eric_Krea2's _sweep_sheets.py, run by the server with your stars / notes
+const SH_FIELDS = {sh_mode: "mode", sh_bg: "background", sh_ratings: "ratings", sh_group: "group_by"};
+function openShare() {
+  if (!SWEEP) return;
+  for (const id of Object.keys(SH_FIELDS)) { const v = recall(id); if (v && [...$("#" + id).options].some(o => o.value === v)) $("#" + id).value = v; }
+  const rated = SWEEP.cells.some(c => c.stars || c.verdict);
+  $("#sh_msg").textContent = rated ? "" : "no marks on this sweep yet - ratings would print nothing";
+  $("#sh_files").innerHTML = "";
+  $("#share").showModal();
+}
+async function makeShare() {
+  const body = {id: SWEEP.id};
+  for (const [id, key] of Object.entries(SH_FIELDS)) { body[key] = $("#" + id).value; remember(id, body[key]); }
+  $("#sh_go").disabled = true; $("#sh_msg").textContent = "making…"; $("#sh_files").innerHTML = "";
+  try {
+    const r = await api("/api/share_sheets", body);
+    if (r.ok === false) throw new Error(r.error);
+    const t = Date.now();
+    $("#sh_msg").textContent = `${r.files.length} file(s) in ${r.folder}` + ((r.notes || []).length ? " - " + r.notes.join("; ") : "");
+    $("#sh_files").innerHTML = r.files.map(f => { const u = `/sharefile?id=${encodeURIComponent(SWEEP.id)}&file=${encodeURIComponent(f)}&t=${t}`;
+      return `<a href="${u}" target="_blank" rel="noopener" title="open full size"><img loading="lazy" src="${u}" alt="">${esc(f)}</a>`; }).join("");
+  } catch (e) { $("#sh_msg").textContent = "failed: " + e.message; }
+  $("#sh_go").disabled = false;
+}
+$("#sharebtn").onclick = openShare;
+// Follow-up (2026-10-16): winners' stack lines for a build-up / leave-one-out sweep
+function followLines() {
+  const how = $("#fo_min").value;
+  const keep = c => how === "5" ? c.stars === 5 : how === "notbad" ? (c.verdict && c.verdict !== "bad") :
+                    (c.stars ? c.stars >= 4 : c.verdict === "good");
+  const seen = new Set(), lines = [];
+  for (const c of SWEEP.cells) {
+    if (c.kind !== "stack" || !keep(c)) continue;
+    const key = c.stack.toLowerCase(); if (seen.has(key)) continue;
+    seen.add(key); lines.push(`# ${c.display || c.stack}${c.stars ? "  " + "★".repeat(c.stars) : ""}`, c.stack);
+  }
+  $("#fo_text").value = lines.join("\n");
+  $("#fo_msg").textContent = lines.length ? `${lines.length / 2} stack(s)` :
+    "no stack cells marked like that in this sweep yet";
+}
+$("#followbtn").onclick = () => { if (!SWEEP) return; const v = recall("fo_min"); if (v) $("#fo_min").value = v; followLines(); $("#follow").showModal(); };
+$("#fo_min").onchange = () => { remember("fo_min", $("#fo_min").value); followLines(); };
+$("#fo_copy").onclick = async () => { try { await navigator.clipboard.writeText($("#fo_text").value); $("#fo_msg").textContent = "copied"; }
+  catch (e) { $("#fo_text").select(); $("#fo_msg").textContent = "press Ctrl+C"; } };
+$("#fo_close").onclick = () => $("#follow").close();
+$("#sh_go").onclick = makeShare;
+$("#sh_close").onclick = () => $("#share").close();
 function alertBar(text) { $("#count").textContent = "error: " + text; }
+// trigger tests (2026-10-15): the words this cell used become the LoRA's prompt words (trigger_picks.py)
+async function useWords(cell, scope) {
+  try {
+    const r = await api("/api/prompt_words/cell", {id: SWEEP.id, file: cell.file, scope});
+    if (r.ok === false) throw new Error(r.error);
+    SWEEP.cells.forEach(c => { if (c.stack === cell.stack) c.words_done = false; });
+    cell.words_done = true; draw(); setPos(POS);
+    $("#count").textContent = `words for ${cell.display || cell.stack}: ${r.variant} ("${r.text || "no words"}") on ${r.checkpoint}`;
+  } catch (e) { alertBar("words not set: " + e.message); }
+}
 
-// Compare: the cell, its parts (each of its LoRAs alone) and the no-LoRA reference, same prompt / seed / multiplier.
+// Compare: the cell beside every smaller stack made of its own LoRAs at the same weights (each alone, the build-up
+// steps A / A+B, or the leave-one-out pairs - whatever the sweep made) and the no-LoRA reference; same prompt / seed /
+// multiplier. Fewest LoRAs first, so a build-up reads left to right (2026-10-16).
+const entriesOf = s => String(s || "").split(" | ").map(e => e.trim().toLowerCase()).filter(Boolean);
 function partsOf(c) {
+  // a single LoRA cell is judged against its baseline too (2026-10-17)
+  if (c.kind === "single") { const b = SWEEP.cells.find(x => x.file && x.kind === "baseline" && x.prompt === c.prompt && x.seed === c.seed);
+    return b ? [b] : []; }
   if (c.kind !== "stack") return [];
-  const names = c.stack.split(" | ");
-  const same = x => x.file && x.prompt === c.prompt && x.seed === c.seed && x.mult === c.mult;
-  const parts = names.map(n => SWEEP.cells.find(x => same(x) && x.kind === "single" && x.stack === n)).filter(Boolean);
+  const mine = entriesOf(c.stack), order = new Map(mine.map((e, i) => [e, i]));
+  const same = x => x !== c && x.file && x.prompt === c.prompt && x.seed === c.seed && x.mult === c.mult;
+  const parts = SWEEP.cells.filter(x => same(x) && (x.kind === "single" || x.kind === "stack")).filter(x => {
+    const e = entriesOf(x.stack); return e.length && e.length < mine.length && e.every(v => order.has(v)); });
+  const rank = x => entriesOf(x.stack).map(v => String(order.get(v)).padStart(2, "0")).join("");
+  parts.sort((a, b) => entriesOf(a.stack).length - entriesOf(b.stack).length || rank(a).localeCompare(rank(b)));
   const base = SWEEP.cells.find(x => x.file && x.kind === "baseline" && x.prompt === c.prompt && x.seed === c.seed);
-  return (base ? [base] : []).concat(parts);
+  return (base ? [base] : []).concat(parts.slice(0, 7));
 }
 function openZoom() {
   const c = VIEW[POS]; if (!c || !c.file) return;
@@ -197,47 +422,86 @@ function openZoom() {
   const figs = partsOf(c).map(p => ({c: p, main: false})).concat([{c, main: true}]);
   $("#strip").innerHTML = figs.map(f => `<figure class="${f.main ? "main" : ""}">
       <img src="/sweepimg?id=${encodeURIComponent(SWEEP.id)}&file=${encodeURIComponent(f.c.file)}&side=${figs.length > 1 ? 1024 : 0}" alt="">
-      <figcaption>${f.main ? "" : (f.c.kind === "baseline" ? "no swept LoRA" : "part: ")}${esc(f.c.display || f.c.stack || f.c.label)}${f.c.verdict ? ` · ${f.c.verdict}` : ""}</figcaption></figure>`).join("");
+      <figcaption>${f.c.kind === "baseline" ? "baseline (no swept LoRA)" : (f.main ? "" : "part: ") + esc(f.c.display || f.c.stack || f.c.label)}${
+        f.c.stars ? ` · ${"★".repeat(f.c.stars)}` : f.c.verdict ? ` · ${f.c.verdict}` : (!f.main && f.c.kind === "baseline" ? " · not rated (rate it: it shows how hard the prompt is)" : "")}</figcaption></figure>`).join("");
   $("#ov_notes").value = c.notes || "";
   drawZoomBar();
   $("#overlay").classList.add("on");
 }
 function drawZoomBar() {
   const c = VIEW[POS];
-  $("#ov_v").textContent = c ? `${POS + 1}/${VIEW.length} · ${c.verdict || "not marked"}` : "";
+  $("#ov_v").textContent = c ? `${POS + 1}/${VIEW.length} · ${c.stars ? c.stars + "★" : c.verdict ? "old mark: " + c.verdict : "not rated"}${c.subject ? " · " + c.subject : ""}` : "";
+  $("#ov_fit").textContent = c && c.fit != null ? `prompt fit ${c.fit}${c.ptype ? " (" + c.ptype + ")" : ""}` : "";
+  drawTags();
+  drawInfo();
 }
 function closeZoom() { ZOOMED = false; $("#overlay").classList.remove("on"); }
 $("#ov_close").onclick = closeZoom;
-document.querySelectorAll(".overlay .bar button[data-v]").forEach(b => b.onclick = () => mark(VIEW[POS], b.dataset.v, !!b.dataset.v));
+
+// Prompt & settings strip in the zoom (2026-10-30): on / off with the button or key Q, remembered.
+var INFO_ON = recall("info") !== "0";
+function drawInfo() {
+  const box = $("#ov_info"), btn = $("#ov_infobtn"), c = VIEW[POS];
+  if (btn) btn.classList.toggle("on", INFO_ON);
+  if (!box) return;
+  if (!INFO_ON || !c || !c.info) { box.style.display = "none"; return; }
+  const i = c.info;
+  const set = (i.settings || []).map(s => s.stage ? (s.t ? `<span class="stg">${esc(s.t)}</span>` : `<span class="sep"></span>`)
+    : s.vary ? `<b class="vary" title="differs between the cells of this sweep">${esc(s.t)}</b>` : `<span>${esc(s.t)}</span>`).join(" ");
+  box.innerHTML = (set ? `<div class="set">${set}</div>` : "")
+    + (i.words ? `<div class="words" title="the trigger words added for this cell">${esc(i.words)}</div>` : "")
+    + `<div class="pr">${i.prompt ? esc(i.prompt) : "<i>the Ultra panel's prompt (not stored in this sweep)</i>"}</div>`;
+  box.style.display = "";
+}
+function toggleInfo() { INFO_ON = !INFO_ON; remember("info", INFO_ON ? "1" : "0"); drawInfo(); }
+$("#ov_infobtn").onclick = toggleInfo;
+document.querySelectorAll(".overlay .bar button[data-v]").forEach(b => b.onclick = () =>
+  mark(VIEW[POS], b.dataset.v ? {verdict: b.dataset.v} : {clear: true}, !!b.dataset.v));
+document.querySelectorAll(".overlay .bar button[data-s]").forEach(b => b.onclick = () => {
+  const s = +b.dataset.s; mark(VIEW[POS], {stars: VIEW[POS].stars === s ? 0 : s}, false); });
+document.querySelectorAll(".overlay .bar button[data-p]").forEach(b => b.onclick = () => {
+  const p = b.dataset.p; mark(VIEW[POS], {push: VIEW[POS].push === p ? "" : p}, false); });
 
 async function showResults(on) {
   document.body.classList.toggle("results", on);
   $("#resultsbtn").textContent = on ? "Back to cells" : "Results";
   if (!on) return;
   const r = await api("/api/stacks/summary");
-  const row = (n, g, b, u) => `<td class="n gtxt">${g}</td><td class="n btxt">${b}</td><td class="n">${u}</td><td>${n}</td>`;
-  $("#results").innerHTML = `<h2>Stacks you marked (${r.stacks.length})</h2>
-    <table><tr><th>good</th><th>bad</th><th>unsure</th><th>stack</th></tr>${
-      r.stacks.map(s => `<tr>${row(esc(s.stack) + (s.sweeps > 1 ? ` <span class="gtxt" style="color:var(--muted)">(${s.sweeps} sweeps)</span>` : ""), s.good, s.bad, s.unsure)}</tr>`).join("")
-      || `<tr><td colspan="4">nothing yet</td></tr>`}</table>
+  const row = (n, g, b, u, st) => `<td class="n">${st != null ? st + "★" : ""}</td><td class="n gtxt">${g}</td><td class="n btxt">${b}</td><td class="n">${u}</td><td>${n}</td>`;
+  $("#results").innerHTML = `<p><button id="upd" title="Work out the prompt fit for older marks and refit the model the LoRA cards and the Suggester read (it also runs on its own a few seconds after you mark)">Update the analysis</button> <span id="updmsg" style="color:var(--muted)"></span></p>
+    <h2>Stacks you rated (${r.stacks.length})</h2>
+    <table><tr><th>stars</th><th>4-5</th><th>1-2</th><th>3</th><th>stack</th></tr>${
+      r.stacks.map(s => `<tr>${row(esc(s.stack) + (s.sweeps > 1 ? ` <span class="gtxt" style="color:var(--muted)">(${s.sweeps} sweeps)</span>` : ""), s.good, s.bad, s.unsure, s.mean_stars)}</tr>`).join("")
+      || `<tr><td colspan="5">nothing yet</td></tr>`}</table>
     <h2>LoRA pairs (${r.pairs.length}) - what the Suggester will learn from</h2>
-    <table><tr><th>good</th><th>bad</th><th>unsure</th><th>pair</th></tr>${
-      r.pairs.map(p => `<tr>${row(esc(p.a) + " + " + esc(p.b), p.good, p.bad, p.unsure)}</tr>`).join("")
-      || `<tr><td colspan="4">nothing yet - pairs come from stack cells (2+ LoRAs)</td></tr>`}</table>`;
+    <table><tr><th></th><th>4-5</th><th>1-2</th><th>3</th><th>pair</th></tr>${
+      r.pairs.map(p => `<tr>${row(esc(p.a) + " + " + esc(p.b), p.good, p.bad, p.unsure, null)}</tr>`).join("")
+      || `<tr><td colspan="5">nothing yet - pairs come from stack cells (2+ LoRAs)</td></tr>`}</table>`;
+  $("#upd").onclick = async () => { $("#updmsg").textContent = "working…";
+    try { const u = await api("/api/stacks/update", {}); $("#updmsg").textContent = `${u.filled} mark(s) filled in, ${u.loras} LoRA(s) in the model`; }
+    catch (e) { $("#updmsg").textContent = "failed: " + e.message; } };
 }
 $("#resultsbtn").onclick = () => showResults(!document.body.classList.contains("results"));
 
 document.addEventListener("keydown", ev => {
   if (document.activeElement === $("#ov_notes")) {        // typing a note: Enter / Esc leave the box, then G B U mark
-    if (ev.key === "Escape" || ev.key === "Enter") { ev.preventDefault(); $("#ov_notes").blur(); }
+    if (ev.key === "Escape" || ev.key === "Enter") { ev.preventDefault(); $("#ov_notes").blur(); }   // then keys mark again
     return;
   }
   if (/INPUT|SELECT/.test(document.activeElement?.tagName || "")) return;
+  if ($("#share").open || $("#follow").open) return;          // the share / follow-up windows take no marking keys
   if (ev.ctrlKey || ev.metaKey || ev.altKey || document.body.classList.contains("results") || !SWEEP) return;
   const k = ev.key.toLowerCase();
   const cols = Math.max(1, Math.round($("#grid").clientWidth / ((document.querySelector(".tile")?.offsetWidth || 300) + 12)));
-  if (k === "g" || k === "b" || k === "u") { ev.preventDefault(); mark(VIEW[POS], {g:"good", b:"bad", u:"unsure"}[k], true); }
-  else if (k === "0" || k === "backspace") { ev.preventDefault(); mark(VIEW[POS], "", false); }
+  if (k === "q") { ev.preventDefault(); toggleInfo(); return; }      // prompt & settings strip (2026-10-30)
+  const flawKey = (SWEEP.flaws || []).find(f => f.key && f.key === k);
+  const praiseKey = Object.entries(SWEEP.praise_keys || {}).find(([_t, key]) => key === k);
+  if (flawKey) { ev.preventDefault(); toggleTag(VIEW[POS], flawKey.tag); }
+  else if (praiseKey) { ev.preventDefault(); toggleTag(VIEW[POS], praiseKey[0]); }
+  else if (k === "+" || k === "=" || k === "-" || k === "_") { ev.preventDefault(); const c = VIEW[POS];
+    const p = (k === "+" || k === "=") ? "stronger" : "weaker"; if (c) mark(c, {push: c.push === p ? "" : p}, false); }
+  else if ("12345".includes(k) && k.length === 1) { ev.preventDefault(); mark(VIEW[POS], {stars: +k}, true); }
+  else if (k === "0" || k === "backspace") { ev.preventDefault(); mark(VIEW[POS], {clear: true}, false); }
   else if (k === "escape") closeZoom();
   else if (k === " " || k === "enter") { ev.preventDefault(); if (ZOOMED) closeZoom(); else openZoom(); }
   else if (k === "arrowright") { ev.preventDefault(); setPos(POS + 1); if (ZOOMED) openZoom(); }

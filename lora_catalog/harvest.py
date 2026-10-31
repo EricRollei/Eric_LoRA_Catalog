@@ -335,7 +335,7 @@ def show(settings: Settings, word: str, top: int = 25) -> str:
     return "\n".join(lines)
 
 
-def wishlist(settings: Settings, top: int = 40, base: str = "", plain: bool = False) -> str:
+def wishlist(settings: Settings, top: int = 40, base: str = "", plain: bool = False, use_taste: bool = True) -> str:
     """LoRAs you do not own that pair well with ones you do. Rank = sum of pair scores x (0.5 + community score / 100):
     a LoRA the wider audience rates at the top of its base model counts 1.5x, one at the bottom 0.5x (spec 5.4).
     The score is community.quick_scores (approval, likes per download, downloads per day; one cached call per
@@ -346,11 +346,22 @@ def wishlist(settings: Settings, top: int = 40, base: str = "", plain: bool = Fa
     local = LocalIndex(connection)
     total: Dict[str, float] = defaultdict(float)
     partners: Dict[str, List[str]] = defaultdict(list)
+    # 2026-10-29 (Discover stage 1): each pair counts by how you rate YOUR side of it (discover.taste), and LoRAs
+    # marked "Not interested" in Discover stay out. use_taste=False (--no-taste) = the earlier ranking.
+    from .discover import _qualities, _tables, dismissed, taste as _taste
+    quality = _qualities(connection, _tables(connection)) if use_taste else {}
+    gone = dismissed(connection)
     for r in connection.execute("select * from lora_pairs where owned_a + owned_b = 1 and score > 0"):
         if base and base.lower() not in (r["base_model"] or "").lower():
             continue
         theirs, ours = (r["b"], r["a"]) if r["owned_a"] else (r["a"], r["b"])
-        total[theirs] += r["score"]
+        if theirs in gone:
+            continue
+        weight = 1.0
+        if use_taste:
+            row = local.owned(ours)
+            weight = _taste(quality.get(str(row["sha256"] or "").lower())) if row is not None else 1.0
+        total[theirs] += r["score"] * weight
         partners[theirs].append(ours)
     seen = _names(connection, settings, list(total), local)
     total = {k: v for k, v in total.items() if not TRAINING.match(seen.get(k, ""))}    # unpublished on-site training
@@ -370,6 +381,7 @@ def wishlist(settings: Settings, top: int = 40, base: str = "", plain: bool = Fa
     best = sorted(pool, key=lambda k: -rank(k))[:top]
     names = _names(connection, settings, best + [p for k in best for p in partners[k][:3]], local, lookup_missing=True)
     head = "sum of pair scores" if plain else "pair sum x (0.5 + Civitai score/100)"
+    head = ("taste-weighted " if use_taste else "") + head
     lines = [f"LoRAs you do not own that pair well with ones you do ({head}){f', base model ~ {base}' if base else ''}, "
              f"top {len(best)}:"]
     for key in best:

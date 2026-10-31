@@ -1,0 +1,310 @@
+{
+ "name": "Trigger test - pilot 5",
+ "subject": "A woman in her thirties sits on a wooden chair beside a window, seen from the knees up. She wears a plain knit sweater and dark trousers, hands resting in her lap, looking toward the viewer. A bare wall behind her and a small potted plant on the windowsill.",
+ "megapixels": 1.0,
+ "loras": [
+  {
+   "path": "L:\\Models\\loras\\Krea2\\Illustration\\2995087-Michael_Parkes_illustration\\3396751-Krea2_v1\\3396751_michaelparkes_000001700_bf16.safetensors",
+   "name": "Michael Parkes illustration",
+   "weight": 1.0,
+   "variants": [
+    {
+     "name": "none",
+     "text": "",
+     "covers": []
+    },
+    {
+     "name": "trigger",
+     "text": "mparkes",
+     "covers": []
+    },
+    {
+     "name": "official",
+     "text": "mparkes, magic realism with meticulous fine linework and soft refined shading, delicate ethereal finish, classical idealized forms, weightless dreamlike atmosphere, precise crystalline detail, subtle ornamental line quality, warm sepia and luminous limited palettes",
+     "covers": [
+      "full"
+     ]
+    },
+    {
+     "name": "trigger+phrase",
+     "text": "mparkes, magic realism illustration with meticulous fine linework, soft refined shading, delicate ethereal finish, classical idealized forms, weightless dreamlike atmosphere, precise crystalline detail, subtle ornamental line quality, warm sepia and luminous limited palette",
+     "covers": []
+    }
+   ],
+   "words_only": "mparkes, magic realism with meticulous fine linework and soft refined shading, delicate ethereal finish, classical idealized forms, weightless dreamlike atmosphere, precise crystalline detail, subtle ornamental line quality, warm sepia and luminous limited palettes"
+  },
+  {
+   "path": "L:\\Models\\loras\\Krea2\\art-style\\432586-Cinematic_Shot_\\3085969-KREA_2\\3085969_zy_cinematic_shot_k2.safetensors",
+   "name": "Cinematic Shot✨",
+   "weight": 0.75,
+   "variants": [
+    {
+     "name": "none",
+     "text": "",
+     "covers": []
+    },
+    {
+     "name": "trigger",
+     "text": "zy_cinematic",
+     "covers": [
+      "official"
+     ]
+    },
+    {
+     "name": "trigger+phrase",
+     "text": "zy_cinematic, cinematic film look, shallow depth of field, dramatic chiaroscuro lighting, film grain, high contrast",
+     "covers": []
+    },
+    {
+     "name": "full",
+     "text": "zy_cinematic, cinematic film look, shallow depth of field, dramatic chiaroscuro lighting, film grain, high contrast, cinematic still image",
+     "covers": []
+    }
+   ],
+   "words_only": "zy_cinematic, cinematic film look, shallow depth of field, dramatic chiaroscuro lighting, film grain, high contrast, cinematic still image"
+  },
+  {
+   "path": "L:\\Models\\loras\\Krea2\\graphic-art\\2538107-V67_Ukiyo-e_style\\3251022-V1_KREA-2\\3251022_v67_ukiyo-e_style_epoch_1.safetensors",
+   "name": "V67 Ukiyo-e style",
+   "weight": 0.7,
+   "variants": [
+    {
+     "name": "none",
+     "text": "",
+     "covers": []
+    },
+    {
+     "name": "trigger",
+     "text": "ukiyo-e",
+     "covers": []
+    },
+    {
+     "name": "official",
+     "text": "ukiyo-e, woodblock print, japanese style, flat colors, ink lines, washi paper, muted palette, edo period, bijin ga, meisho e, kacho ga, japanese woodblock",
+     "covers": []
+    },
+    {
+     "name": "trigger+phrase",
+     "text": "ukiyo-e, traditional japanese woodblock prints with flat colours, thin calligraphic ink lines, muted palettes of indigo, vermilion, ochre, rice-paper white, subtle wood-grain washi texture, no western shading",
+     "covers": []
+    },
+    {
+     "name": "full",
+     "text": "ukiyo-e, woodblock print, japanese style, flat colors, ink lines, washi paper, muted palette, edo period, bijin ga, meisho e, kacho ga, japanese woodblock, traditional japanese woodblock prints with flat colours, thin calligraphic ink lines, muted palettes of indigo, vermilion, ochre, rice-paper white, subtle wood-grain washi texture, no western shading",
+     "covers": []
+    }
+   ],
+   "words_only": "ukiyo-e, woodblock print, japanese style, flat colors, ink lines, washi paper, muted palette, edo period, bijin ga, meisho e, kacho ga, japanese woodblock, traditional japanese woodblock prints with flat colours, thin calligraphic ink lines, muted palettes of indigo, vermilion, ochre, rice-paper white, subtle wood-grain washi texture, no western shading"
+  },
+  {
+   "path": "L:\\Models\\loras\\Krea2\\graphic-art\\2768558-042_-_Ballpoint_Pen\\3116633-042_ncKR2_a0400\\3116633_042_nckr2_a0400.safetensors",
+   "name": "042 - Ballpoint Pen",
+   "weight": 1.0,
+   "variants": [
+    {
+     "name": "none",
+     "text": "",
+     "covers": []
+    },
+    {
+     "name": "trigger",
+     "text": "n0vuschr0ma style",
+     "covers": [
+      "official"
+     ]
+    },
+    {
+     "name": "trigger+phrase",
+     "text": "n0vuschr0ma style, blue ballpoint pen illustrations with lots of visible lines used for shading and details, it has a mix of detailed realism and sketchy messiness",
+     "covers": []
+    },
+    {
+     "name": "full",
+     "text": "n0vuschr0ma style, blue ballpoint pen illustrations with lots of visible lines used for shading and details, it has a mix of detailed realism and sketchy messiness, sketch, monochrome",
+     "covers": []
+    }
+   ],
+   "words_only": "n0vuschr0ma style, blue ballpoint pen illustrations with lots of visible lines used for shading and details, it has a mix of detailed realism and sketchy messiness, sketch, monochrome"
+  },
+  {
+   "path": "L:\\Models\\loras\\Krea2\\graphic-design\\2803744-167_-_Liquid_Chalk_Markers\\3161145-167_ncKR2_a1000\\3161145_167_nckr2_a1000.safetensors",
+   "name": "167 - Liquid Chalk Markers",
+   "weight": 1.0,
+   "variants": [
+    {
+     "name": "none",
+     "text": "",
+     "covers": []
+    },
+    {
+     "name": "trigger",
+     "text": "n0vuschr0ma style",
+     "covers": [
+      "official"
+     ]
+    },
+    {
+     "name": "trigger+phrase",
+     "text": "n0vuschr0ma style, hand-drawn liquid chalk marker on black chalkboard, streaky, uneven, temporary art that can be washed away with a wet sponge",
+     "covers": [
+      "full"
+     ]
+    }
+   ],
+   "words_only": "n0vuschr0ma style, hand-drawn liquid chalk marker on black chalkboard, streaky, uneven, temporary art that can be washed away with a wet sponge"
+  }
+ ],
+ "combos": [
+  {
+   "prompt": "A woman in her thirties sits on a wooden chair beside a window, seen from the knees up. She wears a plain knit sweater and dark trousers, hands resting in her lap, looking toward the viewer. A bare wall behind her and a small potted plant on the windowsill.",
+   "lora_baseline": true,
+   "s1_megapixels": 1.0
+  },
+  {
+   "prompt": "A woman in her thirties sits on a wooden chair beside a window, seen from the knees up. She wears a plain knit sweater and dark trousers, hands resting in her lap, looking toward the viewer. A bare wall behind her and a small potted plant on the windowsill.",
+   "lora_file": "L:\\Models\\loras\\Krea2\\Illustration\\2995087-Michael_Parkes_illustration\\3396751-Krea2_v1\\3396751_michaelparkes_000001700_bf16.safetensors",
+   "lora_strength": 1.0,
+   "s1_megapixels": 1.0
+  },
+  {
+   "prompt": "mparkes. A woman in her thirties sits on a wooden chair beside a window, seen from the knees up. She wears a plain knit sweater and dark trousers, hands resting in her lap, looking toward the viewer. A bare wall behind her and a small potted plant on the windowsill.",
+   "lora_file": "L:\\Models\\loras\\Krea2\\Illustration\\2995087-Michael_Parkes_illustration\\3396751-Krea2_v1\\3396751_michaelparkes_000001700_bf16.safetensors",
+   "lora_strength": 1.0,
+   "s1_megapixels": 1.0
+  },
+  {
+   "prompt": "mparkes, magic realism with meticulous fine linework and soft refined shading, delicate ethereal finish, classical idealized forms, weightless dreamlike atmosphere, precise crystalline detail, subtle ornamental line quality, warm sepia and luminous limited palettes. A woman in her thirties sits on a wooden chair beside a window, seen from the knees up. She wears a plain knit sweater and dark trousers, hands resting in her lap, looking toward the viewer. A bare wall behind her and a small potted plant on the windowsill.",
+   "lora_file": "L:\\Models\\loras\\Krea2\\Illustration\\2995087-Michael_Parkes_illustration\\3396751-Krea2_v1\\3396751_michaelparkes_000001700_bf16.safetensors",
+   "lora_strength": 1.0,
+   "s1_megapixels": 1.0
+  },
+  {
+   "prompt": "mparkes, magic realism illustration with meticulous fine linework, soft refined shading, delicate ethereal finish, classical idealized forms, weightless dreamlike atmosphere, precise crystalline detail, subtle ornamental line quality, warm sepia and luminous limited palette. A woman in her thirties sits on a wooden chair beside a window, seen from the knees up. She wears a plain knit sweater and dark trousers, hands resting in her lap, looking toward the viewer. A bare wall behind her and a small potted plant on the windowsill.",
+   "lora_file": "L:\\Models\\loras\\Krea2\\Illustration\\2995087-Michael_Parkes_illustration\\3396751-Krea2_v1\\3396751_michaelparkes_000001700_bf16.safetensors",
+   "lora_strength": 1.0,
+   "s1_megapixels": 1.0
+  },
+  {
+   "prompt": "mparkes, magic realism with meticulous fine linework and soft refined shading, delicate ethereal finish, classical idealized forms, weightless dreamlike atmosphere, precise crystalline detail, subtle ornamental line quality, warm sepia and luminous limited palettes. A woman in her thirties sits on a wooden chair beside a window, seen from the knees up. She wears a plain knit sweater and dark trousers, hands resting in her lap, looking toward the viewer. A bare wall behind her and a small potted plant on the windowsill.",
+   "lora_baseline": true,
+   "s1_megapixels": 1.0
+  },
+  {
+   "prompt": "A woman in her thirties sits on a wooden chair beside a window, seen from the knees up. She wears a plain knit sweater and dark trousers, hands resting in her lap, looking toward the viewer. A bare wall behind her and a small potted plant on the windowsill.",
+   "lora_file": "L:\\Models\\loras\\Krea2\\art-style\\432586-Cinematic_Shot_\\3085969-KREA_2\\3085969_zy_cinematic_shot_k2.safetensors",
+   "lora_strength": 0.75,
+   "s1_megapixels": 1.0
+  },
+  {
+   "prompt": "zy_cinematic. A woman in her thirties sits on a wooden chair beside a window, seen from the knees up. She wears a plain knit sweater and dark trousers, hands resting in her lap, looking toward the viewer. A bare wall behind her and a small potted plant on the windowsill.",
+   "lora_file": "L:\\Models\\loras\\Krea2\\art-style\\432586-Cinematic_Shot_\\3085969-KREA_2\\3085969_zy_cinematic_shot_k2.safetensors",
+   "lora_strength": 0.75,
+   "s1_megapixels": 1.0
+  },
+  {
+   "prompt": "zy_cinematic, cinematic film look, shallow depth of field, dramatic chiaroscuro lighting, film grain, high contrast. A woman in her thirties sits on a wooden chair beside a window, seen from the knees up. She wears a plain knit sweater and dark trousers, hands resting in her lap, looking toward the viewer. A bare wall behind her and a small potted plant on the windowsill.",
+   "lora_file": "L:\\Models\\loras\\Krea2\\art-style\\432586-Cinematic_Shot_\\3085969-KREA_2\\3085969_zy_cinematic_shot_k2.safetensors",
+   "lora_strength": 0.75,
+   "s1_megapixels": 1.0
+  },
+  {
+   "prompt": "zy_cinematic, cinematic film look, shallow depth of field, dramatic chiaroscuro lighting, film grain, high contrast, cinematic still image. A woman in her thirties sits on a wooden chair beside a window, seen from the knees up. She wears a plain knit sweater and dark trousers, hands resting in her lap, looking toward the viewer. A bare wall behind her and a small potted plant on the windowsill.",
+   "lora_file": "L:\\Models\\loras\\Krea2\\art-style\\432586-Cinematic_Shot_\\3085969-KREA_2\\3085969_zy_cinematic_shot_k2.safetensors",
+   "lora_strength": 0.75,
+   "s1_megapixels": 1.0
+  },
+  {
+   "prompt": "zy_cinematic, cinematic film look, shallow depth of field, dramatic chiaroscuro lighting, film grain, high contrast, cinematic still image. A woman in her thirties sits on a wooden chair beside a window, seen from the knees up. She wears a plain knit sweater and dark trousers, hands resting in her lap, looking toward the viewer. A bare wall behind her and a small potted plant on the windowsill.",
+   "lora_baseline": true,
+   "s1_megapixels": 1.0
+  },
+  {
+   "prompt": "A woman in her thirties sits on a wooden chair beside a window, seen from the knees up. She wears a plain knit sweater and dark trousers, hands resting in her lap, looking toward the viewer. A bare wall behind her and a small potted plant on the windowsill.",
+   "lora_file": "L:\\Models\\loras\\Krea2\\graphic-art\\2538107-V67_Ukiyo-e_style\\3251022-V1_KREA-2\\3251022_v67_ukiyo-e_style_epoch_1.safetensors",
+   "lora_strength": 0.7,
+   "s1_megapixels": 1.0
+  },
+  {
+   "prompt": "ukiyo-e. A woman in her thirties sits on a wooden chair beside a window, seen from the knees up. She wears a plain knit sweater and dark trousers, hands resting in her lap, looking toward the viewer. A bare wall behind her and a small potted plant on the windowsill.",
+   "lora_file": "L:\\Models\\loras\\Krea2\\graphic-art\\2538107-V67_Ukiyo-e_style\\3251022-V1_KREA-2\\3251022_v67_ukiyo-e_style_epoch_1.safetensors",
+   "lora_strength": 0.7,
+   "s1_megapixels": 1.0
+  },
+  {
+   "prompt": "ukiyo-e, woodblock print, japanese style, flat colors, ink lines, washi paper, muted palette, edo period, bijin ga, meisho e, kacho ga, japanese woodblock. A woman in her thirties sits on a wooden chair beside a window, seen from the knees up. She wears a plain knit sweater and dark trousers, hands resting in her lap, looking toward the viewer. A bare wall behind her and a small potted plant on the windowsill.",
+   "lora_file": "L:\\Models\\loras\\Krea2\\graphic-art\\2538107-V67_Ukiyo-e_style\\3251022-V1_KREA-2\\3251022_v67_ukiyo-e_style_epoch_1.safetensors",
+   "lora_strength": 0.7,
+   "s1_megapixels": 1.0
+  },
+  {
+   "prompt": "ukiyo-e, traditional japanese woodblock prints with flat colours, thin calligraphic ink lines, muted palettes of indigo, vermilion, ochre, rice-paper white, subtle wood-grain washi texture, no western shading. A woman in her thirties sits on a wooden chair beside a window, seen from the knees up. She wears a plain knit sweater and dark trousers, hands resting in her lap, looking toward the viewer. A bare wall behind her and a small potted plant on the windowsill.",
+   "lora_file": "L:\\Models\\loras\\Krea2\\graphic-art\\2538107-V67_Ukiyo-e_style\\3251022-V1_KREA-2\\3251022_v67_ukiyo-e_style_epoch_1.safetensors",
+   "lora_strength": 0.7,
+   "s1_megapixels": 1.0
+  },
+  {
+   "prompt": "ukiyo-e, woodblock print, japanese style, flat colors, ink lines, washi paper, muted palette, edo period, bijin ga, meisho e, kacho ga, japanese woodblock, traditional japanese woodblock prints with flat colours, thin calligraphic ink lines, muted palettes of indigo, vermilion, ochre, rice-paper white, subtle wood-grain washi texture, no western shading. A woman in her thirties sits on a wooden chair beside a window, seen from the knees up. She wears a plain knit sweater and dark trousers, hands resting in her lap, looking toward the viewer. A bare wall behind her and a small potted plant on the windowsill.",
+   "lora_file": "L:\\Models\\loras\\Krea2\\graphic-art\\2538107-V67_Ukiyo-e_style\\3251022-V1_KREA-2\\3251022_v67_ukiyo-e_style_epoch_1.safetensors",
+   "lora_strength": 0.7,
+   "s1_megapixels": 1.0
+  },
+  {
+   "prompt": "ukiyo-e, woodblock print, japanese style, flat colors, ink lines, washi paper, muted palette, edo period, bijin ga, meisho e, kacho ga, japanese woodblock, traditional japanese woodblock prints with flat colours, thin calligraphic ink lines, muted palettes of indigo, vermilion, ochre, rice-paper white, subtle wood-grain washi texture, no western shading. A woman in her thirties sits on a wooden chair beside a window, seen from the knees up. She wears a plain knit sweater and dark trousers, hands resting in her lap, looking toward the viewer. A bare wall behind her and a small potted plant on the windowsill.",
+   "lora_baseline": true,
+   "s1_megapixels": 1.0
+  },
+  {
+   "prompt": "A woman in her thirties sits on a wooden chair beside a window, seen from the knees up. She wears a plain knit sweater and dark trousers, hands resting in her lap, looking toward the viewer. A bare wall behind her and a small potted plant on the windowsill.",
+   "lora_file": "L:\\Models\\loras\\Krea2\\graphic-art\\2768558-042_-_Ballpoint_Pen\\3116633-042_ncKR2_a0400\\3116633_042_nckr2_a0400.safetensors",
+   "lora_strength": 1.0,
+   "s1_megapixels": 1.0
+  },
+  {
+   "prompt": "n0vuschr0ma style. A woman in her thirties sits on a wooden chair beside a window, seen from the knees up. She wears a plain knit sweater and dark trousers, hands resting in her lap, looking toward the viewer. A bare wall behind her and a small potted plant on the windowsill.",
+   "lora_file": "L:\\Models\\loras\\Krea2\\graphic-art\\2768558-042_-_Ballpoint_Pen\\3116633-042_ncKR2_a0400\\3116633_042_nckr2_a0400.safetensors",
+   "lora_strength": 1.0,
+   "s1_megapixels": 1.0
+  },
+  {
+   "prompt": "n0vuschr0ma style, blue ballpoint pen illustrations with lots of visible lines used for shading and details, it has a mix of detailed realism and sketchy messiness. A woman in her thirties sits on a wooden chair beside a window, seen from the knees up. She wears a plain knit sweater and dark trousers, hands resting in her lap, looking toward the viewer. A bare wall behind her and a small potted plant on the windowsill.",
+   "lora_file": "L:\\Models\\loras\\Krea2\\graphic-art\\2768558-042_-_Ballpoint_Pen\\3116633-042_ncKR2_a0400\\3116633_042_nckr2_a0400.safetensors",
+   "lora_strength": 1.0,
+   "s1_megapixels": 1.0
+  },
+  {
+   "prompt": "n0vuschr0ma style, blue ballpoint pen illustrations with lots of visible lines used for shading and details, it has a mix of detailed realism and sketchy messiness, sketch, monochrome. A woman in her thirties sits on a wooden chair beside a window, seen from the knees up. She wears a plain knit sweater and dark trousers, hands resting in her lap, looking toward the viewer. A bare wall behind her and a small potted plant on the windowsill.",
+   "lora_file": "L:\\Models\\loras\\Krea2\\graphic-art\\2768558-042_-_Ballpoint_Pen\\3116633-042_ncKR2_a0400\\3116633_042_nckr2_a0400.safetensors",
+   "lora_strength": 1.0,
+   "s1_megapixels": 1.0
+  },
+  {
+   "prompt": "n0vuschr0ma style, blue ballpoint pen illustrations with lots of visible lines used for shading and details, it has a mix of detailed realism and sketchy messiness, sketch, monochrome. A woman in her thirties sits on a wooden chair beside a window, seen from the knees up. She wears a plain knit sweater and dark trousers, hands resting in her lap, looking toward the viewer. A bare wall behind her and a small potted plant on the windowsill.",
+   "lora_baseline": true,
+   "s1_megapixels": 1.0
+  },
+  {
+   "prompt": "A woman in her thirties sits on a wooden chair beside a window, seen from the knees up. She wears a plain knit sweater and dark trousers, hands resting in her lap, looking toward the viewer. A bare wall behind her and a small potted plant on the windowsill.",
+   "lora_file": "L:\\Models\\loras\\Krea2\\graphic-design\\2803744-167_-_Liquid_Chalk_Markers\\3161145-167_ncKR2_a1000\\3161145_167_nckr2_a1000.safetensors",
+   "lora_strength": 1.0,
+   "s1_megapixels": 1.0
+  },
+  {
+   "prompt": "n0vuschr0ma style. A woman in her thirties sits on a wooden chair beside a window, seen from the knees up. She wears a plain knit sweater and dark trousers, hands resting in her lap, looking toward the viewer. A bare wall behind her and a small potted plant on the windowsill.",
+   "lora_file": "L:\\Models\\loras\\Krea2\\graphic-design\\2803744-167_-_Liquid_Chalk_Markers\\3161145-167_ncKR2_a1000\\3161145_167_nckr2_a1000.safetensors",
+   "lora_strength": 1.0,
+   "s1_megapixels": 1.0
+  },
+  {
+   "prompt": "n0vuschr0ma style, hand-drawn liquid chalk marker on black chalkboard, streaky, uneven, temporary art that can be washed away with a wet sponge. A woman in her thirties sits on a wooden chair beside a window, seen from the knees up. She wears a plain knit sweater and dark trousers, hands resting in her lap, looking toward the viewer. A bare wall behind her and a small potted plant on the windowsill.",
+   "lora_file": "L:\\Models\\loras\\Krea2\\graphic-design\\2803744-167_-_Liquid_Chalk_Markers\\3161145-167_ncKR2_a1000\\3161145_167_nckr2_a1000.safetensors",
+   "lora_strength": 1.0,
+   "s1_megapixels": 1.0
+  },
+  {
+   "prompt": "n0vuschr0ma style, hand-drawn liquid chalk marker on black chalkboard, streaky, uneven, temporary art that can be washed away with a wet sponge. A woman in her thirties sits on a wooden chair beside a window, seen from the knees up. She wears a plain knit sweater and dark trousers, hands resting in her lap, looking toward the viewer. A bare wall behind her and a small potted plant on the windowsill.",
+   "lora_baseline": true,
+   "s1_megapixels": 1.0
+  }
+ ],
+ "backup": "A:\\Comfy25\\ComfyUI_windows_portable\\ComfyUI\\custom_nodes\\Eric_Krea2\\docs\\backup\\sweep_presets_2026-10-14_133235.json"
+}

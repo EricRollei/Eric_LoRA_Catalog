@@ -9,12 +9,18 @@ it is safe to run any time. The same steps the old refresh_new_loras.bat ran:
      5 creators     who made each LoRA (cache, LoRA Manager mirror, then the Civitai API)      (internet)
      6 images       Civitai example images next to LoRAs that have none                       (internet)
      7 community    Civitai audience data for LoRAs not collected in the last 30 days         (internet)
+                    (also keeps which other LoRAs each fetched image used - the pair data)
+     7b pairs       LoRA pairs counted from those images (run.py pairs; offline, optional)
      8 cards        the LLM writes a card for every LoRA that has none                        (LLM, vision)
      9 genre-mood   genre and mood for cards that have none yet                               (LLM, text)
+     9b triggers    trigger recipes for new LoRAs or changed evidence (settings trigger_arches; LLM, text; optional)
     10 review-all   the HTML review pages
     11 facets       card_facets, the table the LoRA Suggester reads
+    11b marks       your sweep marks: prompt fit for older marks, the model the cards and Suggester read (optional)
+    11c prompts     the prompt library: merge new preview / community prompts (optional; settings prompt_library_auto)
+    12 style        style vectors from preview images (optional: only with style_enabled; style.py)
 
-Internet steps carry on when they fail; any other failed step stops the run. Between 8 and 9 the card model is
+Internet steps and the optional style step carry on when they fail; any other failed step stops the run. Between 8 and 9 the card model is
 unloaded when the text model is a different one (one LLM at a time on the GPU).
 
 Each step runs as its own process (python run.py <step>) with its output appended to DATA_DIR/logs/refresh.log, and
@@ -40,8 +46,9 @@ LOG_DIR = os.path.join(DATA_DIR, "logs")
 LOG_PATH = os.path.join(LOG_DIR, "refresh.log")
 STATUS_PATH = os.path.join(LOG_DIR, "refresh_status.json")
 INTERNET = {"identify", "crawl", "creators", "images", "community"}
-STEP_NAMES = ["index", "hash", "identify", "crawl", "creators", "images", "community", "cards", "genre-mood",
-              "review-all", "facets"]
+OPTIONAL = {"style", "pairs", "triggers", "marks", "prompts"}  # style: off unless settings.json "style_enabled"; none ever stops a refresh
+STEP_NAMES = ["index", "hash", "identify", "crawl", "creators", "images", "community", "pairs", "cards", "genre-mood",
+              "triggers", "review-all", "facets", "marks", "prompts", "style"]
 
 
 def plan(workers: int = 3, model: str = "", skip_internet: bool = False, only_steps: str = "") -> List[Tuple[str, List[str]]]:
@@ -52,9 +59,13 @@ def plan(workers: int = 3, model: str = "", skip_internet: bool = False, only_st
             continue
         if skip_internet and name in INTERNET:
             continue
-        args = [name]
+        args = [name] if name != "marks" else ["stacks", "--update"]
         if name == "cards":
             args += ["--workers", str(max(1, workers))] + (["--model", model] if model else [])
+        if name == "prompts":
+            args = ["prompts", "build", "--auto"]   # 2026-10-29: skipped when prompt_library_auto is off
+        if name == "triggers":
+            args += ["--refresh"]          # the shelves in settings trigger_arches; only new or changed evidence
         steps.append((name, args))
     return steps
 
@@ -123,6 +134,9 @@ def run(settings: Settings, workers: int = 0, model: str = "", skip_internet: bo
             continue
         if name in INTERNET:
             _log(f"[{label}] failed (needs the internet or a Civitai answer); carrying on without it")
+            continue
+        if name in OPTIONAL:
+            _log(f"[{label}] failed (optional step); carrying on without it")
             continue
         _log(f"[{label}] FAILED - the steps before it are saved; fix the problem and run the refresh again")
         _status(state="failed", step=number, of=len(steps), name=name, started=started, log=LOG_PATH)

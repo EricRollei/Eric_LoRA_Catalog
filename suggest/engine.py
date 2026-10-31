@@ -46,7 +46,7 @@ from typing import Any, Dict, List, Optional, Tuple
 
 from . import filters
 from .axes import AxisValue, exact_weights_for, load_axes_file, read_axes
-from .catalog import ROLES, LoraCard, load_cards, words_of
+from .catalog import ROLES, LoraCard, load_cards, load_render_verdicts, load_style_vectors, words_of
 from .settings import SuggestSettings, load_settings
 from .vocab import PickLists, load_pick_lists
 
@@ -127,6 +127,132 @@ def community_factor(card: LoraCard) -> float:
         return 1.0
     return 1.0 + COMMUNITY_NUDGE * (card.community - 50.0) / 50.0
 
+
+# Your sweep ratings (LoRA Catalog Sweeps page -> markmodel.py -> lora_observed), 2026-10-17. quality = stars above or
+# below the average LoRA with the prompt and checkpoint taken out; it scales the score by 1 + OBSERVED_STEP x quality,
+# within +-OBSERVED_CAP, once the ratings weigh OBSERVED_MIN_N marks. On the checkpoint in use (request.checkpoint)
+# its own number wins. A flaw you tagged in at least a third of a LoRA's marks (2+ times) turns it down when the
+# prompt makes that flaw matter.
+OBSERVED_STEP = 0.08
+OBSERVED_CAP = 0.12
+OBSERVED_MIN_N = 2.0
+FLAW_TURN_DOWN = {"signature or watermark": 0.85, "unwanted text or lettering": 0.85, "added frame or border": 0.9,
+                  "unwanted NSFW": 0.85, "artifacts, noise or banding": 0.9, "faces or hands broken": 0.9}
+PERSON_FLAWS = {"changes the character or face": 0.8, "same face every time": 0.9}
+PERSON = re.compile(r"\b(woman|man|girl|boy|lady|person|people|portrait|face|she|he|her|his|character|warrior|queen|"
+                    r"king|princess|knight|witch|child|couple)\b", re.I)
+
+
+def _ck_name(text: str) -> str:
+    base = re.split(r"[\\/]", str(text or ""))[-1].lower()
+    return re.sub(r"\.(safetensors|ckpt|gguf|pt|bin)$", "", base)
+
+
+def observed_factor(card: LoraCard, view: "PromptView", checkpoint: str = "") -> Tuple[float, List[str]]:
+    obs = card.observed
+    if not obs or float(obs.get("n") or 0) < OBSERVED_MIN_N:
+        return 1.0, []
+    quality, where = float(obs.get("quality") or 0.0), ""
+    ck = _ck_name(checkpoint)
+    if ck:
+        for name, value in (obs.get("by_checkpoint") or {}).items():
+            if name.lower() in ck or ck in name.lower():
+                quality, where = float(value), " on this checkpoint"
+                break
+    factor = 1.0 + max(-OBSERVED_CAP, min(OBSERVED_CAP, OBSERVED_STEP * quality))
+    notes = [f"your sweeps: {quality:+.1f}★{where}"] if abs(quality) >= 0.2 else []
+    flaws = obs.get("flaws") or {}
+
+    def flagged(tag: str) -> Optional[str]:
+        k, n = (flaws.get(tag) or [0, 0])
+        if ck:
+            for key, value in flaws.items():
+                if key.startswith("ck:") and key.endswith("|" + tag) and (key[3:-len(tag) - 1].lower() in ck
+                                                                          or ck in key[3:-len(tag) - 1].lower()):
+                    if value[1] >= 2:
+                        k, n = value
+        return f"{k}/{n}" if k >= 2 and n and k / n >= 0.33 else None
+    for tag, down in FLAW_TURN_DOWN.items():
+        if tag == "unwanted text or lettering" and view.wants_text:
+            continue
+        seen = flagged(tag)
+        if seen:
+            factor *= down
+            notes.append(f"your sweeps: {tag} {seen}")
+    if PERSON.search(view.whole or ""):
+        for tag, down in PERSON_FLAWS.items():
+            seen = flagged(tag)
+            if seen:
+                factor *= down
+                notes.append(f"your sweeps: {tag} {seen}")
+    return factor, notes
+
+# Style image (Advanced node): roles whose score the reference image's look takes part in, and the card kinds that
+# set the scale (median and best match among this platform's look LoRAs). Lighting stays with the prompt words.
+IMAGE_ROLES = {"style", "transform", "treatment"}
+LOOK_KINDS = {"style_medium", "photo_look", "lighting_colour"}
+# raw evidence for a perfect look match at style_image_weight 1 (x weight): weight 0.4 gives 4.8 = about a strong
+# facet match, so the best look alone scores 0.80 (0.64 after a x0.8 'may add nudity'); below the median it subtracts.
+LOOK_RAW = 12.0
+LOOK_FLOOR = -0.5
+# A style card rated nudity (2) is turned down x0.8 for a prompt that does not ask for nudity. When it clearly matches
+# the style image (relative look >= this), the image is the ask: no turn-down (Eric 2026-10-12). Gates are unchanged:
+# explicit cards stay out, and nothing is used above the node's nsfw setting.
+LOOK_LIFTS_NUDITY = 0.5
+# Style words (Advanced node, 2026-10-13): a picked look LoRA whose render check says it shows its look only with its
+# own style words in the prompt (LoRA Catalog run.py style --renders: needs_words) gets up to STYLE_WORDS_MAX words
+# from its card's facets, added with the triggers.
+STYLE_WORD_FACETS = ("medium", "rendering", "line")
+STYLE_WORDS_MAX = 3
+# LoRAs named in the style image's own metadata (Advanced node, 2026-10-13, Eric's option b): strong evidence for the
+# role they play - about as much as naming the person a LoRA depicts - and they count as named (no 'thin evidence' or
+# 'particular character' turn-down). Slot limits, gates and the prompt still apply; weights stay the card's. Not for
+# the utility role (turbo / filter-bypass helpers belong to the image maker's setup).
+USED_RAW = 8.0
+
+
+def _unit(vector: List[float]) -> List[float]:
+    norm = math.sqrt(sum(v * v for v in vector)) or 1.0
+    return [v / norm for v in vector]
+
+
+def look_scores(request: "SuggestRequest", cards: List[LoraCard], catalog: str) -> Tuple[Dict[str, Tuple[float, float, int]], List[str]]:
+    """{path: (look 0..1, cosine, rank among look LoRAs)} for the style image(s), and report lines.
+    look = (cos - median) / (best - median), clamped: relative to this platform's look LoRAs, because one image's raw
+    cosines overlap (own LoRA median 0.69 vs best other 0.63 on Krea2) while its ranking is good (own LoRA 1st 64%,
+    top 5 86%; several images of one look averaged: 1st 84%)."""
+    images = [_unit(v) for v in (request.style_vectors or []) if v]
+    if not images:
+        return {}, []
+    vectors = load_style_vectors(catalog, [c.path for c in cards])
+    if not vectors:
+        return {}, ["style image: ignored - no style vectors in the catalog (LoRA Catalog: run.py style)"]
+    each = request.image_mode == "each" and len(images) > 1
+    mean = _unit([sum(column) for column in zip(*images)])
+
+    def cosine(vector: List[float]) -> float:
+        if each:
+            return max(sum(a * b for a, b in zip(q, vector)) for q in images)
+        return sum(a * b for a, b in zip(mean, vector))
+
+    raw = {path: cosine(vector) for path, vector in vectors.items()}
+    pool = sorted((raw[c.path] for c in cards if c.path in raw and c.kind in LOOK_KINDS), reverse=True)
+    if len(pool) < 3:
+        return {}, ["style image: ignored - too few look LoRAs with style vectors on this platform"]
+    best, median = pool[0], pool[len(pool) // 2]
+    span = max(1e-6, best - median)
+    result = {}
+    for path, cos in raw.items():
+        rank = 1 + sum(1 for value in pool if value > cos)
+        result[path] = (max(LOOK_FLOOR, min(1.0, (cos - median) / span)), cos, rank)
+    by_path = {c.path: c for c in cards}
+    closest = sorted((p for p in raw if p in by_path and by_path[p].kind in LOOK_KINDS), key=lambda p: -raw[p])[:5]
+    mode = f"{len(images)} images, " + ("each image (best match)" if each else "one look (average)") if len(images) > 1 else "1 image"
+    lines = [f"style image: {mode}, weight {request.style_weight:g}, compared with {len(pool)} look LoRAs; closest: "
+             + ", ".join(f"{by_path[p].name} {raw[p]:.2f}" for p in closest)]
+    return result, lines
+
+
 MATURE_LEVEL = {"explicit_sexual": 3, "fetish": 2, "artistic_nude": 2, "boudoir": 2, "lingerie_swimwear_focus": 1}
 
 # slider_min_strength (node widget) -> the smallest |position| that dials a slider. 0.35 keeps the old strength-1
@@ -175,6 +301,14 @@ class SuggestRequest:
     prompt_nsfw: Optional[int] = None    # the Composer's nsfw level (0..3) from PROMPT_SECTIONS; None = not given
     slider_range: float = 3.0            # a slider with no range on its card dials within -range..+range
     slider_min_strength: int = 2         # 1 = any cue, 2 = position >= 0.35, 3 = >= 0.65 (MIN_POSITION)
+    # LoRA Suggester (Advanced), 2026-10-12 - all off by default, so the plain node runs exactly as before:
+    style_vectors: Optional[List[List[float]]] = None   # CSD vectors of the style_image(s); None = no image
+    style_weight: float = 0.4            # how much the look decides against the prompt words (0..1)
+    image_mode: str = "average"          # average = one look from all images; each = best match to any image
+    add_style_words: bool = False        # needs_words LoRAs get their card's style words with the triggers
+    image_loras: Optional[Dict[str, str]] = None   # {LoRA path: note} named in the style image's metadata
+    checkpoint: str = ""                 # 2026-10-17: the checkpoint in use (file name or path); "" = any - picks the
+                                         # per-checkpoint part of your sweep ratings when they have one
 
 
 @dataclass
@@ -295,7 +429,10 @@ def _contains_name(text_lower: str, name: str) -> bool:
 
 
 def score_card(card: LoraCard, view: PromptView, lists: PickLists, idf: Dict[str, float],
-               distinctive_cut: float) -> Tuple[float, List[str]]:
+               distinctive_cut: float, look: Optional[float] = None, look_weight: float = 0.0,
+               look_note: str = "", used_note: str = "") -> Tuple[float, List[str]]:
+    """look (Advanced node): the style image's relative look match for this card (-0.5..1), added as raw evidence
+    x LOOK_RAW x look_weight. None = no style image (the plain node never passes it)."""
     role = card.role
     reasons: List[str] = []
     raw = 0.0
@@ -338,7 +475,13 @@ def score_card(card: LoraCard, view: PromptView, lists: PickLists, idf: Dict[str
                 and _contains_name(view.whole.lower(), trigger):
             raw += 4.0
             reasons.insert(0, f"trigger: {trigger}")
-    named = any(r.startswith(("depicts:", "trigger:", "artist named:")) for r in reasons)
+    if used_note:                         # Advanced node: the style image's metadata says it was made with this LoRA
+        raw += USED_RAW
+        reasons.insert(0, used_note)
+    named = bool(used_note) or any(r.startswith(("depicts:", "trigger:", "artist named:")) for r in reasons)
+    if look is not None and look_weight > 0:
+        raw = max(0.0, raw + LOOK_RAW * look_weight * look)
+        reasons.insert(0, look_note)
     score = 1.0 - math.exp(-raw / SCALE)
     # multipliers
     figure = set(card.facets.get("figure", []))
@@ -347,7 +490,9 @@ def score_card(card: LoraCard, view: PromptView, lists: PickLists, idf: Dict[str
         score *= 0.3
         reasons.append("a particular character, not named in the prompt")
     side = set(card.facets.get("side_effects", []))
-    kinds = {r.split(":")[0] for r in reasons if not r.startswith("words")}
+    kinds = {r.split(":")[0] for r in reasons if not r.startswith(("words", "look "))}
+    if look is not None and look_weight > 0 and look >= 0.5:
+        kinds.add("look")                 # a clear look match is a kind of evidence of its own
     if len(shared) >= 2 and similarity > 0.05:
         kinds.add("words")
     if (role in LAYERS or role == "subject") and not named and len(kinds) < 2:
@@ -567,6 +712,51 @@ def _lines(text: str) -> List[str]:
     return [line.strip().lower() for chunk in (text or "").splitlines() for line in chunk.split(",") if line.strip()]
 
 
+# Your stack ratings (LoRA Catalog -> markmodel.py -> lora_synergy), 2026-10-27. synergy = how much better (+) or
+# worse (-) a pair scored together than the two LoRAs' own ratings predict. Once a pair has SYNERGY_MIN_MARKS rated
+# stacks, a candidate's place in the queue moves by SYNERGY_STEP x the summed synergy with the LoRAs already chosen
+# (pins included), within +-SYNERGY_CAP - it reorders the picks, it never changes their scores.
+SYNERGY_STEP = 0.06
+SYNERGY_CAP = 0.15
+SYNERGY_MIN_MARKS = 2
+
+
+def load_synergy(catalog: str) -> Dict[Tuple[str, str], Tuple[float, int]]:
+    import os as _os
+    import sqlite3 as _sqlite3
+    out: Dict[Tuple[str, str], Tuple[float, int]] = {}
+    try:
+        con = _sqlite3.connect(f"file:{catalog}?mode=ro", uri=True, timeout=10)
+        try:
+            tables = {r[0] for r in con.execute("select name from sqlite_master where type='table'")}
+            if "lora_synergy" not in tables or "loras" not in tables:
+                return out
+            rows = con.execute("select la.path, lb.path, s.synergy, s.n_marks from lora_synergy s "
+                               "join loras la on lower(la.sha256) = s.a join loras lb on lower(lb.sha256) = s.b").fetchall()
+        finally:
+            con.close()
+    except Exception:
+        return out
+    for pa, pb, syn, n in rows:
+        if pa and pb:
+            out[tuple(sorted((_os.path.normcase(pa), _os.path.normcase(pb))))] = (float(syn), int(n or 0))
+    return out
+
+
+def synergy_bonus(pick: "Pick", chosen: List["Pick"],
+                  synergy: Dict[Tuple[str, str], Tuple[float, int]]) -> Tuple[float, List[str]]:
+    import os as _os
+    total, notes = 0.0, []
+    for other in chosen:
+        key = tuple(sorted((_os.path.normcase(pick.card.path), _os.path.normcase(other.card.path))))
+        s = synergy.get(key)
+        if not s or s[1] < SYNERGY_MIN_MARKS:
+            continue
+        total += s[0]
+        notes.append(f"your stacks: {'+' if s[0] >= 0 else ''}{s[0]:.1f} stars with {other.card.name} ({s[1]} marks)")
+    return max(-SYNERGY_CAP, min(SYNERGY_CAP, SYNERGY_STEP * total)), notes
+
+
 def suggest(request: SuggestRequest, settings: Optional[SuggestSettings] = None) -> SuggestResult:
     settings = settings or load_settings()
     lists = load_pick_lists(settings.vocab)
@@ -595,6 +785,9 @@ def suggest(request: SuggestRequest, settings: Optional[SuggestSettings] = None)
 
     idf = _idf(cards)
     distinctive_cut = math.log(1 + max(1, len(cards)) / 3)
+    looks, look_lines = look_scores(request, cards, settings.catalog) if request.style_vectors else ({}, [])
+    lines.extend(look_lines)
+    look_pool = sum(1 for c in cards if c.kind in LOOK_KINDS and c.path in looks)
     excluded_words = filters.parse(request.exclude)       # filters.Term list (name kept for the call sites)
     rng = random.Random(int(request.seed))
     excluded: Dict[str, int] = {}
@@ -610,13 +803,29 @@ def suggest(request: SuggestRequest, settings: Optional[SuggestSettings] = None)
             if role == "slider" or request.role_max.get(role, 0) <= 0:
                 continue                 # sliders are dialled from the prompt's axes, never scored on text
             variant = card if role == card.role else dataclasses.replace(card, role=role)
-            role_score, role_reasons = score_card(variant, view, lists, idf, distinctive_cut)
+            # utility LoRAs in an image (a turbo LoRA for a Raw base, filter bypasses) belong to its maker's setup, not
+            # its look: reported by the node, never boosted
+            used_note = (request.image_loras or {}).get(card.path, "") if role != "utility" else ""
+            if looks and role in IMAGE_ROLES and card.path in looks:      # Advanced node: the style image's look
+                look, cosine_value, rank = looks[card.path]
+                role_score, role_reasons = score_card(
+                    variant, view, lists, idf, distinctive_cut, look=look,
+                    look_weight=max(0.0, min(1.0, float(request.style_weight))),
+                    look_note=f"look {cosine_value:.2f} to the style image (#{rank} of {look_pool})", used_note=used_note)
+            else:
+                role_score, role_reasons = score_card(variant, view, lists, idf, distinctive_cut, used_note=used_note)
+            factor, notes = observed_factor(variant, view, request.checkpoint)     # your sweep ratings, 2026-10-17
+            if factor != 1.0 or notes:
+                role_score, role_reasons = min(1.0, role_score * factor), role_reasons + notes
             if best is None or role_score > best[0]:
                 best = (role_score, role_reasons, variant)
         if best is None:
             continue
         score, reasons, card = best
-        if card.nsfw == 2 and effective < 2:
+        image_match = bool(looks) and card.role in IMAGE_ROLES and looks.get(card.path, (0.0,))[0] >= LOOK_LIFTS_NUDITY
+        if card.nsfw == 2 and effective < 2 and (image_match or card.path in (request.image_loras or {})):
+            reasons.append("may add nudity - not turned down: it matches the style image")   # Eric 2026-10-12
+        elif card.nsfw == 2 and effective < 2:
             score *= 0.8
             reasons.append("may add nudity")
         if effective >= 2 and "censors_nudity" in card.facets.get("side_effects", []):
@@ -670,7 +879,17 @@ def suggest(request: SuggestRequest, settings: Optional[SuggestSettings] = None)
             pin_lines.append(f"  pin '{term.raw}': a slider pinned without a value runs at its typical weight "
                              f"({card.weight:g}); add =<weight>")
     runners: Dict[str, Tuple[Pick, str]] = {}
-    for _order, pick in candidates:
+    synergy = load_synergy(settings.catalog)          # your stack ratings, 2026-10-27
+    remaining = [c for c in candidates if c[1].score >= request.threshold] if synergy else list(candidates)
+    while remaining:
+        j = 0
+        if synergy and chosen:
+            j = max(range(len(remaining)),
+                    key=lambda i: remaining[i][0] + synergy_bonus(remaining[i][1], chosen, synergy)[0])
+        _order, pick = remaining.pop(j)
+        if synergy and chosen:
+            _bonus, _notes = synergy_bonus(pick, chosen, synergy)
+            pick.reasons.extend(_notes)
         if len([p for p in chosen if p.role != "slider"]) >= request.max_loras:
             break
         if pick.score < request.threshold:
@@ -774,6 +993,23 @@ def suggest(request: SuggestRequest, settings: Optional[SuggestSettings] = None)
         for trigger in pick.card.triggers[:2]:
             if trigger.lower() not in {t.lower() for t in triggers}:
                 triggers.append(trigger)
+    style_word_lines: List[str] = []
+    if request.add_style_words and chosen:
+        verdicts = load_render_verdicts(settings.catalog, [p.card.path for p in chosen])
+        prompt_lower = view.whole.lower()
+        for pick in chosen:
+            if pick.role not in IMAGE_ROLES or verdicts.get(pick.card.path) != "needs_words":
+                continue
+            words: List[str] = []
+            for facet in STYLE_WORD_FACETS:
+                for term in pick.card.facets.get(facet) or []:
+                    word = str(term).replace("_", " ").strip()
+                    if word and word.lower() not in prompt_lower and word.lower() not in {w.lower() for w in words + triggers}:
+                        words.append(word)
+            words = words[:STYLE_WORDS_MAX]
+            triggers.extend(words)
+            style_word_lines.append(f"style words for {pick.card.name} (shows its look only with its style words, "
+                                    f"render check): " + (", ".join(words) if words else "none new on its card"))
 
     for pick in chosen:
         w = pick.weights
@@ -785,6 +1021,7 @@ def suggest(request: SuggestRequest, settings: Optional[SuggestSettings] = None)
     if axis_values:
         lines.append("axes read: " + ", ".join(f"{name} {v.position:+.2f} ('{v.phrase}')" if not v.note else f"{name} ?"
                                               for name, v in sorted(axis_values.items())))
+    lines.extend(style_word_lines)
     lines.extend(slider_lines)
     lines.extend(pin_lines)
     best_per_role: Dict[str, Pick] = {}

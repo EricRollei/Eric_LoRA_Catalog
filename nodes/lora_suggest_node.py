@@ -87,6 +87,25 @@ ROLE_HELP = {
 }
 
 
+# Widget names that hold the checkpoint in a loader node (Eric_Krea2's loader, core ComfyUI loaders).
+CHECKPOINT_KEYS = ("transformer_pick", "transformer_path", "transformer", "ckpt_name", "unet_name", "model_name")
+
+
+def checkpoint_in_graph(prompt) -> str:
+    """The checkpoint file loaded somewhere in this workflow, '' when none is found (2026-10-17): your sweep ratings
+    can then use what they know about each LoRA on that checkpoint."""
+    try:
+        for node in (prompt or {}).values():
+            inputs = (node or {}).get("inputs") or {}
+            for key in CHECKPOINT_KEYS:
+                value = inputs.get(key)
+                if isinstance(value, str) and value.lower().endswith((".safetensors", ".ckpt", ".gguf", ".sft")):
+                    return value
+    except Exception:          # noqa: BLE001 - never break the graph over a hint
+        return ""
+    return ""
+
+
 def merge_triggers(prompt: str, triggers):
     """The prompt with each trigger appended once (a trigger already in the prompt is not repeated)."""
     prompt = (prompt or "").strip()
@@ -179,7 +198,8 @@ class LoRASuggester:
                                                "its axis (axes.yaml ladder, -1..1). 1 = any cue; 2 = 0.35 or more (everyday words "
                                                "stay off); 3 = 0.65 or more, only strong asks ('wasp waist', 'ancient')."}),
         }
-        return {"required": required, "optional": optional}
+        # hidden (2026-10-17): the graph, to find the checkpoint in use (no widget, no effect on saved workflows)
+        return {"required": required, "optional": optional, "hidden": {"prompt": "PROMPT"}}
 
     @classmethod
     def IS_CHANGED(cls, **kwargs):
@@ -196,7 +216,7 @@ class LoRASuggester:
     def run(self, platform, mode, nsfw, max_loras, style_max, treatment_max, detailer_max, environment_max,
             lighting_max, subject_max, layout_max, utility_max, apply_threshold, weight_budget, stage_profile,
             variety, seed, sections=None, text="", exclude="", pin="", transform_max=1, slider_max=2,
-            slider_range=3.0, slider_min_strength=2):
+            slider_range=3.0, slider_min_strength=2, prompt=None):
         bundle = _Sections(sections)
         request = SuggestRequest(
             platform=platform, sections=dict(bundle.sections), text=text or "", max_loras=int(max_loras),
@@ -206,7 +226,8 @@ class LoRASuggester:
             threshold=float(apply_threshold), weight_budget=float(weight_budget), stage_profile=stage_profile,
             variety=float(variety), seed=int(seed), nsfw=nsfw, exclude=exclude or "", pin=pin or "",
             prompt_nsfw=bundle.nsfw if sections is not None else None,
-            slider_range=float(slider_range), slider_min_strength=int(slider_min_strength))
+            slider_range=float(slider_range), slider_min_strength=int(slider_min_strength),
+            checkpoint=checkpoint_in_graph(prompt))
         try:
             result = suggest(request)
         except Exception as error:      # never break the graph over a suggestion

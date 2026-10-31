@@ -89,11 +89,37 @@ function buildPanel(root) {
     editorButton.disabled = true;
     try {
       const result = await post("/lora_catalog/editor");
+      if (result.note) toast("info", "Card editor", result.note);
       if (result.up) window.open(result.url, "_blank"); else toast("error", "Card editor", "did not start - see the editor log below");
+      refresh();
       lastLog = "editor"; logName.value = lastLog;
     } catch (error) { toast("error", "Card editor", error.message); }
     editorButton.disabled = false;
   };
+  // The card editor switch (2026-10-17): is it running, since when, on current code - and Stop / Start. An editor
+  // started here stops by itself when ComfyUI closes; one started elsewhere (launch.bat) runs until stopped.
+  const editorState = el("div", { class: "muted" });
+  const editorToggle = el("button", { text: "…" });
+  let EDITOR = { up: false };
+  editorToggle.onclick = async () => {
+    editorToggle.disabled = true;
+    try {
+      const r = await post(EDITOR.up ? "/lora_catalog/editor/stop" : "/lora_catalog/editor/start");
+      toast("info", "Card editor", r.result);
+    } catch (error) { toast("error", "Card editor", error.message); }
+    editorToggle.disabled = false;
+    refresh();
+  };
+  function drawEditor(state) {
+    EDITOR = state || { up: false };
+    editorToggle.textContent = EDITOR.up ? "Stop editor" : "Start editor";
+    editorToggle.title = EDITOR.up ? "Stop the card editor's background process (your edits are already saved)" : "Start the card editor in the background (Open card editor also starts it)";
+    editorState.textContent = !EDITOR.up ? "○ card editor not running" :
+      EDITOR.legacy ? `● card editor running (an old one, pid ${EDITOR.pid || "?"}) - Stop it, or Open restarts it with the current code` :
+      `● card editor running since ${EDITOR.since}, pid ${EDITOR.pid}` + (EDITOR.stale ? " - older code than on disk: Open restarts it" : "") +
+      (EDITOR.tied ? " - stops when ComfyUI closes" : " - not started by this ComfyUI: runs until stopped");
+    editorState.style.color = EDITOR.up && (EDITOR.stale || EDITOR.legacy) ? "#f0a35a" : "";
+  }
   for (const name of ["refresh", "cards", "genre-mood", "facets", "index", "export-sidecars", "editor"]) logName.append(el("option", { value: name, text: name }));
   logName.onchange = () => { lastLog = logName.value; loadLog(); };
 
@@ -105,10 +131,10 @@ function buildPanel(root) {
 
   panel.append(
     el("h3", { text: "LoRA Catalog" }), stats, problems, running,
-    el("h3", { text: "Run" }), jobRow, el("div", { class: "row" }, editorButton),
+    el("h3", { text: "Run" }), jobRow, el("div", { class: "row" }, editorButton, editorToggle), editorState,
     el("h3", { text: "Log" }), el("div", { class: "row" }, logName), logBox,
     settingsBox,
-    el("div", { class: "muted", text: "Jobs run in their own process: ComfyUI keeps working, and restarting it does not stop them. On one GPU, a card pass and image generation share VRAM." }),
+    el("div", { class: "muted", text: "Jobs run in their own process: ComfyUI keeps working, and restarting it does not stop them (Stop is next to each one above). The card editor started here closes with ComfyUI. On one GPU, a card pass and image generation share VRAM." }),
   );
   root.append(panel);
 
@@ -128,6 +154,7 @@ function buildPanel(root) {
         stat(counts.loras ?? counts.catalog, "LoRAs indexed"), stat(counts.cards, "with a card"),
         stat(counts.uncarded, "without a card"), stat(counts.no_genre, "cards without genre/mood"));
       problems.replaceChildren(...(data.problems || []).map(p => el("div", { class: "problem", text: "⚠ " + p })));
+      drawEditor(data.editor_state || { up: !!data.editor });
       const items = (data.running || []).filter(r => r.command !== "serve");
       const status = data.refresh || {};
       running.replaceChildren(...items.map(job => {

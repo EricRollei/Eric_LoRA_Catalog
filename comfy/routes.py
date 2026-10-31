@@ -5,13 +5,17 @@ The LoRA Catalog panel's routes on ComfyUI's own server (web/lora_catalog_panel.
     POST /lora_catalog/job               {"command": "refresh" | "cards" | "genre-mood" | ..., "options": {...}}
     POST /lora_catalog/job/stop          {"pid": 123}  (only a pid that one of our lock files names)
     GET  /lora_catalog/log?name=refresh  the last lines of a job's log
-    POST /lora_catalog/editor            start the card editor if it is not running; returns its URL
+    POST /lora_catalog/editor            start the card editor if it is not running (restart it when it runs older code
+                                         than is on disk); returns its URL
+    POST /lora_catalog/editor/stop       stop the card editor          POST /lora_catalog/editor/start  start it
     GET  /lora_catalog/settings          the settings the panel edits (the Civitai key only as set / not set)
     POST /lora_catalog/settings          save them (settings.json)
     POST /lora_catalog/llm_test          one small text call and one small image call
 
 Jobs run as their own process (python run.py <command>), started detached: ComfyUI's queue never waits on them, and
-restarting ComfyUI does not stop a card pass. Commands and their options come from fixed lists here; nothing the
+restarting ComfyUI does not stop a card pass. The card editor is different (2026-10-17): started from here it gets
+ComfyUI's pid and stops by itself when ComfyUI closes, and the panel shows it with a Stop / Start switch - an editor
+left running invisibly kept serving old code after updates. Commands and their options come from fixed lists here; nothing the
 browser sends reaches a command line unchecked.
 
 (c) Eric Hiss. Dual license, see LICENSE.
@@ -140,6 +144,106 @@ def _editor_up(port: int = EDITOR_PORT) -> bool:
         return False
 
 
+# -- the card editor switch (2026-10-17) ---------------------------------------------------------------------------
+def _editor_health(port: int = EDITOR_PORT) -> Dict[str, Any]:
+    """{pid, started, code, parent} from a running editor; {} when none answers or it is older than /api/health."""
+    try:
+        with urllib.request.urlopen(f"http://127.0.0.1:{port}/api/health", timeout=1.5) as response:
+            data = json.loads(response.read().decode("utf-8"))
+            return data if isinstance(data, dict) and data.get("ok") else {}
+    except Exception:
+        return {}
+
+
+def _disk_code() -> float:
+    folder = os.path.join(config.TOOL_DIR, "lora_catalog")
+    stamps = [os.path.getmtime(os.path.join(folder, n)) for n in os.listdir(folder) if n.endswith(".py")]
+    return max(stamps) if stamps else 0.0
+
+
+def _editor_state() -> Dict[str, Any]:
+    """up / pid / since / stale (runs older code than is on disk) / tied (stops with this ComfyUI) / legacy (an editor
+    from before 2026-10-17: no /api/health, no Stop - it is restarted when you open it)."""
+    up = _editor_up()
+    if not up:
+        return {"up": False}
+    health = _editor_health()
+    if not health:
+        return {"up": True, "legacy": True, "stale": True, "pid": _pid_on_port(EDITOR_PORT)}
+    return {"up": True, "pid": health.get("pid"), "since": time.strftime("%Y-%m-%d %H:%M", time.localtime(health.get("started") or 0)),
+            "stale": float(health.get("code") or 0) + 1 < _disk_code(), "tied": health.get("parent") == os.getpid()}
+
+
+def _pid_on_port(port: int) -> int:
+    """The pid listening on 127.0.0.1:port (netstat), 0 when none or not found."""
+    try:
+        flags = getattr(subprocess, "CREATE_NO_WINDOW", 0)
+        out = subprocess.run(["netstat", "-ano", "-p", "TCP"] if os.name == "nt" else ["netstat", "-ltnp"],
+                             capture_output=True, text=True, timeout=10, creationflags=flags).stdout
+        for line in out.splitlines():
+            parts = line.split()
+            if len(parts) >= 5 and parts[1].endswith(f":{port}") and "LISTEN" in line.upper():
+                return int(parts[-1].split("/")[0]) if parts[-1].split("/")[0].isdigit() else 0
+    except Exception:
+        return 0
+    return 0
+
+
+def _is_editor_process(pid: int) -> bool:
+    """Only ever end a process that is this tool's card editor (its command line runs run.py serve)."""
+    if pid <= 0:
+        return False
+    try:
+        if os.name == "nt":
+            out = subprocess.run(["powershell", "-NoProfile", "-Command",
+                                  f"(Get-CimInstance Win32_Process -Filter 'ProcessId={int(pid)}').CommandLine"],
+                                 capture_output=True, text=True, timeout=15,
+                                 creationflags=getattr(subprocess, "CREATE_NO_WINDOW", 0)).stdout
+        else:
+            out = open(f"/proc/{int(pid)}/cmdline", "rb").read().decode("utf-8", "replace").replace("\0", " ")
+    except Exception:
+        return False
+    return "run.py" in out and " serve" in out
+
+
+def _editor_stop() -> str:
+    state = _editor_state()
+    if not state.get("up"):
+        return "the card editor is not running"
+    pid = int(state.get("pid") or 0)
+    if not state.get("legacy"):
+        try:                                    # ask it to stop: it answers, then closes its port
+            request = urllib.request.Request(f"http://127.0.0.1:{EDITOR_PORT}/api/shutdown", data=b"{}", method="POST",
+                                             headers={"Content-Type": "application/json"})
+            urllib.request.urlopen(request, timeout=3).read()
+        except Exception:
+            pass
+        for _ in range(20):
+            time.sleep(0.25)
+            if not _editor_up():
+                return f"card editor stopped (pid {pid})"
+    if _is_editor_process(pid):                 # an old editor without Stop, or one that did not close
+        if os.name == "nt":
+            subprocess.run(["taskkill", "/T", "/F", "/PID", str(pid)], capture_output=True,
+                           creationflags=getattr(subprocess, "CREATE_NO_WINDOW", 0))
+        else:
+            os.kill(pid, signal.SIGTERM)
+        for _ in range(20):
+            time.sleep(0.25)
+            if not _editor_up():
+                return f"card editor stopped (pid {pid})"
+    return f"could not stop what answers on port {EDITOR_PORT} (pid {pid or '?'}) - it is not this tool's editor"
+
+
+def _editor_start() -> bool:
+    _start(["serve", "--no-browser", "--port", str(EDITOR_PORT), "--parent-pid", str(os.getpid())], "editor")
+    for _ in range(40):
+        time.sleep(0.5)
+        if _editor_up():
+            return True
+    return False
+
+
 def _tail(name: str, lines: int) -> str:
     safe = "".join(ch for ch in name if ch.isalnum() or ch in "-_")
     path = os.path.join(LOG_DIR, f"{safe}.log")
@@ -179,8 +283,10 @@ def register() -> bool:
     async def status(_request):
         def build():
             settings = config.load_settings()
+            state = _editor_state()
             return {"problems": settings.problems(), "counts": _counts(settings), "running": jobs.running(),
-                    "refresh": read_status(), "editor": _editor_up(), "editor_url": f"http://127.0.0.1:{EDITOR_PORT}/"}
+                    "refresh": read_status(), "editor": bool(state.get("up")), "editor_state": state,
+                    "editor_url": f"http://127.0.0.1:{EDITOR_PORT}/"}
         return web.json_response(await off_loop(build))
 
     @routes.post("/lora_catalog/job")
@@ -215,13 +321,25 @@ def register() -> bool:
     @routes.post("/lora_catalog/editor")
     async def editor(_request):
         url = f"http://127.0.0.1:{EDITOR_PORT}/"
-        if not await off_loop(_editor_up):
-            await off_loop(_start, ["serve", "--no-browser", "--port", str(EDITOR_PORT)], "editor")
-            for _ in range(20):
-                await asyncio.sleep(0.5)
-                if await off_loop(_editor_up):
-                    break
-        return web.json_response({"url": url, "up": await off_loop(_editor_up)})
+        state = await off_loop(_editor_state)
+        note = ""
+        if state.get("up") and state.get("stale"):     # older code than is on disk: a fresh one (edits are saved as you go)
+            note = await off_loop(_editor_stop) + ", restarted with the current code"
+            state = await off_loop(_editor_state)
+        if not state.get("up"):
+            await off_loop(_editor_start)
+        return web.json_response({"url": url, "up": await off_loop(_editor_up), "note": note})
+
+    @routes.post("/lora_catalog/editor/stop")
+    async def editor_stop(_request):
+        return web.json_response({"result": await off_loop(_editor_stop)})
+
+    @routes.post("/lora_catalog/editor/start")
+    async def editor_start(_request):
+        if await off_loop(_editor_up):
+            return web.json_response({"result": "already running", "up": True})
+        up = await off_loop(_editor_start)
+        return web.json_response({"result": "card editor started" if up else "did not start - see the editor log", "up": up})
 
     @routes.get("/lora_catalog/settings")
     async def get_settings(_request):
@@ -229,6 +347,11 @@ def register() -> bool:
 
     @routes.post("/lora_catalog/settings")
     async def save(request):
+        # Guard (2026-10-15): after a hot reload (LG_HotReload) a GET for this path was seen landing here and failing on
+        # the empty body (JSONDecodeError, shown as a 500 under Settings). A GET, or a request without a body, just
+        # gets the settings, the same answer the GET route gives.
+        if request.method != "POST" or not request.can_read_body:
+            return web.json_response(await off_loop(lambda: _public_settings(config.load_settings())))
         body = await request.json()
         values = {k: v for k, v in body.items() if k in EDITABLE}
         if "civitai_api_key" in values and not str(values["civitai_api_key"]).strip():
